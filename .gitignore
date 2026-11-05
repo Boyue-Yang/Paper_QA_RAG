@@ -1,0 +1,9 @@
+.venv/
+.cache/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+node_modules/
+.env
+data/llm_cache/
+data/llm_log/

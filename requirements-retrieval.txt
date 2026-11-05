@@ -1,0 +1,6 @@
+# Retrieval (embedding + search). Install torch first, from the CUDA build matching the driver (CUDA 12.6 here):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu126
+# Versions used to build the index: torch 2.14.1+cu126, sentence-transformers 6.2.0, numpy 2.5.4
+sentence-transformers>=6,<7
+numpy>=2,<3
+requests>=2.31,<3

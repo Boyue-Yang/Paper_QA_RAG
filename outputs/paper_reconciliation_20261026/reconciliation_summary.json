@@ -1,0 +1,442 @@
+{
+  "schema_version": "1.0",
+  "catalog_version": "merged_candidates_2026-10-26_v1",
+  "created_at_utc": "2026-10-26T20:43:58.330297+00:00",
+  "status": "merged_with_proposed_selection_not_frozen",
+  "source_snapshots": [
+    {
+      "source_id": "user_workbook",
+      "local_path": "data/sources/user_papers_20261026.xlsx",
+      "sha256": "5de70db1165832d6282f74385c38ee3db8f1cefe1f3cec28bd92cd94f7cacba2"
+    },
+    {
+      "source_id": "cs395t_f26",
+      "catalog": "data/paper_catalog.json",
+      "reading_list": "data/sources/cs395t-f26-readings.json",
+      "snapshot_date": "2026-10-23",
+      "live_site_refreshed": false
+    }
+  ],
+  "method": {
+    "dedupe": "Exact arXiv work ID from URL, ignoring revisions. Preserve versions separately.",
+    "identifier_policy": "Treat identifiers as strings. Recover numeric truncation from supplied URLs.",
+    "selection": "Proposed 60-work LLM-focused first corpus. Keep the full union as reserve; no file deletions.",
+    "review_scope": "Topic, metadata and source-list review; not a full-text comparative review of every work."
+  },
+  "statistics": {
+    "user_rows_by_sheet": {
+      "Sheet1": 32,
+      "Sheet2": 27
+    },
+    "user_raw_entries": 59,
+    "user_unique_works": 59,
+    "user_internal_duplicate_groups": 0,
+    "course_unique_entries": 101,
+    "shared_works": 24,
+    "user_only": 35,
+    "course_only": 77,
+    "merged_unique_entries": 136,
+    "proposed_core": 60,
+    "reserve": 76,
+    "core_topic_counts": {
+      "架构与分词": 14,
+      "Scaling Laws": 2,
+      "优化器": 6,
+      "推理系统": 3,
+      "推理与测试时计算": 6,
+      "后训练与RL": 8,
+      "蒸馏": 2,
+      "PEFT": 4,
+      "语言扩散模型": 2,
+      "安全与水印": 1,
+      "长上下文": 3,
+      "量化": 3,
+      "工具使用": 2,
+      "训练数据": 4
+    },
+    "core_source_presence": {
+      "both": 21,
+      "course_only": 8,
+      "user_only": 31
+    },
+    "core_local_pdf_count": 29,
+    "core_not_downloaded_count": 31,
+    "pinned_version_overlap_needs_verification": 9,
+    "numeric_identifier_format_issues": 2
+  },
+  "numeric_identifier_issues": [
+    {
+      "kind": "numeric_identifier_format",
+      "sheet": "Sheet1",
+      "cell": "D12",
+      "stored_value": 2101.0019,
+      "canonical_id_from_url": "2101.00190"
+    },
+    {
+      "kind": "numeric_identifier_format",
+      "sheet": "Sheet1",
+      "cell": "D17",
+      "stored_value": 2305.1829,
+      "canonical_id_from_url": "2305.18290"
+    }
+  ],
+  "normalized_title_collisions": [
+    [
+      "doc_9f9c54a7dcb4",
+      "doc_978c610ca8a5"
+    ]
+  ],
+  "user_internal_duplicates": [],
+  "ignored_nonpaper_rows": [
+    {
+      "sheet": "Sheet1",
+      "row": 1,
+      "values": [
+        "paper title",
+        "link",
+        "topic",
+        "arxiv_id",
+        "version"
+      ]
+    },
+    {
+      "sheet": "Sheet1",
+      "row": 34,
+      "values": [
+        "the above content are from ECE381V course",
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "sheet": "Sheet2",
+      "row": 1,
+      "values": [
+        "https://noahgol.github.io/teaching/cs395t-f26",
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "sheet": "Sheet2",
+      "row": 2,
+      "values": [
+        "Title",
+        "Link",
+        "Topic",
+        null
+      ]
+    }
+  ],
+  "overlaps": [
+    {
+      "paper_id": "arxiv_1706.03762",
+      "arxiv_id": "1706.03762",
+      "course_title": "Attention Is All You Need",
+      "user_title": "Attention Is All You Need",
+      "user_locations": "Sheet2!A6",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/1706.03762",
+      "user_url": "https://arxiv.org/abs/1706.03762",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2207.09238",
+      "arxiv_id": "2207.09238",
+      "course_title": "Formal Algorithms for Transformers",
+      "user_title": "Formal Algorithms for Transformers",
+      "user_locations": "Sheet2!A4",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2207.09238",
+      "user_url": "https://arxiv.org/abs/2207.09238",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_1701.06538",
+      "arxiv_id": "1701.06538",
+      "course_title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+      "user_title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+      "user_locations": "Sheet1!A3",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/1701.06538",
+      "user_url": "https://arxiv.org/abs/1701.06538",
+      "user_version_labels": [
+        "v1"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2101.03961",
+      "arxiv_id": "2101.03961",
+      "course_title": "Switch Transformers",
+      "user_title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+      "user_locations": "Sheet2!A11",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2101.03961",
+      "user_url": "https://arxiv.org/abs/2101.03961",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2405.21060",
+      "arxiv_id": "2405.21060",
+      "course_title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+      "user_title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+      "user_locations": "Sheet2!A9",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2405.21060",
+      "user_url": "https://arxiv.org/abs/2405.21060",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2006.16236",
+      "arxiv_id": "2006.16236",
+      "course_title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+      "user_title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+      "user_locations": "Sheet2!A10",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2006.16236",
+      "user_url": "https://arxiv.org/abs/2006.16236",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2001.08361",
+      "arxiv_id": "2001.08361",
+      "course_title": "Scaling Laws for Neural Language Models",
+      "user_title": "Scaling Laws for Neural Language Models",
+      "user_locations": "Sheet1!A14",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2001.08361",
+      "user_url": "https://arxiv.org/abs/2001.08361",
+      "user_version_labels": [
+        "v1"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2203.15556",
+      "arxiv_id": "2203.15556",
+      "course_title": "Training Compute-Optimal Large Language Models",
+      "user_title": "Training Compute-Optimal Large Language Models",
+      "user_locations": "Sheet1!A15",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2203.15556",
+      "user_url": "https://arxiv.org/abs/2203.15556",
+      "user_version_labels": [
+        "v1"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_1904.09237",
+      "arxiv_id": "1904.09237",
+      "course_title": "On the Convergence of Adam and Beyond",
+      "user_title": "On the Convergence of Adam and Beyond",
+      "user_locations": "Sheet2!A15",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/1904.09237",
+      "user_url": "https://arxiv.org/abs/1904.09237",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_1412.6980",
+      "arxiv_id": "1412.6980",
+      "course_title": "Adam: A Method for Stochastic Optimization",
+      "user_title": "Adam: A Method for Stochastic Optimization",
+      "user_locations": "Sheet2!A14",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/1412.6980",
+      "user_url": "https://arxiv.org/abs/1412.6980",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2409.11321",
+      "arxiv_id": "2409.11321",
+      "course_title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+      "user_title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+      "user_locations": "Sheet2!A18",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2409.11321",
+      "user_url": "https://arxiv.org/abs/2409.11321",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_1802.09568",
+      "arxiv_id": "1802.09568",
+      "course_title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+      "user_title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+      "user_locations": "Sheet1!A10",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/1802.09568",
+      "user_url": "https://arxiv.org/abs/1802.09568",
+      "user_version_labels": [
+        "v2"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2409.20325",
+      "arxiv_id": "2409.20325",
+      "course_title": "Old Optimizer, New Norm: An Anthology",
+      "user_title": "Old Optimizer, New Norm: An Anthology",
+      "user_locations": "Sheet2!A17",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/2409.20325",
+      "user_url": "https://arxiv.org/abs/2409.20325",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2211.17192",
+      "arxiv_id": "2211.17192",
+      "course_title": "Fast Inference from Transformers via Speculative Decoding",
+      "user_title": "Fast Inference from Transformers via Speculative Decoding",
+      "user_locations": "Sheet2!A21",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2211.17192",
+      "user_url": "https://arxiv.org/abs/2211.17192",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2402.08164",
+      "arxiv_id": "2402.08164",
+      "course_title": "On Limitations of the Transformer Architecture",
+      "user_title": "On Limitations of the Transformer Architecture",
+      "user_locations": "Sheet2!A20",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2402.08164",
+      "user_url": "https://arxiv.org/abs/2402.08164",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2201.11903",
+      "arxiv_id": "2201.11903",
+      "course_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "user_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "user_locations": "Sheet1!A18",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2201.11903",
+      "user_url": "https://arxiv.org/abs/2201.11903",
+      "user_version_labels": [
+        "v6"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2412.01951",
+      "arxiv_id": "2412.01951",
+      "course_title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+      "user_title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+      "user_locations": "Sheet2!A23",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2412.01951",
+      "user_url": "https://arxiv.org/abs/2412.01951",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2205.14135",
+      "arxiv_id": "2205.14135",
+      "course_title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "user_title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "user_locations": "Sheet2!A22",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2205.14135",
+      "user_url": "https://arxiv.org/abs/2205.14135",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_1707.06347",
+      "arxiv_id": "1707.06347",
+      "course_title": "Proximal Policy Optimization Algorithms",
+      "user_title": "Proximal Policy Optimization Algorithms",
+      "user_locations": "Sheet2!A24",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/1707.06347",
+      "user_url": "https://arxiv.org/abs/1707.06347",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2203.02155",
+      "arxiv_id": "2203.02155",
+      "course_title": "Training Language Models to Follow Instructions with Human Feedback",
+      "user_title": "Training language models to follow instructions with human feedback",
+      "user_locations": "Sheet1!A16",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2203.02155",
+      "user_url": "https://arxiv.org/abs/2203.02155",
+      "user_version_labels": [
+        "v1"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2305.18290",
+      "arxiv_id": "2305.18290",
+      "course_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "user_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "user_locations": "Sheet1!A17",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2305.18290",
+      "user_url": "https://arxiv.org/abs/2305.18290",
+      "user_version_labels": [
+        "v3"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2402.03300",
+      "arxiv_id": "2402.03300",
+      "course_title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+      "user_title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+      "user_locations": "Sheet2!A25",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2402.03300",
+      "user_url": "https://arxiv.org/abs/2402.03300",
+      "user_version_labels": [],
+      "version_note": "未指定修订号。"
+    },
+    {
+      "paper_id": "arxiv_2106.09685",
+      "arxiv_id": "2106.09685",
+      "course_title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "user_title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "user_locations": "Sheet1!A11",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/abs/2106.09685",
+      "user_url": "https://arxiv.org/abs/2106.09685",
+      "user_version_labels": [
+        "v2"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    },
+    {
+      "paper_id": "arxiv_2406.07524",
+      "arxiv_id": "2406.07524",
+      "course_title": "Simple and Effective Masked Diffusion Language Models",
+      "user_title": "Simple and Effective Masked Diffusion Language Models",
+      "user_locations": "Sheet1!A32",
+      "match_method": "exact_arxiv_id_ignoring_revision",
+      "course_url": "https://arxiv.org/pdf/2406.07524",
+      "user_url": "https://arxiv.org/pdf/2406.07524",
+      "user_version_labels": [
+        "v2"
+      ],
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。"
+    }
+  ]
+}
