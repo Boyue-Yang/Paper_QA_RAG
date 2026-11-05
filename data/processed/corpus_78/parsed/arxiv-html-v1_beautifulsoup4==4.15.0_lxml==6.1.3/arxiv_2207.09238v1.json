@@ -1,0 +1,1999 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2207.09238",
+  "version": "v1",
+  "title": "Formal Algorithms for Transformers",
+  "source_format": "html",
+  "source_sha256": "7c658ba9ee45b1410205f8a663cf55c8f278e6792513585b92d6ba9957e2a6c5",
+  "source_url": "https://arxiv.org/html/2207.09238v1",
+  "source_path": "data/corpus_78/html/arxiv_2207.09238v1.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2207.09238_v1_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ae9066257e56e85c77ec",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "This document aims to be a self-contained, mathematically precise overview of transformer architectures and algorithms (not results). It covers what transformers are, how they are trained, what they are used for, their key architectural components, and a preview of the most prominent models. The reader is assumed to be familiar with basic ML terminology and simpler neural network architectures such as MLPs.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 410
+        }
+      ],
+      "text": "This document aims to be a self-contained, mathematically precise overview of transformer architectures and algorithms (not results). It covers what transformers are, how they are trained, what they are used for, their key architectural components, and a preview of the most prominent models. The reader is assumed to be familiar with basic ML terminology and simpler neural network architectures such as MLPs."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_76599a79d723f44e5b7b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Transformers are deep feed-forward artificial neural networks with a (self)attention mechanism. They have been tremendously successful in natural language processing tasks and other domains. Since their inception 5 years ago [VSP+17], many variants have been suggested [LWLQ21]. Descriptions are usually graphical, verbal, partial, or incremental. Despite their popularity, it seems no pseudocode has ever been published for any variant. Contrast this to other fields of computer science, even to “cousin” discipline reinforcement learning [MKS+13, SBB18, EMK+21].",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 564
+        },
+        {
+          "paragraph_id": "p_ca707e9d47cb1c70151b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "This report intends to rectify the situation for Transformers. It aims to be a self-contained, complete, precise and compact overview of transformer architectures and formal algorithms (but not results). It covers what Transformers are (Section 6), how they are trained (Section 7), what they’re used for (Section 3), their key architectural components (Section 5), tokenization (Section 4), and a preview of practical considerations (Section 8) and the most prominent models.",
+          "kind": "text",
+          "char_start": 566,
+          "char_end": 1042
+        },
+        {
+          "paragraph_id": "p_6d8878bde9a71d30fe0d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "The essentially complete pseudocode is about 50 lines, compared to thousands of lines of actual real source code. We believe these formal algorithms will be useful for theoreticians who require compact, complete, and precise formulations, experimental researchers interested in implementing a Transformer from scratch, and encourage authors to augment their paper or text book with formal Transformer algorithms (Section 2).",
+          "kind": "text",
+          "char_start": 1044,
+          "char_end": 1468
+        },
+        {
+          "paragraph_id": "p_8e1a09122e5377187ede",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "The reader is assumed to be familiar with basic ML terminology and simpler neural network architectures such as MLPs.",
+          "kind": "text",
+          "char_start": 1470,
+          "char_end": 1587
+        },
+        {
+          "paragraph_id": "p_8d88b7cb45ba681d893c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "In short, a (formally inclined) reader, upon understanding the contents of this document, will have a solid grasp of transformers: they will be ready to read and contribute to the literature on the topic as well as implement their own Transformer using the pseudocode as templates.",
+          "kind": "text",
+          "char_start": 1589,
+          "char_end": 1870
+        }
+      ],
+      "text": "Transformers are deep feed-forward artificial neural networks with a (self)attention mechanism. They have been tremendously successful in natural language processing tasks and other domains. Since their inception 5 years ago [VSP+17], many variants have been suggested [LWLQ21]. Descriptions are usually graphical, verbal, partial, or incremental. Despite their popularity, it seems no pseudocode has ever been published for any variant. Contrast this to other fields of computer science, even to “cousin” discipline reinforcement learning [MKS+13, SBB18, EMK+21].\n\nThis report intends to rectify the situation for Transformers. It aims to be a self-contained, complete, precise and compact overview of transformer architectures and formal algorithms (but not results). It covers what Transformers are (Section 6), how they are trained (Section 7), what they’re used for (Section 3), their key architectural components (Section 5), tokenization (Section 4), and a preview of practical considerations (Section 8) and the most prominent models.\n\nThe essentially complete pseudocode is about 50 lines, compared to thousands of lines of actual real source code. We believe these formal algorithms will be useful for theoreticians who require compact, complete, and precise formulations, experimental researchers interested in implementing a Transformer from scratch, and encourage authors to augment their paper or text book with formal Transformer algorithms (Section 2).\n\nThe reader is assumed to be familiar with basic ML terminology and simpler neural network architectures such as MLPs.\n\nIn short, a (formally inclined) reader, upon understanding the contents of this document, will have a solid grasp of transformers: they will be ready to read and contribute to the literature on the topic as well as implement their own Transformer using the pseudocode as templates."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0002",
+      "title": "2 Motivation",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Motivation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9ce6d7fa17d570021a3e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.1",
+          "text": "The true story above the introduction describes quite well the feeling we have when browsing many Deep Learning (DL) papers; unable to figure out the algorithmic suggestions exactly. For practitioners, the papers may be sufficiently detailed, but the precision needed by theoreticians is usually higher. For reasons not entirely clear to us, the DL community seems shy of providing pseudocode for their neural network models. Below we describe the SOTA in DL paper writing and argue for the value of formal algorithms. The reader already convinced about their merit can without loss skip this section.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 601
+        },
+        {
+          "paragraph_id": "p_3bd94e82ce3946ed5d7d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1",
+          "text": "The lack of scientific precision and detail in DL publications.",
+          "kind": "heading",
+          "char_start": 603,
+          "char_end": 666
+        },
+        {
+          "paragraph_id": "p_bc8304e680721e61d59b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p1.1",
+          "text": "Deep Learning has been tremendously successful in the last 5 to 10 years with thousands of papers published every year. Many describe only informally how they change a previous model, Some 100+ page papers contain only a few lines of prose informally describing the model [RBC+21]. At best there are some high-level diagrams. No pseudocode. No equations. No reference to a precise explanation of the model. One may argue that most DL models are minor variations of a few core architectures, such as the Transformer [VSP+17], so a reference augmented by a description of the changes should suffice. This would be true if (a) the changes were described precisely, (b) the reference architecture has been described precisely elsewhere, and (c) a reference is given to this description. Some if not all three are lacking in most DL papers. To the best of our knowledge no-one has even provided pseudocode for the famous Transformer and its encoder/decoder-only variations.",
+          "kind": "text",
+          "char_start": 668,
+          "char_end": 1636
+        },
+        {
+          "paragraph_id": "p_afbeb59a07720ebe0203",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2",
+          "text": "Interfacing algorithms.",
+          "kind": "heading",
+          "char_start": 1638,
+          "char_end": 1661
+        },
+        {
+          "paragraph_id": "p_dd9ef8027e74bbc283e7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2.p1.1",
+          "text": "Equally important are proper explanations of how these networks are trained and used, but sometimes it is not even clear what the inputs and outputs and potential side-effects of the described model are. Of course someone experienced would usually be able to correctly guess, but this is not a particularly scientific approach. The experimental section in publications often does not explain what is actually fed into the algorithms and how. If there is some explanation in the methods section, it is often disconnected from what is described in the experimental section, possibly due to different authors writing the different sections. The core algorithms for the models should be accompanied by the wrapper algorithms that call them, e.g. (pre)training, fine-tuning, prompting, inference, deployment. Sometimes this is simple, but sometimes the magic happens there. In any case, if these things are not formally stated they remain unclear. Again, if the setup is standard and has been formally explained elsewhere, a simple reference will do.",
+          "kind": "text",
+          "char_start": 1663,
+          "char_end": 2708
+        },
+        {
+          "paragraph_id": "p_fc9257aebbd1a1cf988e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px3",
+          "text": "Source code vs pseudocode.",
+          "kind": "heading",
+          "char_start": 2710,
+          "char_end": 2736
+        },
+        {
+          "paragraph_id": "p_49d65200594a7ab17013",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px3.p1.1",
+          "text": "Providing open source code is very useful, but not a proper substitute for formal algorithms. There is a massive difference between a (partial) Python dump and well-crafted pseudocode. A lot of abstraction and clean-up is necessary: remove boiler plate code, use mostly single-letter variable names, replace code by math expressions wherever possible, e.g. replace loops by sums, remove (some) optimizations, etc. A well-crafted pseudocode is often less than a page and still essentially complete, compared to often thousands of lines of real source code. This is hard work no-one seems to be willing to do. Of course a forward process of first designing algorithms and write up pseudocode on paper, and then implementing it is fine too, but few DL practitioners seem to work that way.",
+          "kind": "text",
+          "char_start": 2738,
+          "char_end": 3523
+        },
+        {
+          "paragraph_id": "p_9668c5a4146bb0c4d4e4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px4",
+          "text": "Examples of good neural network pseudocode and mathematics and explanations.",
+          "kind": "heading",
+          "char_start": 3525,
+          "char_end": 3601
+        },
+        {
+          "paragraph_id": "p_e077f834fded5d1d58b4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px4.p1.1",
+          "text": "Multi-Layer Perceptrons (MLPs) are usually well-described in many papers, e.g. [MPCB14, BFT17, JGH18], though also without pseudocode. For a rare text-book example of pseudocode for a non-trivial neural network architecture, see Algorithm S2 of [SGBK+21], which constitutes a complete, i.e. essentially executable, pseudocode of just 25 lines based on a 350-line Python Colab toy implementation, which itself is based on a proper 1000+ line implementation.",
+          "kind": "text",
+          "char_start": 3603,
+          "char_end": 4059
+        },
+        {
+          "paragraph_id": "p_1a972c06ddb7fbc67d5e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px4.p2.1",
+          "text": "This work aims to do the same for Transformers: The whole decoder-only Transformer GPT Algorithm 10 based on attention Algorithms 4 and 5 and normalization Algorithm 6 including training Algorithm 13 and prompting and inference Algorithm 14 all-together is less than 50 lines of pseudocode, compared to e.g. the 2000-line self-contained C-implementation [Bel21].",
+          "kind": "text",
+          "char_start": 4061,
+          "char_end": 4423
+        },
+        {
+          "paragraph_id": "p_a9d3cec6e9705ac9e47e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px4.p3.1",
+          "text": "[Ala19] is a great blog-post explaining Transformers and [EGKZ21] describes the attention mechanism to sufficient mathematical precision to allow proving properties about it, but neither provides pseudocode. [Elh21] is an attempt to understand Transformers by reverse-engineering the computations they perform and interpreting them as circuits.",
+          "kind": "text",
+          "char_start": 4425,
+          "char_end": 4769
+        },
+        {
+          "paragraph_id": "p_b71181c0cfb6eeabc1b5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px5",
+          "text": "Motivation.",
+          "kind": "heading",
+          "char_start": 4771,
+          "char_end": 4782
+        },
+        {
+          "paragraph_id": "p_c959a27ae112ccbb5216",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px5.p1.1",
+          "text": "But does anyone actually need pseudocode and what would they be useful for (we sometimes get asked)? We find the absence of pseudocode in DL and this question quite perplexing, but apparently it requires answering. Providing such pseudocode can be useful for many purposes:",
+          "kind": "text",
+          "char_start": 4784,
+          "char_end": 5057
+        },
+        {
+          "paragraph_id": "p_4677847262fcfab8d616",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i1",
+          "text": "• They can be used as templates and adapted to precisely describe future variations, and therewith set a new standard in DL publishing. We explicitly encourage the reader to copy and adapt them to their needs and cite the original as “adapted from [PH22]”.",
+          "kind": "list_item",
+          "char_start": 5059,
+          "char_end": 5315
+        },
+        {
+          "paragraph_id": "p_3c9c15a2c4bc729d9f87",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i2",
+          "text": "• Having all that matters on one page in front of you makes it easier to develop new variations compared to reading prose or scrolling through 1000s of lines of actual code.",
+          "kind": "list_item",
+          "char_start": 5317,
+          "char_end": 5490
+        },
+        {
+          "paragraph_id": "p_5b07ee53b8c42b1c0d7b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i3",
+          "text": "• They can be used as a basis for new implementations from scratch, e.g. in different programming languages, without having to wade through and reverse-engineer existing idiosyncratic real source code.",
+          "kind": "list_item",
+          "char_start": 5492,
+          "char_end": 5693
+        },
+        {
+          "paragraph_id": "p_d9934a6150278fb5e080",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i4",
+          "text": "• They may establish notational convention, which eases communication and reading future variations.",
+          "kind": "list_item",
+          "char_start": 5695,
+          "char_end": 5795
+        },
+        {
+          "paragraph_id": "p_936a2e8771d6803c6a29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i5",
+          "text": "• The process of converting source code into pseudocode can exhibit implementation errors (as it e.g. did in [SGBK+21]).",
+          "kind": "list_item",
+          "char_start": 5797,
+          "char_end": 5917
+        },
+        {
+          "paragraph_id": "p_dffd4fe043b51a50146d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i6",
+          "text": "• Theoreticians need compact, complete, and precise representations for reasoning and ultimately proving properties about algorithms. They are often unwilling or unable to reverse engineer code, or guess the meaning of words or fancy diagrams.",
+          "kind": "list_item",
+          "char_start": 5919,
+          "char_end": 6162
+        },
+        {
+          "paragraph_id": "p_04716bb7e94de8eff16f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px5.p2.1",
+          "text": "With this motivation in mind, the following five sections formally describe all aspects of transformer architectures, training, and inference.",
+          "kind": "text",
+          "char_start": 6164,
+          "char_end": 6306
+        }
+      ],
+      "text": "The true story above the introduction describes quite well the feeling we have when browsing many Deep Learning (DL) papers; unable to figure out the algorithmic suggestions exactly. For practitioners, the papers may be sufficiently detailed, but the precision needed by theoreticians is usually higher. For reasons not entirely clear to us, the DL community seems shy of providing pseudocode for their neural network models. Below we describe the SOTA in DL paper writing and argue for the value of formal algorithms. The reader already convinced about their merit can without loss skip this section.\n\nThe lack of scientific precision and detail in DL publications.\n\nDeep Learning has been tremendously successful in the last 5 to 10 years with thousands of papers published every year. Many describe only informally how they change a previous model, Some 100+ page papers contain only a few lines of prose informally describing the model [RBC+21]. At best there are some high-level diagrams. No pseudocode. No equations. No reference to a precise explanation of the model. One may argue that most DL models are minor variations of a few core architectures, such as the Transformer [VSP+17], so a reference augmented by a description of the changes should suffice. This would be true if (a) the changes were described precisely, (b) the reference architecture has been described precisely elsewhere, and (c) a reference is given to this description. Some if not all three are lacking in most DL papers. To the best of our knowledge no-one has even provided pseudocode for the famous Transformer and its encoder/decoder-only variations.\n\nInterfacing algorithms.\n\nEqually important are proper explanations of how these networks are trained and used, but sometimes it is not even clear what the inputs and outputs and potential side-effects of the described model are. Of course someone experienced would usually be able to correctly guess, but this is not a particularly scientific approach. The experimental section in publications often does not explain what is actually fed into the algorithms and how. If there is some explanation in the methods section, it is often disconnected from what is described in the experimental section, possibly due to different authors writing the different sections. The core algorithms for the models should be accompanied by the wrapper algorithms that call them, e.g. (pre)training, fine-tuning, prompting, inference, deployment. Sometimes this is simple, but sometimes the magic happens there. In any case, if these things are not formally stated they remain unclear. Again, if the setup is standard and has been formally explained elsewhere, a simple reference will do.\n\nSource code vs pseudocode.\n\nProviding open source code is very useful, but not a proper substitute for formal algorithms. There is a massive difference between a (partial) Python dump and well-crafted pseudocode. A lot of abstraction and clean-up is necessary: remove boiler plate code, use mostly single-letter variable names, replace code by math expressions wherever possible, e.g. replace loops by sums, remove (some) optimizations, etc. A well-crafted pseudocode is often less than a page and still essentially complete, compared to often thousands of lines of real source code. This is hard work no-one seems to be willing to do. Of course a forward process of first designing algorithms and write up pseudocode on paper, and then implementing it is fine too, but few DL practitioners seem to work that way.\n\nExamples of good neural network pseudocode and mathematics and explanations.\n\nMulti-Layer Perceptrons (MLPs) are usually well-described in many papers, e.g. [MPCB14, BFT17, JGH18], though also without pseudocode. For a rare text-book example of pseudocode for a non-trivial neural network architecture, see Algorithm S2 of [SGBK+21], which constitutes a complete, i.e. essentially executable, pseudocode of just 25 lines based on a 350-line Python Colab toy implementation, which itself is based on a proper 1000+ line implementation.\n\nThis work aims to do the same for Transformers: The whole decoder-only Transformer GPT Algorithm 10 based on attention Algorithms 4 and 5 and normalization Algorithm 6 including training Algorithm 13 and prompting and inference Algorithm 14 all-together is less than 50 lines of pseudocode, compared to e.g. the 2000-line self-contained C-implementation [Bel21].\n\n[Ala19] is a great blog-post explaining Transformers and [EGKZ21] describes the attention mechanism to sufficient mathematical precision to allow proving properties about it, but neither provides pseudocode. [Elh21] is an attempt to understand Transformers by reverse-engineering the computations they perform and interpreting them as circuits.\n\nMotivation.\n\nBut does anyone actually need pseudocode and what would they be useful for (we sometimes get asked)? We find the absence of pseudocode in DL and this question quite perplexing, but apparently it requires answering. Providing such pseudocode can be useful for many purposes:\n\n• They can be used as templates and adapted to precisely describe future variations, and therewith set a new standard in DL publishing. We explicitly encourage the reader to copy and adapt them to their needs and cite the original as “adapted from [PH22]”.\n\n• Having all that matters on one page in front of you makes it easier to develop new variations compared to reading prose or scrolling through 1000s of lines of actual code.\n\n• They can be used as a basis for new implementations from scratch, e.g. in different programming languages, without having to wade through and reverse-engineer existing idiosyncratic real source code.\n\n• They may establish notational convention, which eases communication and reading future variations.\n\n• The process of converting source code into pseudocode can exhibit implementation errors (as it e.g. did in [SGBK+21]).\n\n• Theoreticians need compact, complete, and precise representations for reasoning and ultimately proving properties about algorithms. They are often unwilling or unable to reverse engineer code, or guess the meaning of words or fancy diagrams.\n\nWith this motivation in mind, the following five sections formally describe all aspects of transformer architectures, training, and inference."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0003",
+      "title": "3 Transformers and Typical Tasks",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Transformers and Typical Tasks"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e49ca2b873da52c4444b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "Transformers are neural network models that excel at natural language processing, or more generally at modelling sequential data. Two common types of tasks they are used for are sequence modelling and sequence-to-sequence prediction.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 233
+        },
+        {
+          "paragraph_id": "p_e4ec234e5bd119e70af2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px1",
+          "text": "Notation.",
+          "kind": "heading",
+          "char_start": 235,
+          "char_end": 244
+        },
+        {
+          "paragraph_id": "p_e03f178a29ce67626812",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px1.p1.1",
+          "text": "Let $V$ denote a finite set, called a vocabulary, often identified with $[N_{\\mathrm{V}}]:=\\{1,...,N_{\\mathrm{V}}\\}$. This could be words or letters, but typically are sub-words, called tokens. Let ${\\boldsymbol{x}}≡x[1:\\ell]≡x[1]x[2]...x[\\ell]∈V^{*}$ be a sequence of tokens, e.g. a sentence or a paragraph or a document. Unlike in Python, we use arrays starting from $1$, and $x[1:\\ell]$ includes $x[\\ell]$. For a matrix $M∈ℝ^{d×d^{\\prime}}$, we write $M[i,:]∈ℝ^{d^{\\prime}}$ for the $i$th row and $M[:,j]∈ℝ^{d}$ for the $j$-th column. We use matrix $×$ column vector convention more common in mathematics, compared to the default row vector $×$ matrix in the transformer literature, i.e. our matrices are transposed. See Appendix B for a complete list of notation.",
+          "kind": "text",
+          "char_start": 246,
+          "char_end": 1013
+        },
+        {
+          "paragraph_id": "p_5207d487a8a032f36ed5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px2",
+          "text": "Chunking.",
+          "kind": "heading",
+          "char_start": 1015,
+          "char_end": 1024
+        },
+        {
+          "paragraph_id": "p_b15ca3b333fa7a45db29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px2.p1.1",
+          "text": "The predominant paradigm in machine learning is (still) learning from independent and identically distributed (i.i.d.) data. Even for sequence modelling for practical reasons this tradition is upheld. The training data may naturally be a collection of (independent) articles, but even then, some may exceed the maximal context length $\\ell_{\\max}$ transformers can handle. In this case, an article is crudely broken into shorter chunks of length $≤\\ell_{\\max}$.",
+          "kind": "text",
+          "char_start": 1026,
+          "char_end": 1487
+        },
+        {
+          "paragraph_id": "p_481b454dec6ef0899d34",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px3",
+          "text": "Sequence modelling (DTransformer).",
+          "kind": "heading",
+          "char_start": 1489,
+          "char_end": 1523
+        },
+        {
+          "paragraph_id": "p_07642411bb48032ae752",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px3.p1.1",
+          "text": "Given a vocabulary $V$, let ${\\boldsymbol{x}}_{n}∈V^{*}$ for $n∈[N_{\\mathrm{data}}]$ be a dataset of sequences (imagined to be) sampled i.i.d. from some distribution $P$ over $V^{*}$. The goal is to learn an estimate $\\hat{P}$ of the distribution $P({\\boldsymbol{x}})$. In practice, the distribution estimate is often decomposed via the chain rule as $\\hat{P}({\\boldsymbol{x}})=\\hat{P}_{{\\boldsymbol{\\theta}}}(x[1])\\cdot\\hat{P}_{{\\boldsymbol{\\theta}}}(x[2]\\,|\\,x[1])\\cdots\\hat{P}_{{\\boldsymbol{\\theta}}}(x[\\ell]\\,|\\,{\\boldsymbol{x}}{[1:\\ell-1]})$, where ${\\boldsymbol{\\theta}}$ consists of all neural network parameters to be learned. The goal is to learn a distribution over a single token $x[t]$ given its preceding tokens $x[1:t-1]$ as context.",
+          "kind": "text",
+          "char_start": 1525,
+          "char_end": 2272
+        },
+        {
+          "paragraph_id": "p_7b7b4f13a5781dd15e8f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px3.p2.1",
+          "text": "Examples include e.g. language modelling, RL policy distillation, or music generation.",
+          "kind": "text",
+          "char_start": 2274,
+          "char_end": 2360
+        },
+        {
+          "paragraph_id": "p_e79323d5b26d7672595e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px4",
+          "text": "Sequence-to-sequence (seq2seq) prediction (EDTransformer).",
+          "kind": "heading",
+          "char_start": 2362,
+          "char_end": 2420
+        },
+        {
+          "paragraph_id": "p_ded64206fdd12b21d6a6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px4.p1.1",
+          "text": "Given a vocabulary $V$ and an i.i.d. dataset of sequence pairs $({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n})\\sim P$, where $P$ is a distribution over $V^{*}×V^{*}$, learn an estimate of the conditional distribution $P({\\boldsymbol{x}}|{\\boldsymbol{z}})$. In practice, the conditional distribution estimate is often decomposed as $\\hat{P}({\\boldsymbol{x}}|{\\boldsymbol{z}})=\\hat{P}_{{\\boldsymbol{\\theta}}}(x[1]\\,|\\,{\\boldsymbol{z}})\\cdot\\hat{P}_{{\\boldsymbol{\\theta}}}(x[2]\\,|\\,x[1],{\\boldsymbol{z}})\\cdots\\hat{P}_{{\\boldsymbol{\\theta}}}(x[\\ell]\\,|\\,{\\boldsymbol{x}}{[1:\\ell-1]},{\\boldsymbol{z}})$.",
+          "kind": "text",
+          "char_start": 2422,
+          "char_end": 3018
+        },
+        {
+          "paragraph_id": "p_7e8e6eb3591aa2bef77f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px4.p2.1",
+          "text": "Examples include translation (${\\boldsymbol{z}}=$ a sentence in English, ${\\boldsymbol{x}}=$ the same sentence in German), question answering (${\\boldsymbol{z}}=$ question, ${\\boldsymbol{x}}=$ the corresponding answer), text-to-speech (${\\boldsymbol{z}}=$ a piece of text, ${\\boldsymbol{x}}=$ a voice recording of someone reading the text).",
+          "kind": "text",
+          "char_start": 3020,
+          "char_end": 3360
+        },
+        {
+          "paragraph_id": "p_e094ab86dd0d8001bdc0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px5",
+          "text": "Classification (ETransformer).",
+          "kind": "heading",
+          "char_start": 3362,
+          "char_end": 3392
+        },
+        {
+          "paragraph_id": "p_00b1258bb325d90b6d8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px5.p1.1",
+          "text": "Given a vocabulary $V$ and a set of classes $[N_{\\mathrm{C}}]$, let $({\\boldsymbol{x}}_{n},c_{n})\\in V^{*}\\times[N_{\\mathrm{C}}]$ for $n\\in[N_{\\mathrm{data}}]$ be an i.i.d. dataset of sequence-class pairs sampled from $P({\\boldsymbol{x}},c)$. The goal in classification is to learn an estimate of the conditional distribution $P(c|{\\boldsymbol{x}})$.",
+          "kind": "text",
+          "char_start": 3394,
+          "char_end": 3744
+        },
+        {
+          "paragraph_id": "p_d916c51ae954850db2ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS0.SSS0.Px5.p2.1",
+          "text": "Examples include e.g. sentiment classification, spam filtering, toxicity classification.",
+          "kind": "text",
+          "char_start": 3746,
+          "char_end": 3834
+        }
+      ],
+      "text": "Transformers are neural network models that excel at natural language processing, or more generally at modelling sequential data. Two common types of tasks they are used for are sequence modelling and sequence-to-sequence prediction.\n\nNotation.\n\nLet $V$ denote a finite set, called a vocabulary, often identified with $[N_{\\mathrm{V}}]:=\\{1,...,N_{\\mathrm{V}}\\}$. This could be words or letters, but typically are sub-words, called tokens. Let ${\\boldsymbol{x}}≡x[1:\\ell]≡x[1]x[2]...x[\\ell]∈V^{*}$ be a sequence of tokens, e.g. a sentence or a paragraph or a document. Unlike in Python, we use arrays starting from $1$, and $x[1:\\ell]$ includes $x[\\ell]$. For a matrix $M∈ℝ^{d×d^{\\prime}}$, we write $M[i,:]∈ℝ^{d^{\\prime}}$ for the $i$th row and $M[:,j]∈ℝ^{d}$ for the $j$-th column. We use matrix $×$ column vector convention more common in mathematics, compared to the default row vector $×$ matrix in the transformer literature, i.e. our matrices are transposed. See Appendix B for a complete list of notation.\n\nChunking.\n\nThe predominant paradigm in machine learning is (still) learning from independent and identically distributed (i.i.d.) data. Even for sequence modelling for practical reasons this tradition is upheld. The training data may naturally be a collection of (independent) articles, but even then, some may exceed the maximal context length $\\ell_{\\max}$ transformers can handle. In this case, an article is crudely broken into shorter chunks of length $≤\\ell_{\\max}$.\n\nSequence modelling (DTransformer).\n\nGiven a vocabulary $V$, let ${\\boldsymbol{x}}_{n}∈V^{*}$ for $n∈[N_{\\mathrm{data}}]$ be a dataset of sequences (imagined to be) sampled i.i.d. from some distribution $P$ over $V^{*}$. The goal is to learn an estimate $\\hat{P}$ of the distribution $P({\\boldsymbol{x}})$. In practice, the distribution estimate is often decomposed via the chain rule as $\\hat{P}({\\boldsymbol{x}})=\\hat{P}_{{\\boldsymbol{\\theta}}}(x[1])\\cdot\\hat{P}_{{\\boldsymbol{\\theta}}}(x[2]\\,|\\,x[1])\\cdots\\hat{P}_{{\\boldsymbol{\\theta}}}(x[\\ell]\\,|\\,{\\boldsymbol{x}}{[1:\\ell-1]})$, where ${\\boldsymbol{\\theta}}$ consists of all neural network parameters to be learned. The goal is to learn a distribution over a single token $x[t]$ given its preceding tokens $x[1:t-1]$ as context.\n\nExamples include e.g. language modelling, RL policy distillation, or music generation.\n\nSequence-to-sequence (seq2seq) prediction (EDTransformer).\n\nGiven a vocabulary $V$ and an i.i.d. dataset of sequence pairs $({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n})\\sim P$, where $P$ is a distribution over $V^{*}×V^{*}$, learn an estimate of the conditional distribution $P({\\boldsymbol{x}}|{\\boldsymbol{z}})$. In practice, the conditional distribution estimate is often decomposed as $\\hat{P}({\\boldsymbol{x}}|{\\boldsymbol{z}})=\\hat{P}_{{\\boldsymbol{\\theta}}}(x[1]\\,|\\,{\\boldsymbol{z}})\\cdot\\hat{P}_{{\\boldsymbol{\\theta}}}(x[2]\\,|\\,x[1],{\\boldsymbol{z}})\\cdots\\hat{P}_{{\\boldsymbol{\\theta}}}(x[\\ell]\\,|\\,{\\boldsymbol{x}}{[1:\\ell-1]},{\\boldsymbol{z}})$.\n\nExamples include translation (${\\boldsymbol{z}}=$ a sentence in English, ${\\boldsymbol{x}}=$ the same sentence in German), question answering (${\\boldsymbol{z}}=$ question, ${\\boldsymbol{x}}=$ the corresponding answer), text-to-speech (${\\boldsymbol{z}}=$ a piece of text, ${\\boldsymbol{x}}=$ a voice recording of someone reading the text).\n\nClassification (ETransformer).\n\nGiven a vocabulary $V$ and a set of classes $[N_{\\mathrm{C}}]$, let $({\\boldsymbol{x}}_{n},c_{n})\\in V^{*}\\times[N_{\\mathrm{C}}]$ for $n\\in[N_{\\mathrm{data}}]$ be an i.i.d. dataset of sequence-class pairs sampled from $P({\\boldsymbol{x}},c)$. The goal in classification is to learn an estimate of the conditional distribution $P(c|{\\boldsymbol{x}})$.\n\nExamples include e.g. sentiment classification, spam filtering, toxicity classification."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0004",
+      "title": "4 Tokenization: How Text is Represented",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Tokenization: How Text is Represented"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9ad1b75493fcf7185126",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "In the context of natural language tasks, tokenization refers to how a piece of text such as “My grandma makes the best apple pie.” is represented as a sequence of vocabulary elements (called tokens).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 200
+        },
+        {
+          "paragraph_id": "p_e1b082863eb30b8874c0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1",
+          "text": "Character-level tokenization.",
+          "kind": "heading",
+          "char_start": 202,
+          "char_end": 231
+        },
+        {
+          "paragraph_id": "p_6a0d32be34703bf1b878",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1.p1.1",
+          "text": "One possible choice is to let $V$ be the English alphabet (plus punctuation). In the example above, we’d get a sequence of length 36: [‘M’, ‘y’, ‘ ’, …]. Character-level tokenization tends to yield very long sequences.",
+          "kind": "text",
+          "char_start": 233,
+          "char_end": 451
+        },
+        {
+          "paragraph_id": "p_8d2594ddf7b5202ca206",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2",
+          "text": "Word-level tokenization.",
+          "kind": "heading",
+          "char_start": 453,
+          "char_end": 477
+        },
+        {
+          "paragraph_id": "p_72d856abc075af77ee2c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2.p1.1",
+          "text": "Another choice would be to let $V$ consist of all English words (plus punctuation). In the example above, we’d get a sequence of length 7: [‘My ’, ‘grandma ’, ‘makes ’, …]. Word-level tokenization tends to require a very large vocabulary and cannot deal with new words at test time.",
+          "kind": "text",
+          "char_start": 479,
+          "char_end": 761
+        },
+        {
+          "paragraph_id": "p_4f0c0d0849370579e4a6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3",
+          "text": "Subword tokenization.",
+          "kind": "heading",
+          "char_start": 763,
+          "char_end": 784
+        },
+        {
+          "paragraph_id": "p_3ff58c2cc3e967d5a386",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p1.1",
+          "text": "This is the method used in practice nowadays: $V$ is a set of commonly occurring word segments like ‘cious’, ‘ing’, ‘pre’. Common words like ‘is ’ are often a separate token, and single characters are also included in $V$ to ensure all words are expressible.",
+          "kind": "text",
+          "char_start": 786,
+          "char_end": 1044
+        },
+        {
+          "paragraph_id": "p_96b8bb2455ef7c6c8073",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p2.1",
+          "text": "There are in fact many ways to do subword tokenization. One of the simplest and most successful ones is Byte Pair Encoding [Gag94, SHB16] used in GPT-2 [RWC+19].",
+          "kind": "text",
+          "char_start": 1046,
+          "char_end": 1207
+        },
+        {
+          "paragraph_id": "p_3e138dea24d9c652ce50",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px4",
+          "text": "Final vocabulary and text representation.",
+          "kind": "heading",
+          "char_start": 1209,
+          "char_end": 1250
+        },
+        {
+          "paragraph_id": "p_92089106a660b78d1f5a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px4.p1.1",
+          "text": "Given a choice of tokenization / vocabulary, each vocabulary element is assigned a unique index in $\\{1,2,\\dots,N_{\\mathrm{V}}-3\\}$. A number of special tokens are then added to the vocabulary. The number of special tokens varies, and here we will consider three: $\\texttt{mask\\_token}:=N_{\\mathrm{V}}-2$, used in masked language modelling (see Algorithm 12); $\\texttt{bos\\_token}:=N_{\\mathrm{V}}-1$, used for representing the beginning of sequence; and $\\texttt{eos\\_token}:=N_{\\mathrm{V}}$, used for representing the end of sequence. The complete vocabulary has $N_{\\mathrm{V}}=|V|$ elements.",
+          "kind": "text",
+          "char_start": 1252,
+          "char_end": 1846
+        },
+        {
+          "paragraph_id": "p_9a554fc51522fae4fb29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px4.p2.1",
+          "text": "A piece of text is represented as a sequence of indices (called token IDs) corresponding to its (sub)words, preceded by bos_token and followed by eos_token.",
+          "kind": "text",
+          "char_start": 1848,
+          "char_end": 2004
+        }
+      ],
+      "text": "In the context of natural language tasks, tokenization refers to how a piece of text such as “My grandma makes the best apple pie.” is represented as a sequence of vocabulary elements (called tokens).\n\nCharacter-level tokenization.\n\nOne possible choice is to let $V$ be the English alphabet (plus punctuation). In the example above, we’d get a sequence of length 36: [‘M’, ‘y’, ‘ ’, …]. Character-level tokenization tends to yield very long sequences.\n\nWord-level tokenization.\n\nAnother choice would be to let $V$ consist of all English words (plus punctuation). In the example above, we’d get a sequence of length 7: [‘My ’, ‘grandma ’, ‘makes ’, …]. Word-level tokenization tends to require a very large vocabulary and cannot deal with new words at test time.\n\nSubword tokenization.\n\nThis is the method used in practice nowadays: $V$ is a set of commonly occurring word segments like ‘cious’, ‘ing’, ‘pre’. Common words like ‘is ’ are often a separate token, and single characters are also included in $V$ to ensure all words are expressible.\n\nThere are in fact many ways to do subword tokenization. One of the simplest and most successful ones is Byte Pair Encoding [Gag94, SHB16] used in GPT-2 [RWC+19].\n\nFinal vocabulary and text representation.\n\nGiven a choice of tokenization / vocabulary, each vocabulary element is assigned a unique index in $\\{1,2,\\dots,N_{\\mathrm{V}}-3\\}$. A number of special tokens are then added to the vocabulary. The number of special tokens varies, and here we will consider three: $\\texttt{mask\\_token}:=N_{\\mathrm{V}}-2$, used in masked language modelling (see Algorithm 12); $\\texttt{bos\\_token}:=N_{\\mathrm{V}}-1$, used for representing the beginning of sequence; and $\\texttt{eos\\_token}:=N_{\\mathrm{V}}$, used for representing the end of sequence. The complete vocabulary has $N_{\\mathrm{V}}=|V|$ elements.\n\nA piece of text is represented as a sequence of indices (called token IDs) corresponding to its (sub)words, preceded by bos_token and followed by eos_token."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0005",
+      "title": "5 Architectural Components",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Architectural Components"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_78c7c61f906d8405ee36",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "The following are the neural network building blocks (functions with learnable parameters) from which transformers are made. Full architectures featuring these building blocks are presented in the next section. (By a slight abuse of notation, we identify $V$ with the set $\\{1,2,\\dots,N_{\\mathrm{V}}\\}$.)",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 304
+        },
+        {
+          "paragraph_id": "p_b4ba551a40783dde4667",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px1",
+          "text": "Token embedding.",
+          "kind": "heading",
+          "char_start": 306,
+          "char_end": 322
+        },
+        {
+          "paragraph_id": "p_c6d740397dcc64acb5e5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px1.p1.1",
+          "text": "The token embedding learns to represent each vocabulary element as a vector in $ℝ^{d_{\\mathrm{e}}}$; see Algorithm 1.",
+          "kind": "text",
+          "char_start": 324,
+          "char_end": 441
+        },
+        {
+          "paragraph_id": "p_4d719b936a7b6ed7cff3",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm1",
+          "text": "Algorithm 1 Token embedding.",
+          "kind": "caption",
+          "char_start": 443,
+          "char_end": 471
+        },
+        {
+          "paragraph_id": "p_fa607bfe11da7ce18c8e",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm1.4",
+          "text": "Input: $v∈V\\cong[N_{\\mathrm{V}}]$, a token ID.\nOutput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, the vector representation of the token.\nParameters: ${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, the token embedding matrix.\n1 return ${\\boldsymbol{e}}={\\boldsymbol{W_{e}}}[:,v]$",
+          "kind": "listing",
+          "char_start": 473,
+          "char_end": 758
+        },
+        {
+          "paragraph_id": "p_4ace65f9f66936eb5796",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2",
+          "text": "Positional embedding.",
+          "kind": "heading",
+          "char_start": 760,
+          "char_end": 781
+        },
+        {
+          "paragraph_id": "p_09be2361f44fcf332867",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2.p1.1",
+          "text": "The positional embedding learns to represent a token’s position in a sequence as a vector in $ℝ^{d_{\\mathrm{e}}}$. For example, the position of the first token in a sequence is represented by a (learned) vector ${\\boldsymbol{W_{p}}}[:,1]$, the position of the second token is represented by another (learned) vector ${\\boldsymbol{W_{p}}}[:,2]$, etc. The purpose of the positional embedding is to allow a Transformer to make sense of word ordering; in its absence the representation would be permutation invariant and the model would perceive sequences as “bags of words” instead.",
+          "kind": "text",
+          "char_start": 783,
+          "char_end": 1362
+        },
+        {
+          "paragraph_id": "p_bf972a107a8c4df4ef0b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2.p2.1",
+          "text": "Learned positional embeddings require that input sequence length is at most some fixed number $\\ell_{\\max}$ (the size of the learned positional embedding matrix must be finite and fixed in advance of training). An intuitive explanation of how this works can be found at [Ala18]. For pseudocode, see Algorithm 2.",
+          "kind": "text",
+          "char_start": 1364,
+          "char_end": 1675
+        },
+        {
+          "paragraph_id": "p_a879bb491de17042055f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2.p3.1",
+          "text": "Not all transformers make use of learned positional embeddings, some use a hard-coded mapping ${\\boldsymbol{W_{p}}}:ℕ\\to ℝ^{d_{\\mathrm{e}}}$ instead [Ker21]. Such hard-coded positional embeddings can (theoretically) handle arbitrarily long sequences. The original Transformer [VSP+17] uses",
+          "kind": "text",
+          "char_start": 1677,
+          "char_end": 1966
+        },
+        {
+          "paragraph_id": "p_e9c9311caf43218c8833",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.EGx1",
+          "text": "\\displaystyle{\\boldsymbol{W_{p}}}[2i-1,t]\\penalty\\ \\displaystyle=\\penalty\\ \\sin(t/\\ell_{\\max}^{2i/d_{\\mathrm{e}}}), \\displaystyle{\\boldsymbol{W_{p}}}[2i,t]\\penalty\\ \\displaystyle=\\penalty\\ \\cos(t/\\ell_{\\max}^{2i/d_{\\mathrm{e}}}).",
+          "kind": "equation",
+          "char_start": 1968,
+          "char_end": 2197
+        },
+        {
+          "paragraph_id": "p_3c6d630f3e72164b6691",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2.p3.2",
+          "text": "for $0<i≤d_{\\mathrm{e}}/2$.",
+          "kind": "text",
+          "char_start": 2199,
+          "char_end": 2226
+        },
+        {
+          "paragraph_id": "p_61c780519fa060da561a",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm2",
+          "text": "Algorithm 2 Positional embedding.",
+          "kind": "caption",
+          "char_start": 2228,
+          "char_end": 2261
+        },
+        {
+          "paragraph_id": "p_cc02cd87b3afb3cb2662",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm2.4",
+          "text": "Input: $\\ell∈[\\ell_{\\max}]$, position of a token in the sequence.\nOutput: ${\\boldsymbol{e_{p}}}∈ℝ^{d_{\\mathrm{e}}}$, the vector representation of the position.\nParameters: ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the positional embedding matrix.\n1 return ${\\boldsymbol{e_{p}}}={\\boldsymbol{W_{p}}}[:,\\ell]$",
+          "kind": "listing",
+          "char_start": 2263,
+          "char_end": 2583
+        },
+        {
+          "paragraph_id": "p_0a7d9ec50cd31b20da5d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px2.p4.1",
+          "text": "The positional embedding of a token is usually added to the token embedding to form a token’s initial embedding. For the $t$-th token of a sequence ${\\boldsymbol{x}}$, the embedding is",
+          "kind": "text",
+          "char_start": 2585,
+          "char_end": 2769
+        },
+        {
+          "paragraph_id": "p_8c8ede147dd92be12bc0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.E1",
+          "text": "{\\boldsymbol{e}}={\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t].",
+          "kind": "equation",
+          "char_start": 2771,
+          "char_end": 2843
+        },
+        {
+          "paragraph_id": "p_4e29b85d965b5860b5db",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px3",
+          "text": "Attention.",
+          "kind": "heading",
+          "char_start": 2845,
+          "char_end": 2855
+        },
+        {
+          "paragraph_id": "p_563496a0b1a45b9e3384",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px3.p1.1",
+          "text": "Attention is the main architectural component of transformers. It enables a neural network to make use of contextual information (e.g. preceding text or the surrounding text) for predicting the current token.",
+          "kind": "text",
+          "char_start": 2857,
+          "char_end": 3065
+        },
+        {
+          "paragraph_id": "p_137349682d0957e98847",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px3.p2.1",
+          "text": "On a high level, attention works as follows: the token currently being predicted is mapped to a query vector ${\\boldsymbol{q}}∈ℝ^{d_{\\mathrm{attn}}}$, and the tokens in the context are mapped to key vectors ${\\boldsymbol{k}}_{t}∈ℝ^{d_{\\mathrm{attn}}}$ and value vectors ${\\boldsymbol{v}}_{t}∈ℝ^{d_{\\mathrm{value}}}$. The inner products ${\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{t}$ are interpreted as the degree to which token $t∈V$ is important for predicting the current token $q$ – they are used to derive a distribution over the context tokens, which is then used to combine the value vectors. An intuitive explanation how this achieves attention can be found at [Ala18, Ala19]. The precise algorithm is given in Algorithm 3.",
+          "kind": "text",
+          "char_start": 3067,
+          "char_end": 3801
+        },
+        {
+          "paragraph_id": "p_7c3f278b224788e75111",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm3",
+          "text": "Algorithm 3 Basic single-query attention.",
+          "kind": "caption",
+          "char_start": 3803,
+          "char_end": 3844
+        },
+        {
+          "paragraph_id": "p_7614647e08dbbb4876c8",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm3.4",
+          "text": "Input: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{in}}}$, vector representation of the current token\nInput: ${\\boldsymbol{e}}_{t}∈ℝ^{d_{\\mathrm{in}}}$, vector representations of context tokens $t∈[T]$.\nOutput: ${\\boldsymbol{\\tilde{v}}}∈ℝ^{d_{\\mathrm{out}}}$, vector representation of the token and context combined.\nParameters: ${\\boldsymbol{W_{q}}},{\\boldsymbol{W_{k}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{in}}}$, ${\\boldsymbol{b_{q}}},{\\boldsymbol{b_{k}}}∈ℝ^{d_{\\mathrm{attn}}}$, the query and key linear projections.\nParameters: ${\\boldsymbol{W_{v}}}∈ℝ^{d_{\\mathrm{out}}×d_{\\mathrm{in}}}$, ${\\boldsymbol{b_{v}}}∈ℝ^{d_{\\mathrm{out}}}$, the value linear projection.\n1 ${\\boldsymbol{q}}\\leftarrow{\\boldsymbol{W_{q}}}{\\boldsymbol{e}}+{\\boldsymbol{b_{q}}}$\n2 $\\forall t:\\ {\\boldsymbol{k}}_{t}\\leftarrow{\\boldsymbol{W_{k}}}{\\boldsymbol{e}}_{t}+{\\boldsymbol{b_{k}}}$\n3 $\\forall t:\\ {\\boldsymbol{v}}_{t}\\leftarrow{\\boldsymbol{W_{v}}}{\\boldsymbol{e}}_{t}+{\\boldsymbol{b_{v}}}$\n4 $\\forall t:\\ \\alpha_{t}=\\frac{\\exp\\left({\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{t}/\\sqrt{d_{\\mathrm{attn}}}\\right)}{\\sum_{u}\\exp\\left({\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{u}/\\sqrt{d_{\\mathrm{attn}}}\\right)}$\n5 return ${\\boldsymbol{\\tilde{v}}}=\\sum_{t=1}^{T}\\alpha_{t}{\\boldsymbol{v}}_{t}$",
+          "kind": "listing",
+          "char_start": 3846,
+          "char_end": 5107
+        },
+        {
+          "paragraph_id": "p_008e83930d55cd80eb3f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px3.p3.1",
+          "text": "There are many ways the basic attention mechanism is used in transformers. We list some of the most common variants below.",
+          "kind": "text",
+          "char_start": 5109,
+          "char_end": 5231
+        },
+        {
+          "paragraph_id": "p_0de8f4380df37f45a23a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px3.p4.1",
+          "text": "It will be useful to define the softmax function for matrix arguments, as well as a Mask matrix:",
+          "kind": "text",
+          "char_start": 5233,
+          "char_end": 5329
+        },
+        {
+          "paragraph_id": "p_b705d1e26c76bc38f293",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.E2",
+          "text": "\\mathrm{softmax}({\\boldsymbol{A}})[t_{\\mathrm{z}},t_{\\mathrm{x}}]\\penalty\\ :=\\penalty\\ \\frac{\\exp A[t_{\\mathrm{z}},t_{\\mathrm{x}}]}{\\sum_{t}\\exp A[t,t_{\\mathrm{x}}]},",
+          "kind": "equation",
+          "char_start": 5331,
+          "char_end": 5497
+        },
+        {
+          "paragraph_id": "p_aa7116297ea840b42f97",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.E3",
+          "text": "\\text{Mask}[t_{\\mathrm{z}},t_{\\mathrm{x}}]=\\left\\{{1\\penalty\\ \\penalty\\ \\penalty\\ \\text{for bidirectional attention}\\atop[\\![t_{\\mathrm{z}}\\!≤\\!t_{\\mathrm{x}}]\\!]\\penalty\\ \\penalty\\ \\text{for unidirectional att.}}\\right.",
+          "kind": "equation",
+          "char_start": 5499,
+          "char_end": 5719
+        },
+        {
+          "paragraph_id": "p_37513166ea37d53663b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm4",
+          "text": "Algorithm 4 ${\\boldsymbol{\\tilde{V}}}\\leftarrow$ Attention$({\\boldsymbol{X}},{\\boldsymbol{Z}}|\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}},\\text{Mask})$",
+          "kind": "caption",
+          "char_start": 5721,
+          "char_end": 5876
+        },
+        {
+          "paragraph_id": "p_52f71d3e38afc06b0cae",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm4.6",
+          "text": "/* Computes a single (masked) self- or cross- attention head. */\nInput: ${\\boldsymbol{X}}∈ℝ^{d_{\\mathrm{x}}×\\ell_{\\mathrm{x}}},{\\boldsymbol{Z}}∈ℝ^{d_{\\mathrm{z}}×\\ell_{\\mathrm{z}}}$, vector representations of primary and context sequence.\nOutput: ${\\boldsymbol{\\tilde{V}}}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{x}}}$, updated representations of tokens in ${\\boldsymbol{X}}$, folding in information from tokens in ${\\boldsymbol{Z}}$.\nParameters: $\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}$ consisting of: ${\\boldsymbol{W_{q}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}}$, ${\\boldsymbol{b_{q}}}∈ℝ^{d_{\\mathrm{attn}}}$ ${\\boldsymbol{W_{k}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b_{k}}}∈ℝ^{d_{\\mathrm{attn}}}$ ${\\boldsymbol{W_{v}}}∈ℝ^{d_{\\mathrm{out}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b_{v}}}∈ℝ^{d_{\\mathrm{out}}}$.\nHyperparameters: Mask$∈\\!\\!\\{0,\\!1\\}^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$, $\\uparrow$(3)\n1 ${\\boldsymbol{Q}}\\leftarrow{\\boldsymbol{W_{q}}}{\\boldsymbol{X}}+{\\boldsymbol{b_{q}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{Q}}\\mathrm{uery}∈ℝ^{d_{\\mathrm{attn}}×\\ell_{\\mathrm{x}}}$]​]\n2 ${\\boldsymbol{K}}\\leftarrow{\\boldsymbol{W_{k}}}{\\boldsymbol{Z}}+{\\boldsymbol{b_{k}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{K}}\\mathrm{ey}∈ℝ^{d_{\\mathrm{attn}}×\\ell_{\\mathrm{z}}}$]​]\n3 ${\\boldsymbol{V}}\\leftarrow{\\boldsymbol{W_{v}}}{\\boldsymbol{Z}}+{\\boldsymbol{b_{v}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{V}}\\mathrm{alue}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{z}}}$]​]\n4 ${\\boldsymbol{S}}\\leftarrow{\\boldsymbol{K}}^{\\intercal}{\\boldsymbol{Q}}$ [​[${\\boldsymbol{S}}\\mathrm{core}∈ℝ^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$]​]\n5 $\\forall t_{\\mathrm{z}},t_{\\mathrm{x}},$ if $\\neg$Mask$[t_{\\mathrm{z}},t_{\\mathrm{x}}]$ then $S[t_{\\mathrm{z}},t_{\\mathrm{x}}]\\leftarrow-∞$\n6 return ${\\boldsymbol{\\tilde{V}}}={\\boldsymbol{V}}\\cdot\\mathrm{softmax}\\left({\\boldsymbol{S}}/\\sqrt{d_{\\mathrm{attn}}}\\right)$",
+          "kind": "listing",
+          "char_start": 5878,
+          "char_end": 7793
+        },
+        {
+          "paragraph_id": "p_27c60737ee1518d0f720",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px4",
+          "text": "Bidirectional / unmasked self-attention.",
+          "kind": "heading",
+          "char_start": 7795,
+          "char_end": 7835
+        },
+        {
+          "paragraph_id": "p_2420867a78ed68892178",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px4.p1.1",
+          "text": "Given a sequence of token representations, this variant applies attention to each token, treating all tokens in the sequence as the context. See Algorithm 4, called with token sequence ${\\boldsymbol{Z}}={\\boldsymbol{X}}$ and no masking (Mask≡1).",
+          "kind": "text",
+          "char_start": 7837,
+          "char_end": 8082
+        },
+        {
+          "paragraph_id": "p_811d4cb7a9211d28a96a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px5",
+          "text": "Unidirectional / masked self-attention.",
+          "kind": "heading",
+          "char_start": 8084,
+          "char_end": 8123
+        },
+        {
+          "paragraph_id": "p_9bc52fe93678ff598b4c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px5.p1.1",
+          "text": "Given a sequence of token representations, this variant applies attention to each token, treating all preceding tokens (including itself) as the context. Future tokens are masked out, so this causal auto-regressive version can be used for online prediction. See Algorithm 4, called with token sequence ${\\boldsymbol{Z}}={\\boldsymbol{X}}$ and Mask$[t_{\\mathrm{z}},t_{\\mathrm{x}}]:=[\\![t_{\\mathrm{z}}\\leq t_{\\mathrm{x}}]\\!]$. For this Mask, the output ${\\boldsymbol{\\tilde{V}}}[:,1:t]$ only depends on ${\\boldsymbol{X}}[:,1:t]$, hence can be used to predict ${\\boldsymbol{X}}[:,t+1]$.",
+          "kind": "text",
+          "char_start": 8125,
+          "char_end": 8707
+        },
+        {
+          "paragraph_id": "p_7c56702a01d92353e83a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px6",
+          "text": "Cross-attention.",
+          "kind": "heading",
+          "char_start": 8709,
+          "char_end": 8725
+        },
+        {
+          "paragraph_id": "p_c9bef9a0ed39a5302517",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px6.p1.1",
+          "text": "Given two sequences of token representations (often in the context of a sequence-to-sequence task), this variant applies attention to each token of the primary token sequence ${\\boldsymbol{X}}$, treating the second token sequence ${\\boldsymbol{Z}}$ as the context. See Algorithm 4, called with Mask≡1. While the output ${\\boldsymbol{\\tilde{V}}}$ and input sequences ${\\boldsymbol{X}}$ have the same length $\\ell_{\\mathrm{x}}$, the context sequence ${\\boldsymbol{Z}}$ can have different length $\\ell_{\\mathrm{z}}$.",
+          "kind": "text",
+          "char_start": 8727,
+          "char_end": 9240
+        },
+        {
+          "paragraph_id": "p_523d2817c99a542bd8a3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px7",
+          "text": "Multi-head attention.",
+          "kind": "heading",
+          "char_start": 9242,
+          "char_end": 9263
+        },
+        {
+          "paragraph_id": "p_fc4b1d876af4a4e7b3c6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px7.p1.1",
+          "text": "The attention algorithm presented so far (Algorithm 4) describes the operation of a single attention head. In practice, transformers run multiple attention heads (with separate learnable parameters) in parallel and combine their outputs; this is called multi-head attention; see Algorithm 5",
+          "kind": "text",
+          "char_start": 9265,
+          "char_end": 9555
+        },
+        {
+          "paragraph_id": "p_3fab383a8247b569594a",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm5",
+          "text": "Algorithm 5 ${\\boldsymbol{\\tilde{V}}}\\leftarrow$ MHAttention$({\\boldsymbol{X}},{\\boldsymbol{Z}}|{\\boldsymbol{\\mathcal{W}}},\\text{Mask})$",
+          "kind": "caption",
+          "char_start": 9557,
+          "char_end": 9693
+        },
+        {
+          "paragraph_id": "p_74e48086070191dc9b3a",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm5.6",
+          "text": "/* Computes Multi-Head (masked) self- or cross- attention layer. */\nInput: ${\\boldsymbol{X}}∈ℝ^{d_{\\mathrm{x}}×\\ell_{\\mathrm{x}}},{\\boldsymbol{Z}}∈ℝ^{d_{\\mathrm{z}}×\\ell_{\\mathrm{z}}}$, vector representations of primary and context sequence.\nOutput: ${\\boldsymbol{\\tilde{V}}}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{x}}}$, updated representations of tokens in ${\\boldsymbol{X}}$, folding in information from tokens in ${\\boldsymbol{Z}}$.\nHyperparameters: $H$, number of attention heads\nHyperparameters: Mask$∈\\!\\!\\{0,\\!1\\}^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$, $\\uparrow$(3)\nParameters: ${\\boldsymbol{\\mathcal{W}}}$ consisting of\nFor $h∈[H]$, $\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}^{h}$ consisting of:\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}}$,\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}}$,\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}}$.\n${\\boldsymbol{W_{o}}}∈ℝ^{d_{\\mathrm{out}}×Hd_{\\mathrm{mid}}}$, ${\\boldsymbol{b_{o}}}∈ℝ^{d_{\\mathrm{out}}}$.\n1 For $h∈[H]$:\n2 ${\\boldsymbol{Y}}^{h}\\leftarrow\\texttt{Attention}({\\boldsymbol{X}},{\\boldsymbol{Z}}|\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}^{h},\\text{Mask})$\n3 ${\\boldsymbol{Y}}\\leftarrow[{\\boldsymbol{Y}}^{1};{\\boldsymbol{Y}}^{2};\\dots;{\\boldsymbol{Y}}^{H}]$\n4 return ${\\boldsymbol{\\tilde{V}}}={\\boldsymbol{W_{o}}}{\\boldsymbol{Y}}+{\\boldsymbol{b_{o}}}{\\boldsymbol{1}}^{\\intercal}$",
+          "kind": "listing",
+          "char_start": 9695,
+          "char_end": 11333
+        },
+        {
+          "paragraph_id": "p_e9f0810ac20adc3e2747",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px8",
+          "text": "Layer normalisation.",
+          "kind": "heading",
+          "char_start": 11335,
+          "char_end": 11355
+        },
+        {
+          "paragraph_id": "p_ba406f31f6f2fa27b237",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px8.p1.1",
+          "text": "Layer normalisation explicitly controls the mean and variance of individual neural network activations; the pseudocode is given in Algorithm 6. Some transformers use a simpler and more computationally efficient version of layer normalization setting ${\\boldsymbol{m}}={\\boldsymbol{\\beta}}=0$, called root mean square layer normalisation, or RMSnorm.",
+          "kind": "text",
+          "char_start": 11357,
+          "char_end": 11706
+        },
+        {
+          "paragraph_id": "p_ae0ad26ed892f4733c47",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm6",
+          "text": "Algorithm 6 $\\hat{{\\boldsymbol{e}}}\\leftarrow$ layer_norm$({\\boldsymbol{e}}|{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$",
+          "kind": "caption",
+          "char_start": 11708,
+          "char_end": 11828
+        },
+        {
+          "paragraph_id": "p_d791fd5902e5299daea6",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm6.6",
+          "text": "/* Normalizes layer activations ${\\boldsymbol{e}}$. */\nInput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, neural network activations.\nOutput: $\\widehat{{\\boldsymbol{e}}}∈ℝ^{d_{\\mathrm{e}}}$, normalized activations.\nParameters: ${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{e}}}$, element-wise scale and offset.\n1 ${\\boldsymbol{m}}\\leftarrow\\sum_{i=1}^{d_{\\mathrm{e}}}{\\boldsymbol{e}}[i]/d_{\\mathrm{e}}$\n2 $v\\leftarrow\\sum_{i=1}^{d_{\\mathrm{e}}}({\\boldsymbol{e}}[i]-{\\boldsymbol{m}})^{2}/d_{\\mathrm{e}}$\n3 return $\\widehat{{\\boldsymbol{e}}}=\\frac{{\\boldsymbol{e}}-{\\boldsymbol{m}}}{\\sqrt{v}}⊙{\\boldsymbol{\\gamma}}+{\\boldsymbol{\\beta}}$, where $⊙$ denotes element-wise multiplication.",
+          "kind": "listing",
+          "char_start": 11830,
+          "char_end": 12519
+        },
+        {
+          "paragraph_id": "p_a545e6e76ab368837db3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px9",
+          "text": "Unembedding.",
+          "kind": "heading",
+          "char_start": 12521,
+          "char_end": 12533
+        },
+        {
+          "paragraph_id": "p_21966c64e5314e18fe64",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px9.p1.1",
+          "text": "The unembedding learns to convert a vector representation of a token and its context into a distribution over the vocabulary elements; see Algorithm 7. The algorithm describes an independently learned unembedding matrix, but note that sometimes the unembedding matrix is instead fixed to be the transpose of the embedding matrix.",
+          "kind": "text",
+          "char_start": 12535,
+          "char_end": 12864
+        },
+        {
+          "paragraph_id": "p_b71845328e4ccf6ff9d1",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm7",
+          "text": "Algorithm 7 Unembedding.",
+          "kind": "caption",
+          "char_start": 12866,
+          "char_end": 12890
+        },
+        {
+          "paragraph_id": "p_3f12f26fe62267dad7de",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm7.4",
+          "text": "Input: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, a token encoding.\nOutput: ${\\boldsymbol{p}}∈\\Delta(V)$, a probability distribution over the vocabulary.\nParameters: ${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 return ${\\boldsymbol{p}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{e}})$",
+          "kind": "listing",
+          "char_start": 12892,
+          "char_end": 13218
+        }
+      ],
+      "text": "The following are the neural network building blocks (functions with learnable parameters) from which transformers are made. Full architectures featuring these building blocks are presented in the next section. (By a slight abuse of notation, we identify $V$ with the set $\\{1,2,\\dots,N_{\\mathrm{V}}\\}$.)\n\nToken embedding.\n\nThe token embedding learns to represent each vocabulary element as a vector in $ℝ^{d_{\\mathrm{e}}}$; see Algorithm 1.\n\nAlgorithm 1 Token embedding.\n\nInput: $v∈V\\cong[N_{\\mathrm{V}}]$, a token ID.\nOutput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, the vector representation of the token.\nParameters: ${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, the token embedding matrix.\n1 return ${\\boldsymbol{e}}={\\boldsymbol{W_{e}}}[:,v]$\n\nPositional embedding.\n\nThe positional embedding learns to represent a token’s position in a sequence as a vector in $ℝ^{d_{\\mathrm{e}}}$. For example, the position of the first token in a sequence is represented by a (learned) vector ${\\boldsymbol{W_{p}}}[:,1]$, the position of the second token is represented by another (learned) vector ${\\boldsymbol{W_{p}}}[:,2]$, etc. The purpose of the positional embedding is to allow a Transformer to make sense of word ordering; in its absence the representation would be permutation invariant and the model would perceive sequences as “bags of words” instead.\n\nLearned positional embeddings require that input sequence length is at most some fixed number $\\ell_{\\max}$ (the size of the learned positional embedding matrix must be finite and fixed in advance of training). An intuitive explanation of how this works can be found at [Ala18]. For pseudocode, see Algorithm 2.\n\nNot all transformers make use of learned positional embeddings, some use a hard-coded mapping ${\\boldsymbol{W_{p}}}:ℕ\\to ℝ^{d_{\\mathrm{e}}}$ instead [Ker21]. Such hard-coded positional embeddings can (theoretically) handle arbitrarily long sequences. The original Transformer [VSP+17] uses\n\n\\displaystyle{\\boldsymbol{W_{p}}}[2i-1,t]\\penalty\\ \\displaystyle=\\penalty\\ \\sin(t/\\ell_{\\max}^{2i/d_{\\mathrm{e}}}), \\displaystyle{\\boldsymbol{W_{p}}}[2i,t]\\penalty\\ \\displaystyle=\\penalty\\ \\cos(t/\\ell_{\\max}^{2i/d_{\\mathrm{e}}}).\n\nfor $0<i≤d_{\\mathrm{e}}/2$.\n\nAlgorithm 2 Positional embedding.\n\nInput: $\\ell∈[\\ell_{\\max}]$, position of a token in the sequence.\nOutput: ${\\boldsymbol{e_{p}}}∈ℝ^{d_{\\mathrm{e}}}$, the vector representation of the position.\nParameters: ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the positional embedding matrix.\n1 return ${\\boldsymbol{e_{p}}}={\\boldsymbol{W_{p}}}[:,\\ell]$\n\nThe positional embedding of a token is usually added to the token embedding to form a token’s initial embedding. For the $t$-th token of a sequence ${\\boldsymbol{x}}$, the embedding is\n\n{\\boldsymbol{e}}={\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t].\n\nAttention.\n\nAttention is the main architectural component of transformers. It enables a neural network to make use of contextual information (e.g. preceding text or the surrounding text) for predicting the current token.\n\nOn a high level, attention works as follows: the token currently being predicted is mapped to a query vector ${\\boldsymbol{q}}∈ℝ^{d_{\\mathrm{attn}}}$, and the tokens in the context are mapped to key vectors ${\\boldsymbol{k}}_{t}∈ℝ^{d_{\\mathrm{attn}}}$ and value vectors ${\\boldsymbol{v}}_{t}∈ℝ^{d_{\\mathrm{value}}}$. The inner products ${\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{t}$ are interpreted as the degree to which token $t∈V$ is important for predicting the current token $q$ – they are used to derive a distribution over the context tokens, which is then used to combine the value vectors. An intuitive explanation how this achieves attention can be found at [Ala18, Ala19]. The precise algorithm is given in Algorithm 3.\n\nAlgorithm 3 Basic single-query attention.\n\nInput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{in}}}$, vector representation of the current token\nInput: ${\\boldsymbol{e}}_{t}∈ℝ^{d_{\\mathrm{in}}}$, vector representations of context tokens $t∈[T]$.\nOutput: ${\\boldsymbol{\\tilde{v}}}∈ℝ^{d_{\\mathrm{out}}}$, vector representation of the token and context combined.\nParameters: ${\\boldsymbol{W_{q}}},{\\boldsymbol{W_{k}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{in}}}$, ${\\boldsymbol{b_{q}}},{\\boldsymbol{b_{k}}}∈ℝ^{d_{\\mathrm{attn}}}$, the query and key linear projections.\nParameters: ${\\boldsymbol{W_{v}}}∈ℝ^{d_{\\mathrm{out}}×d_{\\mathrm{in}}}$, ${\\boldsymbol{b_{v}}}∈ℝ^{d_{\\mathrm{out}}}$, the value linear projection.\n1 ${\\boldsymbol{q}}\\leftarrow{\\boldsymbol{W_{q}}}{\\boldsymbol{e}}+{\\boldsymbol{b_{q}}}$\n2 $\\forall t:\\ {\\boldsymbol{k}}_{t}\\leftarrow{\\boldsymbol{W_{k}}}{\\boldsymbol{e}}_{t}+{\\boldsymbol{b_{k}}}$\n3 $\\forall t:\\ {\\boldsymbol{v}}_{t}\\leftarrow{\\boldsymbol{W_{v}}}{\\boldsymbol{e}}_{t}+{\\boldsymbol{b_{v}}}$\n4 $\\forall t:\\ \\alpha_{t}=\\frac{\\exp\\left({\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{t}/\\sqrt{d_{\\mathrm{attn}}}\\right)}{\\sum_{u}\\exp\\left({\\boldsymbol{q}}^{\\intercal}{\\boldsymbol{k}}_{u}/\\sqrt{d_{\\mathrm{attn}}}\\right)}$\n5 return ${\\boldsymbol{\\tilde{v}}}=\\sum_{t=1}^{T}\\alpha_{t}{\\boldsymbol{v}}_{t}$\n\nThere are many ways the basic attention mechanism is used in transformers. We list some of the most common variants below.\n\nIt will be useful to define the softmax function for matrix arguments, as well as a Mask matrix:\n\n\\mathrm{softmax}({\\boldsymbol{A}})[t_{\\mathrm{z}},t_{\\mathrm{x}}]\\penalty\\ :=\\penalty\\ \\frac{\\exp A[t_{\\mathrm{z}},t_{\\mathrm{x}}]}{\\sum_{t}\\exp A[t,t_{\\mathrm{x}}]},\n\n\\text{Mask}[t_{\\mathrm{z}},t_{\\mathrm{x}}]=\\left\\{{1\\penalty\\ \\penalty\\ \\penalty\\ \\text{for bidirectional attention}\\atop[\\![t_{\\mathrm{z}}\\!≤\\!t_{\\mathrm{x}}]\\!]\\penalty\\ \\penalty\\ \\text{for unidirectional att.}}\\right.\n\nAlgorithm 4 ${\\boldsymbol{\\tilde{V}}}\\leftarrow$ Attention$({\\boldsymbol{X}},{\\boldsymbol{Z}}|\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}},\\text{Mask})$\n\n/* Computes a single (masked) self- or cross- attention head. */\nInput: ${\\boldsymbol{X}}∈ℝ^{d_{\\mathrm{x}}×\\ell_{\\mathrm{x}}},{\\boldsymbol{Z}}∈ℝ^{d_{\\mathrm{z}}×\\ell_{\\mathrm{z}}}$, vector representations of primary and context sequence.\nOutput: ${\\boldsymbol{\\tilde{V}}}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{x}}}$, updated representations of tokens in ${\\boldsymbol{X}}$, folding in information from tokens in ${\\boldsymbol{Z}}$.\nParameters: $\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}$ consisting of: ${\\boldsymbol{W_{q}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}}$, ${\\boldsymbol{b_{q}}}∈ℝ^{d_{\\mathrm{attn}}}$ ${\\boldsymbol{W_{k}}}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b_{k}}}∈ℝ^{d_{\\mathrm{attn}}}$ ${\\boldsymbol{W_{v}}}∈ℝ^{d_{\\mathrm{out}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b_{v}}}∈ℝ^{d_{\\mathrm{out}}}$.\nHyperparameters: Mask$∈\\!\\!\\{0,\\!1\\}^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$, $\\uparrow$(3)\n1 ${\\boldsymbol{Q}}\\leftarrow{\\boldsymbol{W_{q}}}{\\boldsymbol{X}}+{\\boldsymbol{b_{q}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{Q}}\\mathrm{uery}∈ℝ^{d_{\\mathrm{attn}}×\\ell_{\\mathrm{x}}}$]​]\n2 ${\\boldsymbol{K}}\\leftarrow{\\boldsymbol{W_{k}}}{\\boldsymbol{Z}}+{\\boldsymbol{b_{k}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{K}}\\mathrm{ey}∈ℝ^{d_{\\mathrm{attn}}×\\ell_{\\mathrm{z}}}$]​]\n3 ${\\boldsymbol{V}}\\leftarrow{\\boldsymbol{W_{v}}}{\\boldsymbol{Z}}+{\\boldsymbol{b_{v}}}{\\boldsymbol{1}}^{\\intercal}$ [​[${\\boldsymbol{V}}\\mathrm{alue}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{z}}}$]​]\n4 ${\\boldsymbol{S}}\\leftarrow{\\boldsymbol{K}}^{\\intercal}{\\boldsymbol{Q}}$ [​[${\\boldsymbol{S}}\\mathrm{core}∈ℝ^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$]​]\n5 $\\forall t_{\\mathrm{z}},t_{\\mathrm{x}},$ if $\\neg$Mask$[t_{\\mathrm{z}},t_{\\mathrm{x}}]$ then $S[t_{\\mathrm{z}},t_{\\mathrm{x}}]\\leftarrow-∞$\n6 return ${\\boldsymbol{\\tilde{V}}}={\\boldsymbol{V}}\\cdot\\mathrm{softmax}\\left({\\boldsymbol{S}}/\\sqrt{d_{\\mathrm{attn}}}\\right)$\n\nBidirectional / unmasked self-attention.\n\nGiven a sequence of token representations, this variant applies attention to each token, treating all tokens in the sequence as the context. See Algorithm 4, called with token sequence ${\\boldsymbol{Z}}={\\boldsymbol{X}}$ and no masking (Mask≡1).\n\nUnidirectional / masked self-attention.\n\nGiven a sequence of token representations, this variant applies attention to each token, treating all preceding tokens (including itself) as the context. Future tokens are masked out, so this causal auto-regressive version can be used for online prediction. See Algorithm 4, called with token sequence ${\\boldsymbol{Z}}={\\boldsymbol{X}}$ and Mask$[t_{\\mathrm{z}},t_{\\mathrm{x}}]:=[\\![t_{\\mathrm{z}}\\leq t_{\\mathrm{x}}]\\!]$. For this Mask, the output ${\\boldsymbol{\\tilde{V}}}[:,1:t]$ only depends on ${\\boldsymbol{X}}[:,1:t]$, hence can be used to predict ${\\boldsymbol{X}}[:,t+1]$.\n\nCross-attention.\n\nGiven two sequences of token representations (often in the context of a sequence-to-sequence task), this variant applies attention to each token of the primary token sequence ${\\boldsymbol{X}}$, treating the second token sequence ${\\boldsymbol{Z}}$ as the context. See Algorithm 4, called with Mask≡1. While the output ${\\boldsymbol{\\tilde{V}}}$ and input sequences ${\\boldsymbol{X}}$ have the same length $\\ell_{\\mathrm{x}}$, the context sequence ${\\boldsymbol{Z}}$ can have different length $\\ell_{\\mathrm{z}}$.\n\nMulti-head attention.\n\nThe attention algorithm presented so far (Algorithm 4) describes the operation of a single attention head. In practice, transformers run multiple attention heads (with separate learnable parameters) in parallel and combine their outputs; this is called multi-head attention; see Algorithm 5\n\nAlgorithm 5 ${\\boldsymbol{\\tilde{V}}}\\leftarrow$ MHAttention$({\\boldsymbol{X}},{\\boldsymbol{Z}}|{\\boldsymbol{\\mathcal{W}}},\\text{Mask})$\n\n/* Computes Multi-Head (masked) self- or cross- attention layer. */\nInput: ${\\boldsymbol{X}}∈ℝ^{d_{\\mathrm{x}}×\\ell_{\\mathrm{x}}},{\\boldsymbol{Z}}∈ℝ^{d_{\\mathrm{z}}×\\ell_{\\mathrm{z}}}$, vector representations of primary and context sequence.\nOutput: ${\\boldsymbol{\\tilde{V}}}∈ℝ^{d_{\\mathrm{out}}×\\ell_{\\mathrm{x}}}$, updated representations of tokens in ${\\boldsymbol{X}}$, folding in information from tokens in ${\\boldsymbol{Z}}$.\nHyperparameters: $H$, number of attention heads\nHyperparameters: Mask$∈\\!\\!\\{0,\\!1\\}^{\\ell_{\\mathrm{z}}×\\ell_{\\mathrm{x}}}$, $\\uparrow$(3)\nParameters: ${\\boldsymbol{\\mathcal{W}}}$ consisting of\nFor $h∈[H]$, $\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}^{h}$ consisting of:\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}}$,\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}}$,\n$|$ ${\\boldsymbol{W}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}×d_{\\mathrm{z}}}$, ${\\boldsymbol{b}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}}$.\n${\\boldsymbol{W_{o}}}∈ℝ^{d_{\\mathrm{out}}×Hd_{\\mathrm{mid}}}$, ${\\boldsymbol{b_{o}}}∈ℝ^{d_{\\mathrm{out}}}$.\n1 For $h∈[H]$:\n2 ${\\boldsymbol{Y}}^{h}\\leftarrow\\texttt{Attention}({\\boldsymbol{X}},{\\boldsymbol{Z}}|\\boldsymbol{\\mathcal{W}}_{\\!\\!\\boldsymbol{qkv}}^{h},\\text{Mask})$\n3 ${\\boldsymbol{Y}}\\leftarrow[{\\boldsymbol{Y}}^{1};{\\boldsymbol{Y}}^{2};\\dots;{\\boldsymbol{Y}}^{H}]$\n4 return ${\\boldsymbol{\\tilde{V}}}={\\boldsymbol{W_{o}}}{\\boldsymbol{Y}}+{\\boldsymbol{b_{o}}}{\\boldsymbol{1}}^{\\intercal}$\n\nLayer normalisation.\n\nLayer normalisation explicitly controls the mean and variance of individual neural network activations; the pseudocode is given in Algorithm 6. Some transformers use a simpler and more computationally efficient version of layer normalization setting ${\\boldsymbol{m}}={\\boldsymbol{\\beta}}=0$, called root mean square layer normalisation, or RMSnorm.\n\nAlgorithm 6 $\\hat{{\\boldsymbol{e}}}\\leftarrow$ layer_norm$({\\boldsymbol{e}}|{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$\n\n/* Normalizes layer activations ${\\boldsymbol{e}}$. */\nInput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, neural network activations.\nOutput: $\\widehat{{\\boldsymbol{e}}}∈ℝ^{d_{\\mathrm{e}}}$, normalized activations.\nParameters: ${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{e}}}$, element-wise scale and offset.\n1 ${\\boldsymbol{m}}\\leftarrow\\sum_{i=1}^{d_{\\mathrm{e}}}{\\boldsymbol{e}}[i]/d_{\\mathrm{e}}$\n2 $v\\leftarrow\\sum_{i=1}^{d_{\\mathrm{e}}}({\\boldsymbol{e}}[i]-{\\boldsymbol{m}})^{2}/d_{\\mathrm{e}}$\n3 return $\\widehat{{\\boldsymbol{e}}}=\\frac{{\\boldsymbol{e}}-{\\boldsymbol{m}}}{\\sqrt{v}}⊙{\\boldsymbol{\\gamma}}+{\\boldsymbol{\\beta}}$, where $⊙$ denotes element-wise multiplication.\n\nUnembedding.\n\nThe unembedding learns to convert a vector representation of a token and its context into a distribution over the vocabulary elements; see Algorithm 7. The algorithm describes an independently learned unembedding matrix, but note that sometimes the unembedding matrix is instead fixed to be the transpose of the embedding matrix.\n\nAlgorithm 7 Unembedding.\n\nInput: ${\\boldsymbol{e}}∈ℝ^{d_{\\mathrm{e}}}$, a token encoding.\nOutput: ${\\boldsymbol{p}}∈\\Delta(V)$, a probability distribution over the vocabulary.\nParameters: ${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 return ${\\boldsymbol{p}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{e}})$"
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0006",
+      "title": "6 Transformer Architectures",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S6",
+      "path": [
+        "6 Transformer Architectures"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c71bbbcb854aeac229ff",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p1.1",
+          "text": "This section presents a few prominent transformer architectures, based on attention Algorithms 4 and 5 and using normalization Algorithm 6, in roughly historical order:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 168
+        },
+        {
+          "paragraph_id": "p_d96097070b89e6c5ac56",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i1",
+          "text": "• EDT [VSP+17] The original sequence-to-sequence / Encoder-Decoder Transformer, Algorithms 8, 11 and 15.",
+          "kind": "list_item",
+          "char_start": 170,
+          "char_end": 274
+        },
+        {
+          "paragraph_id": "p_572db93e5a85faef5f69",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i2",
+          "text": "• BERT [DCLT19], which is an instance of an encoder-only transformer (encoder-only means that it is derived from the encoder-decoder architecture by dropping the decoder part), Algorithms 9 and 12.",
+          "kind": "list_item",
+          "char_start": 276,
+          "char_end": 473
+        },
+        {
+          "paragraph_id": "p_d617ebf240fe8fb62e08",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i3",
+          "text": "• GPT [RWC+19, BMR+20], which is an instance of a decoder-only transformer, Algorithms 10, 13 and 14.",
+          "kind": "list_item",
+          "char_start": 475,
+          "char_end": 576
+        },
+        {
+          "paragraph_id": "p_021953f3fd6049c6366b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p1.2",
+          "text": "While the main architectural difference between BERT and GPT is in attention masking, they also differ in a number of less important ways: e.g. they use different activation functions and the layer-norms are positioned differently. We included these differences in the pseudocode to stay faithful to the original algorithms, but note that different transformer architectures may adopt these selectively.",
+          "kind": "text",
+          "char_start": 578,
+          "char_end": 981
+        },
+        {
+          "paragraph_id": "p_17baa589bd4e7bef19fe",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p2.1",
+          "text": "To simplify notation, we denote by ${\\boldsymbol{\\mathcal{W}}}$ the entire set of parameters (query, key, value and output linear projections) required by a multi-head attention layer:",
+          "kind": "text",
+          "char_start": 983,
+          "char_end": 1167
+        },
+        {
+          "paragraph_id": "p_64adb931cdd09208b930",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.EGx2",
+          "text": "\\displaystyle{\\boldsymbol{\\mathcal{W}}}\\penalty\\ :=\\penalty\\ \\left(\\begin{matrix}{\\boldsymbol{W}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}},&{\\boldsymbol{b}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}},&h∈[H]\\\\ {\\boldsymbol{W}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}},&{\\boldsymbol{b}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}},&h∈[H]\\\\ {\\boldsymbol{W}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}×d_{\\mathrm{z}}},&{\\boldsymbol{b}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}},&h∈[H]\\\\ {\\boldsymbol{W_{o}}}∈ℝ^{d_{\\mathrm{out}}×Hd_{\\mathrm{mid}}},&{\\boldsymbol{b_{o}}}∈ℝ^{d_{\\mathrm{out}}}&\\end{matrix}\\right)",
+          "kind": "equation",
+          "char_start": 1169,
+          "char_end": 1805
+        },
+        {
+          "paragraph_id": "p_9cd5c003c2c1378e1aa2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px1",
+          "text": "Encoder-decoder / sequence-to-sequence transformer [VSP+17].",
+          "kind": "heading",
+          "char_start": 1807,
+          "char_end": 1867
+        },
+        {
+          "paragraph_id": "p_4ed107ed5c95cabf4775",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px1.p1.1",
+          "text": "This is the very first transformer. It was originally used for sequence-to-sequence tasks (machine translation), which is why it is more complicated than its successors.",
+          "kind": "text",
+          "char_start": 1869,
+          "char_end": 2038
+        },
+        {
+          "paragraph_id": "p_7fd271755d85fc46ac4f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px1.p2.1",
+          "text": "The idea behind the architecture is as follows: First, the context sequence is encoded using bidirectional multi-head attention. The output of this ‘encoder’ part of the network is a vector representation of each context token, taking into account the entire context sequence. Second, the primary sequence is encoded. Each token in the primary sequence is allowed to use information from the encoded context sequence, as well as primary sequence tokens that precede it. See Algorithm 8 for more details.",
+          "kind": "text",
+          "char_start": 2040,
+          "char_end": 2543
+        },
+        {
+          "paragraph_id": "p_f4dda13df939479bcd5d",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm8",
+          "text": "Algorithm 8 ${\\boldsymbol{P}}\\leftarrow$ EDTransformer$({\\boldsymbol{z}},{\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$",
+          "kind": "caption",
+          "char_start": 2545,
+          "char_end": 2658
+        },
+        {
+          "paragraph_id": "p_5b5b2e4adedbf715bb30",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm8.6",
+          "text": "/* Encoder-decoder transformer forward pass */\nInput: ${\\boldsymbol{z}},{\\boldsymbol{x}}∈V^{*}$, two sequences of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where the $t$-th column of ${\\boldsymbol{P}}$ represents $\\hat{P}_{{\\boldsymbol{\\theta}}}(x[t+1]|\\,{\\boldsymbol{x}}[1:t],{\\boldsymbol{z}})$.\nHyperparameters: $\\ell_{\\max},L_{\\mathrm{enc}},L_{\\mathrm{dec}},H,d_{\\mathrm{e}},d_{\\mathrm{mlp}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L_{\\mathrm{enc}}]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{enc}}$, multi-head encoder attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×{d_{\\mathrm{e}}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\nFor $l∈[L_{\\mathrm{dec}}]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{dec}}$, multi-head decoder attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{e/d}}$, multi-head cross-attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{3},{\\boldsymbol{\\beta}}_{l}^{3},{\\boldsymbol{\\gamma}}_{l}^{4},{\\boldsymbol{\\beta}}_{l}^{4},{\\boldsymbol{\\gamma}}_{l}^{5},{\\boldsymbol{\\beta}}_{l}^{5}∈ℝ^{d_{\\mathrm{e}}}$, three sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp3}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp3}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp4}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp4}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n/* Encode the context sequence: */\n1 $\\ell_{\\mathrm{z}}\\leftarrow\\mathrm{length}({\\boldsymbol{z}})$\n2 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,z[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{Z}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell_{\\mathrm{z}}}]$\n4 for $l=1,2,\\dots,L_{\\mathrm{enc}}$ do\n5 ${\\boldsymbol{Z}}\\leftarrow{\\boldsymbol{Z}}+\\texttt{MHAttention}({\\boldsymbol{Z}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{enc}},\\text{Mask}≡1)$\n6 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{Z}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{Z}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n7 ${\\boldsymbol{Z}}\\leftarrow{\\boldsymbol{Z}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{ReLU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{Z}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n8 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{Z}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{Z}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n9 end for\n/* Decode the primary sequence, conditioning on the context: */\n10 $\\ell_{\\mathrm{x}}\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n11 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n12 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell_{\\mathrm{x}}}]$\n13 for $i=1,2,\\dots,L_{\\mathrm{dec}}$ do\n14 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{dec}},\\text{Mask}[t,t^{\\prime}]≡[\\![t\\leq t^{\\prime}]\\!])$\n15 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{3},{\\boldsymbol{\\beta}}_{l}^{3})$\n16 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}},{\\boldsymbol{Z}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{e/d}},\\text{Mask}≡1)$\n17 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{4},{\\boldsymbol{\\beta}}_{l}^{4})$\n18 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp4}}^{l}\\texttt{ReLU}({\\boldsymbol{W}}_{\\mathrm{mlp3}}^{l}{\\boldsymbol{X}}+{\\boldsymbol{b}}_{\\mathrm{mlp3}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp4}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n19 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{5},{\\boldsymbol{\\beta}}_{l}^{5})$\n20 end for\n/* Derive conditional probabilities and return: */\n21 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$",
+          "kind": "listing",
+          "char_start": 2660,
+          "char_end": 7700
+        },
+        {
+          "paragraph_id": "p_e3e507f008186d78b457",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px2",
+          "text": "Encoder-only transformer: BERT [DCLT19].",
+          "kind": "heading",
+          "char_start": 7702,
+          "char_end": 7742
+        },
+        {
+          "paragraph_id": "p_8c6bb4872de446f4ab9b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px2.p1.1",
+          "text": "BERT is a bidirectional transformer trained on the task of masked language modelling. Given a piece of text with some tokens masked out, the goal is to correctly recover the masked-out tokens. The original use of BERT was to learn generally useful text representations, which could then be adapted for various downstream NLP tasks. The masking is not performed via the Mask parameter but differently: During training each input token is replaced with probability $p_{\\text{mask}}$ by a dummy token mask_token, and evaluation is based on the reconstruction probability of these knocked-out tokens (see Algorithm 12).",
+          "kind": "text",
+          "char_start": 7744,
+          "char_end": 8359
+        },
+        {
+          "paragraph_id": "p_719577bebda8f0075454",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px2.p2.1",
+          "text": "The BERT architecture resembles the encoder part of the seq2seq transformer (hence ‘encoder-only’). It is described in detail in Algorithm 9. It uses the GELU nonlinearity instead of ReLU:",
+          "kind": "text",
+          "char_start": 8361,
+          "char_end": 8549
+        },
+        {
+          "paragraph_id": "p_f226cc443acabbb2d3de",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.E5",
+          "text": "\\mathrm{GELU}(x)=x\\cdot ℙ_{X\\sim\\mathcal{N}(0,1)}[X<x].",
+          "kind": "equation",
+          "char_start": 8551,
+          "char_end": 8606
+        },
+        {
+          "paragraph_id": "p_851d839dd14fa8baff5c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px2.p2.2",
+          "text": "(When called with vector or matrix arguments, GELU is applied element-wise.)",
+          "kind": "text",
+          "char_start": 8608,
+          "char_end": 8684
+        },
+        {
+          "paragraph_id": "p_63aa6ba359b95672b342",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm9",
+          "text": "Algorithm 9 ${\\boldsymbol{P}}\\leftarrow$ ETransformer(${\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$",
+          "kind": "caption",
+          "char_start": 8686,
+          "char_end": 8781
+        },
+        {
+          "paragraph_id": "p_7c9eac8d56a3b6f5ff49",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm9.6",
+          "text": "/* BERT, an encoder-only transformer, forward pass */\nInput: ${\\boldsymbol{x}}∈V^{*}$, a sequence of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where each column of ${\\boldsymbol{P}}$ is a distribution over the vocabulary.\nHyperparameters: $\\ell_{\\max},L,H,d_{\\mathrm{e}},d_{\\mathrm{mlp}},d_{\\mathrm{f}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}$, multi-head attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{W_{f}}}∈ℝ^{d_{\\mathrm{f}}×d_{\\mathrm{e}}},{\\boldsymbol{b_{f}}}∈ℝ^{d_{\\mathrm{f}}}$, ${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{f}}}$, the final linear projection and layer-norm parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $t∈[\\ell]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell}]$\n4 for $l=1,2,\\dots,L$ do\n5 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l},\\text{Mask}≡1)$\n6 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n7 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{GELU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{X}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n8 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n9 end for\n10 ${\\boldsymbol{X}}\\leftarrow\\texttt{GELU}({\\boldsymbol{W_{f}}}{\\boldsymbol{X}}+{\\boldsymbol{b_{f}}}{\\boldsymbol{1}}^{\\intercal})$\n11 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$\n12 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$",
+          "kind": "listing",
+          "char_start": 8783,
+          "char_end": 11642
+        },
+        {
+          "paragraph_id": "p_ff97df76325527e90008",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px3",
+          "text": "Decoder-only transformers: GPT-2 [RWC+19], GPT-3 [BMR+20], Gopher [RBC+21].",
+          "kind": "heading",
+          "char_start": 11644,
+          "char_end": 11719
+        },
+        {
+          "paragraph_id": "p_cfd977bb3258530e9b01",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px3.p1.1",
+          "text": "GPT-2 and GPT-3 are large language models developed by OpenAI, and Gopher is a large language model developed by DeepMind. They all have similar architectures and are trained by autoregressive language modelling: Given an incomplete sentence or paragraph, the goal is to predict the next token.",
+          "kind": "text",
+          "char_start": 11721,
+          "char_end": 12015
+        },
+        {
+          "paragraph_id": "p_6cfb5ea53dc9d420faf2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px3.p2.1",
+          "text": "The main difference from BERT is that GPT/Gopher use unidirectional attention instead of bidirectional attention; they also apply layer-norms in slightly different order.",
+          "kind": "text",
+          "char_start": 12017,
+          "char_end": 12187
+        },
+        {
+          "paragraph_id": "p_cd91cc9c7593aaf271ac",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px3.p3.1",
+          "text": "See Algorithm 10 for the pseudocode of GPT-2. GPT-3 is identical except larger, and replaces dense attention in Line 6 by sparse attention, i.e. each token only uses a subset of the full context.",
+          "kind": "text",
+          "char_start": 12189,
+          "char_end": 12384
+        },
+        {
+          "paragraph_id": "p_284d4662a75decc5af52",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px3.p4.1",
+          "text": "Gopher also deviates only slightly from the GPT-2 architecture: it replaces layer norm in lines 5, 7 and 10 by RMSnorm ($m={\\boldsymbol{\\beta}}=0$), and it uses different positional embeddings.",
+          "kind": "text",
+          "char_start": 12386,
+          "char_end": 12579
+        },
+        {
+          "paragraph_id": "p_40746aef6a678dedf2a7",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm10",
+          "text": "Algorithm 10 ${\\boldsymbol{P}}\\leftarrow$ DTransformer(${\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$",
+          "kind": "caption",
+          "char_start": 12581,
+          "char_end": 12677
+        },
+        {
+          "paragraph_id": "p_4b20e408922f0293541a",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm10.6",
+          "text": "/* GPT, a decoder-only transformer, forward pass */\nInput: ${\\boldsymbol{x}}∈V^{*}$, a sequence of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where the $t$-th column of ${\\boldsymbol{P}}$ represents $\\hat{P}_{{\\boldsymbol{\\theta}}}(x[t+1]|\\,{\\boldsymbol{x}}[1:t])$.\nHyperparameters: $\\ell_{\\max},L,H,d_{\\mathrm{e}},d_{\\mathrm{mlp}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}$, multi-head attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{e}}}$, final layer-norm parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $t∈[\\ell]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell}]$\n4 for $l=1,2,\\dots,L$ do\n5 for $t∈[\\ell]:\\ {\\boldsymbol{\\tilde{X}}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n6 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{\\tilde{X}}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l},\\text{Mask}[t,t^{\\prime}]=[\\![t\\leq t^{\\prime}]\\!])$\n7 for $t∈[\\ell]:\\ {\\boldsymbol{\\tilde{X}}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n8 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{GELU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{\\tilde{X}}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n9 end for\n10 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$\n11 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$",
+          "kind": "listing",
+          "char_start": 12679,
+          "char_end": 15379
+        },
+        {
+          "paragraph_id": "p_b7b8254c9e24eea7a22d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px4",
+          "text": "Multi-domain decoder-only transformer: Gato [RZP+22].",
+          "kind": "heading",
+          "char_start": 15381,
+          "char_end": 15434
+        },
+        {
+          "paragraph_id": "p_988ee2248c99626a9656",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px4.p1.1",
+          "text": "Gato is a multi-modal multi-task transformer built by DeepMind. It is a single neural network that can play Atari, navigate 3D environments, control a robotic arm, caption images, have conversations, and more.",
+          "kind": "text",
+          "char_start": 15436,
+          "char_end": 15645
+        },
+        {
+          "paragraph_id": "p_88049aacf1a04d9ced2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px4.p2.1",
+          "text": "Under the hood, each modality is converted into a sequence prediction problem by a separate tokenization and embedding method; for example images are divided into non-overlapping $16×16$ patches, ordered in raster order (left-to-right, top-to-bottom) and processed by a ResNet block to obtain a vector representation.",
+          "kind": "text",
+          "char_start": 15647,
+          "char_end": 15964
+        },
+        {
+          "paragraph_id": "p_da3c20d66762f4e3e385",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.SS0.SSS0.Px4.p3.1",
+          "text": "The actual Gato architecture is then a decoder-only transformer like the one in Algorithm 10, but where Line 2 is replaced with modality-specific embedding code.",
+          "kind": "text",
+          "char_start": 15966,
+          "char_end": 16127
+        }
+      ],
+      "text": "This section presents a few prominent transformer architectures, based on attention Algorithms 4 and 5 and using normalization Algorithm 6, in roughly historical order:\n\n• EDT [VSP+17] The original sequence-to-sequence / Encoder-Decoder Transformer, Algorithms 8, 11 and 15.\n\n• BERT [DCLT19], which is an instance of an encoder-only transformer (encoder-only means that it is derived from the encoder-decoder architecture by dropping the decoder part), Algorithms 9 and 12.\n\n• GPT [RWC+19, BMR+20], which is an instance of a decoder-only transformer, Algorithms 10, 13 and 14.\n\nWhile the main architectural difference between BERT and GPT is in attention masking, they also differ in a number of less important ways: e.g. they use different activation functions and the layer-norms are positioned differently. We included these differences in the pseudocode to stay faithful to the original algorithms, but note that different transformer architectures may adopt these selectively.\n\nTo simplify notation, we denote by ${\\boldsymbol{\\mathcal{W}}}$ the entire set of parameters (query, key, value and output linear projections) required by a multi-head attention layer:\n\n\\displaystyle{\\boldsymbol{\\mathcal{W}}}\\penalty\\ :=\\penalty\\ \\left(\\begin{matrix}{\\boldsymbol{W}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{x}}},&{\\boldsymbol{b}}_{\\boldsymbol{q}}^{h}∈ℝ^{d_{\\mathrm{attn}}},&h∈[H]\\\\ {\\boldsymbol{W}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}×d_{\\mathrm{z}}},&{\\boldsymbol{b}}_{\\boldsymbol{k}}^{h}∈ℝ^{d_{\\mathrm{attn}}},&h∈[H]\\\\ {\\boldsymbol{W}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}×d_{\\mathrm{z}}},&{\\boldsymbol{b}}_{\\boldsymbol{v}}^{h}∈ℝ^{d_{\\mathrm{mid}}},&h∈[H]\\\\ {\\boldsymbol{W_{o}}}∈ℝ^{d_{\\mathrm{out}}×Hd_{\\mathrm{mid}}},&{\\boldsymbol{b_{o}}}∈ℝ^{d_{\\mathrm{out}}}&\\end{matrix}\\right)\n\nEncoder-decoder / sequence-to-sequence transformer [VSP+17].\n\nThis is the very first transformer. It was originally used for sequence-to-sequence tasks (machine translation), which is why it is more complicated than its successors.\n\nThe idea behind the architecture is as follows: First, the context sequence is encoded using bidirectional multi-head attention. The output of this ‘encoder’ part of the network is a vector representation of each context token, taking into account the entire context sequence. Second, the primary sequence is encoded. Each token in the primary sequence is allowed to use information from the encoded context sequence, as well as primary sequence tokens that precede it. See Algorithm 8 for more details.\n\nAlgorithm 8 ${\\boldsymbol{P}}\\leftarrow$ EDTransformer$({\\boldsymbol{z}},{\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$\n\n/* Encoder-decoder transformer forward pass */\nInput: ${\\boldsymbol{z}},{\\boldsymbol{x}}∈V^{*}$, two sequences of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where the $t$-th column of ${\\boldsymbol{P}}$ represents $\\hat{P}_{{\\boldsymbol{\\theta}}}(x[t+1]|\\,{\\boldsymbol{x}}[1:t],{\\boldsymbol{z}})$.\nHyperparameters: $\\ell_{\\max},L_{\\mathrm{enc}},L_{\\mathrm{dec}},H,d_{\\mathrm{e}},d_{\\mathrm{mlp}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L_{\\mathrm{enc}}]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{enc}}$, multi-head encoder attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×{d_{\\mathrm{e}}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\nFor $l∈[L_{\\mathrm{dec}}]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{dec}}$, multi-head decoder attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{e/d}}$, multi-head cross-attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{3},{\\boldsymbol{\\beta}}_{l}^{3},{\\boldsymbol{\\gamma}}_{l}^{4},{\\boldsymbol{\\beta}}_{l}^{4},{\\boldsymbol{\\gamma}}_{l}^{5},{\\boldsymbol{\\beta}}_{l}^{5}∈ℝ^{d_{\\mathrm{e}}}$, three sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp3}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp3}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp4}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp4}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n/* Encode the context sequence: */\n1 $\\ell_{\\mathrm{z}}\\leftarrow\\mathrm{length}({\\boldsymbol{z}})$\n2 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,z[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{Z}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell_{\\mathrm{z}}}]$\n4 for $l=1,2,\\dots,L_{\\mathrm{enc}}$ do\n5 ${\\boldsymbol{Z}}\\leftarrow{\\boldsymbol{Z}}+\\texttt{MHAttention}({\\boldsymbol{Z}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{enc}},\\text{Mask}≡1)$\n6 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{Z}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{Z}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n7 ${\\boldsymbol{Z}}\\leftarrow{\\boldsymbol{Z}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{ReLU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{Z}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n8 for $t∈[\\ell_{\\mathrm{z}}]:\\ {\\boldsymbol{Z}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{Z}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n9 end for\n/* Decode the primary sequence, conditioning on the context: */\n10 $\\ell_{\\mathrm{x}}\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n11 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n12 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell_{\\mathrm{x}}}]$\n13 for $i=1,2,\\dots,L_{\\mathrm{dec}}$ do\n14 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{dec}},\\text{Mask}[t,t^{\\prime}]≡[\\![t\\leq t^{\\prime}]\\!])$\n15 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{3},{\\boldsymbol{\\beta}}_{l}^{3})$\n16 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}},{\\boldsymbol{Z}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l}^{\\mathrm{e/d}},\\text{Mask}≡1)$\n17 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{4},{\\boldsymbol{\\beta}}_{l}^{4})$\n18 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp4}}^{l}\\texttt{ReLU}({\\boldsymbol{W}}_{\\mathrm{mlp3}}^{l}{\\boldsymbol{X}}+{\\boldsymbol{b}}_{\\mathrm{mlp3}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp4}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n19 for $t∈[\\ell_{\\mathrm{x}}]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{5},{\\boldsymbol{\\beta}}_{l}^{5})$\n20 end for\n/* Derive conditional probabilities and return: */\n21 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$\n\nEncoder-only transformer: BERT [DCLT19].\n\nBERT is a bidirectional transformer trained on the task of masked language modelling. Given a piece of text with some tokens masked out, the goal is to correctly recover the masked-out tokens. The original use of BERT was to learn generally useful text representations, which could then be adapted for various downstream NLP tasks. The masking is not performed via the Mask parameter but differently: During training each input token is replaced with probability $p_{\\text{mask}}$ by a dummy token mask_token, and evaluation is based on the reconstruction probability of these knocked-out tokens (see Algorithm 12).\n\nThe BERT architecture resembles the encoder part of the seq2seq transformer (hence ‘encoder-only’). It is described in detail in Algorithm 9. It uses the GELU nonlinearity instead of ReLU:\n\n\\mathrm{GELU}(x)=x\\cdot ℙ_{X\\sim\\mathcal{N}(0,1)}[X<x].\n\n(When called with vector or matrix arguments, GELU is applied element-wise.)\n\nAlgorithm 9 ${\\boldsymbol{P}}\\leftarrow$ ETransformer(${\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$\n\n/* BERT, an encoder-only transformer, forward pass */\nInput: ${\\boldsymbol{x}}∈V^{*}$, a sequence of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where each column of ${\\boldsymbol{P}}$ is a distribution over the vocabulary.\nHyperparameters: $\\ell_{\\max},L,H,d_{\\mathrm{e}},d_{\\mathrm{mlp}},d_{\\mathrm{f}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}$, multi-head attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{W_{f}}}∈ℝ^{d_{\\mathrm{f}}×d_{\\mathrm{e}}},{\\boldsymbol{b_{f}}}∈ℝ^{d_{\\mathrm{f}}}$, ${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{f}}}$, the final linear projection and layer-norm parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $t∈[\\ell]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell}]$\n4 for $l=1,2,\\dots,L$ do\n5 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{X}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l},\\text{Mask}≡1)$\n6 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n7 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{GELU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{X}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n8 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n9 end for\n10 ${\\boldsymbol{X}}\\leftarrow\\texttt{GELU}({\\boldsymbol{W_{f}}}{\\boldsymbol{X}}+{\\boldsymbol{b_{f}}}{\\boldsymbol{1}}^{\\intercal})$\n11 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$\n12 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$\n\nDecoder-only transformers: GPT-2 [RWC+19], GPT-3 [BMR+20], Gopher [RBC+21].\n\nGPT-2 and GPT-3 are large language models developed by OpenAI, and Gopher is a large language model developed by DeepMind. They all have similar architectures and are trained by autoregressive language modelling: Given an incomplete sentence or paragraph, the goal is to predict the next token.\n\nThe main difference from BERT is that GPT/Gopher use unidirectional attention instead of bidirectional attention; they also apply layer-norms in slightly different order.\n\nSee Algorithm 10 for the pseudocode of GPT-2. GPT-3 is identical except larger, and replaces dense attention in Line 6 by sparse attention, i.e. each token only uses a subset of the full context.\n\nGopher also deviates only slightly from the GPT-2 architecture: it replaces layer norm in lines 5, 7 and 10 by RMSnorm ($m={\\boldsymbol{\\beta}}=0$), and it uses different positional embeddings.\n\nAlgorithm 10 ${\\boldsymbol{P}}\\leftarrow$ DTransformer(${\\boldsymbol{x}}|{\\boldsymbol{\\theta}})$\n\n/* GPT, a decoder-only transformer, forward pass */\nInput: ${\\boldsymbol{x}}∈V^{*}$, a sequence of token IDs.\nOutput: ${\\boldsymbol{P}}∈(0,1)^{N_{\\mathrm{V}}×\\mathrm{length}({\\boldsymbol{x}})}$, where the $t$-th column of ${\\boldsymbol{P}}$ represents $\\hat{P}_{{\\boldsymbol{\\theta}}}(x[t+1]|\\,{\\boldsymbol{x}}[1:t])$.\nHyperparameters: $\\ell_{\\max},L,H,d_{\\mathrm{e}},d_{\\mathrm{mlp}}∈ℕ$\nParameters: ${\\boldsymbol{\\theta}}$ includes all of the following parameters:\n${\\boldsymbol{W_{e}}}∈ℝ^{d_{\\mathrm{e}}×N_{\\mathrm{V}}}$, ${\\boldsymbol{W_{p}}}∈ℝ^{d_{\\mathrm{e}}×\\ell_{\\max}}$, the token and positional embedding matrices.\nFor $l∈[L]$:\n$|$ ${\\boldsymbol{\\mathcal{W}}}_{l}$, multi-head attention parameters for layer $l$, see (4),\n$|$ ${\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1},{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2}∈ℝ^{d_{\\mathrm{e}}}$, two sets of layer-norm parameters,\n$|$ ${\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}×d_{\\mathrm{e}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}∈ℝ^{d_{\\mathrm{mlp}}}$, ${\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}×d_{\\mathrm{mlp}}}$, ${\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}∈ℝ^{d_{\\mathrm{e}}}$, MLP parameters.\n${\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}}∈ℝ^{d_{\\mathrm{e}}}$, final layer-norm parameters.\n${\\boldsymbol{W_{u}}}∈ℝ^{N_{\\mathrm{V}}×d_{\\mathrm{e}}}$, the unembedding matrix.\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $t∈[\\ell]:\\ {\\boldsymbol{e}}_{t}\\leftarrow{\\boldsymbol{W_{e}}}[:,x[t]]+{\\boldsymbol{W_{p}}}[:,t]$\n3 ${\\boldsymbol{X}}\\leftarrow[{\\boldsymbol{e}}_{1},{\\boldsymbol{e}}_{2},\\dots{\\boldsymbol{e}}_{\\ell}]$\n4 for $l=1,2,\\dots,L$ do\n5 for $t∈[\\ell]:\\ {\\boldsymbol{\\tilde{X}}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{1},{\\boldsymbol{\\beta}}_{l}^{1})$\n6 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+\\texttt{MHAttention}({\\boldsymbol{\\tilde{X}}}\\,|{\\boldsymbol{\\mathcal{W}}}_{l},\\text{Mask}[t,t^{\\prime}]=[\\![t\\leq t^{\\prime}]\\!])$\n7 for $t∈[\\ell]:\\ {\\boldsymbol{\\tilde{X}}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}}_{l}^{2},{\\boldsymbol{\\beta}}_{l}^{2})$\n8 ${\\boldsymbol{X}}\\leftarrow{\\boldsymbol{X}}+{\\boldsymbol{W}}_{\\mathrm{mlp2}}^{l}\\texttt{GELU}({\\boldsymbol{W}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{\\tilde{X}}}+{\\boldsymbol{b}}_{\\mathrm{mlp1}}^{l}{\\boldsymbol{1}}^{\\intercal})+{\\boldsymbol{b}}_{\\mathrm{mlp2}}^{l}{\\boldsymbol{1}}^{\\intercal}$\n9 end for\n10 for $t∈[\\ell]:\\ {\\boldsymbol{X}}[:,t]\\leftarrow\\texttt{layer\\_norm}({\\boldsymbol{X}}{[:,t]}\\,|\\,{\\boldsymbol{\\gamma}},{\\boldsymbol{\\beta}})$\n11 return ${\\boldsymbol{P}}=\\mathrm{softmax}({\\boldsymbol{W_{u}}}{\\boldsymbol{X}})$\n\nMulti-domain decoder-only transformer: Gato [RZP+22].\n\nGato is a multi-modal multi-task transformer built by DeepMind. It is a single neural network that can play Atari, navigate 3D environments, control a robotic arm, caption images, have conversations, and more.\n\nUnder the hood, each modality is converted into a sequence prediction problem by a separate tokenization and embedding method; for example images are divided into non-overlapping $16×16$ patches, ordered in raster order (left-to-right, top-to-bottom) and processed by a ResNet block to obtain a vector representation.\n\nThe actual Gato architecture is then a decoder-only transformer like the one in Algorithm 10, but where Line 2 is replaced with modality-specific embedding code."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0007",
+      "title": "7 Transformer Training and Inference",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S7",
+      "path": [
+        "7 Transformer Training and Inference"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f070595830fb1ce5329e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.p1.1",
+          "text": "This section lists the pseudocode for various algorithms for training and using transformers:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 93
+        },
+        {
+          "paragraph_id": "p_4d01c26d6e3887e8309c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.I1.i1",
+          "text": "• EDTraining() Algorithm 11 shows how to train a sequence-to-sequence transformer (the original Transformer [VSP+17]).",
+          "kind": "list_item",
+          "char_start": 95,
+          "char_end": 213
+        },
+        {
+          "paragraph_id": "p_934da296e314d6645a59",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.I1.i2",
+          "text": "• ETraining() Algorithm 12 shows how to train a transformer on the task of masked language modelling (like BERT [DCLT19]).",
+          "kind": "list_item",
+          "char_start": 215,
+          "char_end": 337
+        },
+        {
+          "paragraph_id": "p_3fb27c16053d11a78fa6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.I1.i3",
+          "text": "• DTraining() Algorithm 13 shows how to train a transformer on the task of next token prediction (like CPT-x [BMR+20] and Gopher [RBC+21]).",
+          "kind": "list_item",
+          "char_start": 339,
+          "char_end": 478
+        },
+        {
+          "paragraph_id": "p_b020758fae204207622d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.I1.i4",
+          "text": "• DInference() Algorithm 14 shows how to prompt a transformer trained on next token prediction (like GPT-x [BMR+20]). The temperature parameter $τ$ interpolates between most likely continuation ($τ=0$), faithful sampling ($τ=1)$, and uniform sampling $(τ=∞)$.",
+          "kind": "list_item",
+          "char_start": 480,
+          "char_end": 739
+        },
+        {
+          "paragraph_id": "p_1105576ed6c425166ef2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.I1.i5",
+          "text": "• EDInference() Algorithm 15 shows how to use a sequence-to-sequence transformer for prediction.",
+          "kind": "list_item",
+          "char_start": 741,
+          "char_end": 837
+        },
+        {
+          "paragraph_id": "p_b03bde06faf842170dae",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.SS0.SSS0.Px1",
+          "text": "Gradient descent.",
+          "kind": "heading",
+          "char_start": 839,
+          "char_end": 856
+        },
+        {
+          "paragraph_id": "p_d87582e22ef915b92bf1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S7.SS0.SSS0.Px1.p1.1",
+          "text": "The described training Algorithms 11 to 13 use Stochastic Gradient Descent (SGD) ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot∇\\text{loss}({\\boldsymbol{\\theta}})$ to minimize the log loss (aka cross entropy) as the update rule. Computation of the gradient is done via automatic differentiation tools; see [BPRS18, Table 5]. In practice, vanilla SGD is usually replaced by some more refined variation such as RMSProp or AdaGrad or others [Rud16]. Adam [KB15] is used most often these days.",
+          "kind": "text",
+          "char_start": 858,
+          "char_end": 1361
+        },
+        {
+          "paragraph_id": "p_b574abc01a7c4941c8ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm11",
+          "text": "Algorithm 11 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ EDTraining(${\\boldsymbol{z}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)",
+          "kind": "caption",
+          "char_start": 1363,
+          "char_end": 1529
+        },
+        {
+          "paragraph_id": "p_0ca4d65ac53d7167ae5c",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm11.6",
+          "text": "/* Training a seq2seq model */\nInput: $\\{({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n})\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequence pairs.\nInput: ${\\boldsymbol{\\theta}}$, initial transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{EDTransformer}({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n}|{\\boldsymbol{\\theta}})\\!\\!$\n5 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t=1}^{\\ell-1}\\log P({\\boldsymbol{\\theta}})[x_{n}[t\\!+\\!1],t]\\!\\!$\n6 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n7 end for\n8 end for\n9 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$",
+          "kind": "listing",
+          "char_start": 1531,
+          "char_end": 2437
+        },
+        {
+          "paragraph_id": "p_e110e62b8c83b789db09",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm12",
+          "text": "Algorithm 12 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ ETraining(${\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)",
+          "kind": "caption",
+          "char_start": 2439,
+          "char_end": 2565
+        },
+        {
+          "paragraph_id": "p_81b7d1a82209f2d92715",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm12.6",
+          "text": "/* Training by masked language modelling */\nInput: $\\{{\\boldsymbol{x}}_{n}\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequences.\nInput: ${\\boldsymbol{\\theta}}$, initial encoder-only transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞),p_{\\mathrm{mask}}∈(0,1)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots,N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 for $t=1,2,\\dots,\\ell$ do\n5 $\\tilde{x}_{n}[t]\\leftarrow\\texttt{mask\\_token}\\text{ or }x_{n}[t]$ randomly with probability $p_{\\mathrm{mask}}$ or $1-p_{\\mathrm{mask}}$\n6 end for\n7 $\\tilde{T}\\!\\leftarrow\\!{\\{t\\!∈\\![\\ell]:\\tilde{x}_{n}[t]=\\texttt{mask\\_token}\\}}\\!\\!$\n8 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{ETransformer}({\\boldsymbol{\\tilde{x}}}_{n}\\,|\\,{\\boldsymbol{\\theta}})$\n9 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t∈\\tilde{T}}\\log P({\\boldsymbol{\\theta}})[x_{n}[t],t]$\n10 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n11 end for\n12 end for\n13 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$",
+          "kind": "listing",
+          "char_start": 2567,
+          "char_end": 3741
+        },
+        {
+          "paragraph_id": "p_121eabfddb524e994061",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm13",
+          "text": "Algorithm 13 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ DTraining(${\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)",
+          "kind": "caption",
+          "char_start": 3743,
+          "char_end": 3869
+        },
+        {
+          "paragraph_id": "p_8952a5b95220a47e7b80",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm13.6",
+          "text": "/* Training next token prediction */\nInput: $\\{{\\boldsymbol{x}}_{n}\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequences.\nInput: ${\\boldsymbol{\\theta}}$, initial decoder-only transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{DTransformer}({\\boldsymbol{x}}_{n}\\,|\\,{\\boldsymbol{\\theta}})$\n5 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t=1}^{\\ell-1}\\log P({\\boldsymbol{\\theta}})[x_{n}[t\\!+\\!1],t]\\!\\!$\n6 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n7 end for\n8 end for\n9 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$",
+          "kind": "listing",
+          "char_start": 3871,
+          "char_end": 4746
+        },
+        {
+          "paragraph_id": "p_974b17a9f0ca3d95fc38",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm14",
+          "text": "Algorithm 14 ${\\boldsymbol{y}}\\leftarrow$ DInference(${\\boldsymbol{x}},\\hat{{\\boldsymbol{\\theta}}}$)",
+          "kind": "caption",
+          "char_start": 4748,
+          "char_end": 4848
+        },
+        {
+          "paragraph_id": "p_e84b275704cf20f3d78a",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm14.6",
+          "text": "/* Prompting a trained model and using it for prediction. */\nInput: Trained transformer parameters $\\hat{{\\boldsymbol{\\theta}}}$.\nInput: ${\\boldsymbol{x}}∈V^{*}$, a prompt.\nOutput: ${\\boldsymbol{y}}∈V^{*}$, the transformer’s continuation of the prompt.\nHyperparameters: $\\ell_{\\mathrm{gen}}∈ℕ,\\ τ∈(0,∞)$\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $i=1,2,\\dots\\ell_{\\mathrm{gen}}$ do\n3 ${\\boldsymbol{P}}\\leftarrow\\texttt{DTransformer}({\\boldsymbol{x}}\\,|\\,\\hat{{\\boldsymbol{\\theta}}})$\n4 ${\\boldsymbol{p}}\\leftarrow{\\boldsymbol{P}}[:,\\ell+i-1]$\n5 sample a token $y$ from ${\\boldsymbol{q}}\\propto{\\boldsymbol{p}}^{1/τ}$\n6 ${\\boldsymbol{x}}\\leftarrow[{\\boldsymbol{x}},y]$\n7 end for\n8 return ${\\boldsymbol{y}}={\\boldsymbol{x}}[\\ell+1:\\ell+\\ell_{\\mathrm{gen}}]$",
+          "kind": "listing",
+          "char_start": 4850,
+          "char_end": 5621
+        },
+        {
+          "paragraph_id": "p_cddf8e18984e910ca9ba",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm15",
+          "text": "Algorithm 15 ${\\boldsymbol{\\hat{x}}}\\leftarrow$ EDInference(${\\boldsymbol{z}},\\hat{{\\boldsymbol{\\theta}}}$)",
+          "kind": "caption",
+          "char_start": 5623,
+          "char_end": 5730
+        },
+        {
+          "paragraph_id": "p_ad8339af312dcaf70217",
+          "page": null,
+          "bbox": null,
+          "element_id": "algorithm15.6",
+          "text": "/* Using a trained seq2seq model for prediction. */\nInput: A seq2seq transformer and trained parameters $\\hat{{\\boldsymbol{\\theta}}}$ of the transformer.\nInput: ${\\boldsymbol{z}}∈V^{*}$, input sequence, e.g. a sentence in English.\nOutput: ${\\boldsymbol{\\hat{x}}}∈V^{*}$, output sequence, e.g. the sentence in German.\nHyperparameters: $τ∈(0,∞)$\n1 ${\\boldsymbol{\\hat{x}}}\\leftarrow[\\texttt{bos\\_token}]$\n2 $y\\leftarrow 0$\n3 while $y\\neq\\texttt{eos\\_token}$ do\n4 ${\\boldsymbol{P}}\\leftarrow\\texttt{EDTransformer}({\\boldsymbol{z}},{\\boldsymbol{\\hat{x}}}\\,|\\,\\hat{{\\boldsymbol{\\theta}}})$\n5 ${\\boldsymbol{p}}\\leftarrow{\\boldsymbol{P}}[:,\\mathrm{length}({\\boldsymbol{\\hat{x})}}]$\n6 sample a token $y$ from ${\\boldsymbol{q}}\\propto{\\boldsymbol{p}}^{1/τ}$\n7 ${\\boldsymbol{\\hat{x}}}\\leftarrow[{\\boldsymbol{\\hat{x}}},y]$\n8 end while\n9 return ${\\boldsymbol{\\hat{x}}}$",
+          "kind": "listing",
+          "char_start": 5732,
+          "char_end": 6588
+        }
+      ],
+      "text": "This section lists the pseudocode for various algorithms for training and using transformers:\n\n• EDTraining() Algorithm 11 shows how to train a sequence-to-sequence transformer (the original Transformer [VSP+17]).\n\n• ETraining() Algorithm 12 shows how to train a transformer on the task of masked language modelling (like BERT [DCLT19]).\n\n• DTraining() Algorithm 13 shows how to train a transformer on the task of next token prediction (like CPT-x [BMR+20] and Gopher [RBC+21]).\n\n• DInference() Algorithm 14 shows how to prompt a transformer trained on next token prediction (like GPT-x [BMR+20]). The temperature parameter $τ$ interpolates between most likely continuation ($τ=0$), faithful sampling ($τ=1)$, and uniform sampling $(τ=∞)$.\n\n• EDInference() Algorithm 15 shows how to use a sequence-to-sequence transformer for prediction.\n\nGradient descent.\n\nThe described training Algorithms 11 to 13 use Stochastic Gradient Descent (SGD) ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot∇\\text{loss}({\\boldsymbol{\\theta}})$ to minimize the log loss (aka cross entropy) as the update rule. Computation of the gradient is done via automatic differentiation tools; see [BPRS18, Table 5]. In practice, vanilla SGD is usually replaced by some more refined variation such as RMSProp or AdaGrad or others [Rud16]. Adam [KB15] is used most often these days.\n\nAlgorithm 11 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ EDTraining(${\\boldsymbol{z}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)\n\n/* Training a seq2seq model */\nInput: $\\{({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n})\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequence pairs.\nInput: ${\\boldsymbol{\\theta}}$, initial transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{EDTransformer}({\\boldsymbol{z}}_{n},{\\boldsymbol{x}}_{n}|{\\boldsymbol{\\theta}})\\!\\!$\n5 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t=1}^{\\ell-1}\\log P({\\boldsymbol{\\theta}})[x_{n}[t\\!+\\!1],t]\\!\\!$\n6 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n7 end for\n8 end for\n9 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$\n\nAlgorithm 12 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ ETraining(${\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)\n\n/* Training by masked language modelling */\nInput: $\\{{\\boldsymbol{x}}_{n}\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequences.\nInput: ${\\boldsymbol{\\theta}}$, initial encoder-only transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞),p_{\\mathrm{mask}}∈(0,1)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots,N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 for $t=1,2,\\dots,\\ell$ do\n5 $\\tilde{x}_{n}[t]\\leftarrow\\texttt{mask\\_token}\\text{ or }x_{n}[t]$ randomly with probability $p_{\\mathrm{mask}}$ or $1-p_{\\mathrm{mask}}$\n6 end for\n7 $\\tilde{T}\\!\\leftarrow\\!{\\{t\\!∈\\![\\ell]:\\tilde{x}_{n}[t]=\\texttt{mask\\_token}\\}}\\!\\!$\n8 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{ETransformer}({\\boldsymbol{\\tilde{x}}}_{n}\\,|\\,{\\boldsymbol{\\theta}})$\n9 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t∈\\tilde{T}}\\log P({\\boldsymbol{\\theta}})[x_{n}[t],t]$\n10 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n11 end for\n12 end for\n13 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$\n\nAlgorithm 13 $\\hat{{\\boldsymbol{\\theta}}}\\leftarrow$ DTraining(${\\boldsymbol{x}}_{1:N_{\\mathrm{data}}},{\\boldsymbol{\\theta}}$)\n\n/* Training next token prediction */\nInput: $\\{{\\boldsymbol{x}}_{n}\\}_{n=1}^{N_{\\mathrm{data}}}$, a dataset of sequences.\nInput: ${\\boldsymbol{\\theta}}$, initial decoder-only transformer parameters.\nOutput: $\\hat{{\\boldsymbol{\\theta}}}$, the trained parameters.\nHyperparameters: $N_{\\mathrm{epochs}}∈ℕ,\\ η∈(0,∞)$\n1 for $i=1,2,\\dots,N_{\\mathrm{epochs}}$ do\n2 for $n=1,2,\\dots N_{\\mathrm{data}}$ do\n3 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}}_{n})$\n4 ${\\boldsymbol{P}}({\\boldsymbol{\\theta}})\\leftarrow\\texttt{DTransformer}({\\boldsymbol{x}}_{n}\\,|\\,{\\boldsymbol{\\theta}})$\n5 $\\mathrm{loss}({\\boldsymbol{\\theta}})=-\\sum_{t=1}^{\\ell-1}\\log P({\\boldsymbol{\\theta}})[x_{n}[t\\!+\\!1],t]\\!\\!$\n6 ${\\boldsymbol{\\theta}}\\leftarrow{\\boldsymbol{\\theta}}-η\\cdot\\nabla\\mathrm{loss}({\\boldsymbol{\\theta}})$\n7 end for\n8 end for\n9 return $\\hat{{\\boldsymbol{\\theta}}}={\\boldsymbol{\\theta}}$\n\nAlgorithm 14 ${\\boldsymbol{y}}\\leftarrow$ DInference(${\\boldsymbol{x}},\\hat{{\\boldsymbol{\\theta}}}$)\n\n/* Prompting a trained model and using it for prediction. */\nInput: Trained transformer parameters $\\hat{{\\boldsymbol{\\theta}}}$.\nInput: ${\\boldsymbol{x}}∈V^{*}$, a prompt.\nOutput: ${\\boldsymbol{y}}∈V^{*}$, the transformer’s continuation of the prompt.\nHyperparameters: $\\ell_{\\mathrm{gen}}∈ℕ,\\ τ∈(0,∞)$\n1 $\\ell\\leftarrow\\mathrm{length}({\\boldsymbol{x}})$\n2 for $i=1,2,\\dots\\ell_{\\mathrm{gen}}$ do\n3 ${\\boldsymbol{P}}\\leftarrow\\texttt{DTransformer}({\\boldsymbol{x}}\\,|\\,\\hat{{\\boldsymbol{\\theta}}})$\n4 ${\\boldsymbol{p}}\\leftarrow{\\boldsymbol{P}}[:,\\ell+i-1]$\n5 sample a token $y$ from ${\\boldsymbol{q}}\\propto{\\boldsymbol{p}}^{1/τ}$\n6 ${\\boldsymbol{x}}\\leftarrow[{\\boldsymbol{x}},y]$\n7 end for\n8 return ${\\boldsymbol{y}}={\\boldsymbol{x}}[\\ell+1:\\ell+\\ell_{\\mathrm{gen}}]$\n\nAlgorithm 15 ${\\boldsymbol{\\hat{x}}}\\leftarrow$ EDInference(${\\boldsymbol{z}},\\hat{{\\boldsymbol{\\theta}}}$)\n\n/* Using a trained seq2seq model for prediction. */\nInput: A seq2seq transformer and trained parameters $\\hat{{\\boldsymbol{\\theta}}}$ of the transformer.\nInput: ${\\boldsymbol{z}}∈V^{*}$, input sequence, e.g. a sentence in English.\nOutput: ${\\boldsymbol{\\hat{x}}}∈V^{*}$, output sequence, e.g. the sentence in German.\nHyperparameters: $τ∈(0,∞)$\n1 ${\\boldsymbol{\\hat{x}}}\\leftarrow[\\texttt{bos\\_token}]$\n2 $y\\leftarrow 0$\n3 while $y\\neq\\texttt{eos\\_token}$ do\n4 ${\\boldsymbol{P}}\\leftarrow\\texttt{EDTransformer}({\\boldsymbol{z}},{\\boldsymbol{\\hat{x}}}\\,|\\,\\hat{{\\boldsymbol{\\theta}}})$\n5 ${\\boldsymbol{p}}\\leftarrow{\\boldsymbol{P}}[:,\\mathrm{length}({\\boldsymbol{\\hat{x})}}]$\n6 sample a token $y$ from ${\\boldsymbol{q}}\\propto{\\boldsymbol{p}}^{1/τ}$\n7 ${\\boldsymbol{\\hat{x}}}\\leftarrow[{\\boldsymbol{\\hat{x}}},y]$\n8 end while\n9 return ${\\boldsymbol{\\hat{x}}}$"
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0008",
+      "title": "8 Practical Considerations",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S8",
+      "path": [
+        "8 Practical Considerations"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_dab29ce022d063a84c2e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.p1.1",
+          "text": "While the vanilla transformers provided here may work in practice, a variety of “tricks” have been developed over the years to improve the performance of deep neural networks in general and transformers in particular [LWLQ21]:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 226
+        },
+        {
+          "paragraph_id": "p_515db9567b96c20d148a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i1",
+          "text": "• Data preprocessing: cleaning, augmentation [FGW+21], adding noise, shuffling [Lem21] (besides tokenization and chunking).",
+          "kind": "list_item",
+          "char_start": 228,
+          "char_end": 351
+        },
+        {
+          "paragraph_id": "p_ce0e334f84ff15905d29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i2",
+          "text": "• Architecture: sparse layers, weight sharing (besides attention).",
+          "kind": "list_item",
+          "char_start": 353,
+          "char_end": 419
+        },
+        {
+          "paragraph_id": "p_8c91c541115a4ac4ffbc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i3",
+          "text": "• Training: improved optimizers, minibatches, batch normalization, learning rate scheduling, weight initialization, pre-training, ensembling, multi-task, adversarial (besides layer normalization) [Sut15].",
+          "kind": "list_item",
+          "char_start": 421,
+          "char_end": 625
+        },
+        {
+          "paragraph_id": "p_d6d69f481222ca076cbf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i4",
+          "text": "• Regularization: weight decay, early stopping, cross-validation, dropout, adding noise [MBM20, TZ22].",
+          "kind": "list_item",
+          "char_start": 627,
+          "char_end": 729
+        },
+        {
+          "paragraph_id": "p_a90e68972ce7afed2553",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i5",
+          "text": "• Inference: scratchpad prompting, few-shot prompting, chain of thought, majority voting [LAD+22].",
+          "kind": "list_item",
+          "char_start": 731,
+          "char_end": 829
+        },
+        {
+          "paragraph_id": "p_902433b25a4bb9b898a7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S8.I1.i6",
+          "text": "• Others.",
+          "kind": "list_item",
+          "char_start": 831,
+          "char_end": 840
+        }
+      ],
+      "text": "While the vanilla transformers provided here may work in practice, a variety of “tricks” have been developed over the years to improve the performance of deep neural networks in general and transformers in particular [LWLQ21]:\n\n• Data preprocessing: cleaning, augmentation [FGW+21], adding noise, shuffling [Lem21] (besides tokenization and chunking).\n\n• Architecture: sparse layers, weight sharing (besides attention).\n\n• Training: improved optimizers, minibatches, batch normalization, learning rate scheduling, weight initialization, pre-training, ensembling, multi-task, adversarial (besides layer normalization) [Sut15].\n\n• Regularization: weight decay, early stopping, cross-validation, dropout, adding noise [MBM20, TZ22].\n\n• Inference: scratchpad prompting, few-shot prompting, chain of thought, majority voting [LAD+22].\n\n• Others."
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0009",
+      "title": "Appendix A References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A References"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2207.09238_v1_s0010",
+      "title": "Untitled section",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "Untitled section"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c58c4daa81b64e2e60d0",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx1",
+          "text": "[Ala18] Jay Alammar. The Illustrated Transformer. http://jalammar.github.io/illustrated-transformer/, 2018.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 107
+        },
+        {
+          "paragraph_id": "p_679e8374bbea66dcc8de",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx2",
+          "text": "[Ala19] Jay Alammar. The Illustrated GPT-2 (Visualizing Transformer Language Models). http://jalammar.github.io/illustrated-gpt2/, 2019.",
+          "kind": "list_item",
+          "char_start": 109,
+          "char_end": 245
+        },
+        {
+          "paragraph_id": "p_680358ac3baf0bbd29f4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx3",
+          "text": "[Bel21] Fabrice Bellard. NNCP v2: Lossless Data Compression with Transformer. https://bellard.org/libnc/gpt2tc.html, 2021.",
+          "kind": "list_item",
+          "char_start": 247,
+          "char_end": 369
+        },
+        {
+          "paragraph_id": "p_8ab495d31317756a54d8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx4",
+          "text": "[BFT17] Peter L Bartlett, Dylan J Foster, and Matus J Telgarsky. Spectrally-normalized margin bounds for neural networks. NeurIPS, 2017.",
+          "kind": "list_item",
+          "char_start": 371,
+          "char_end": 507
+        },
+        {
+          "paragraph_id": "p_cbd0bbb98cded168cdf5",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx5",
+          "text": "[BMR+20] Tom Brown, Benjamin Mann, Nick Ryder, et al. Language models are few-shot learners. NeurIPS, 2020.",
+          "kind": "list_item",
+          "char_start": 509,
+          "char_end": 616
+        },
+        {
+          "paragraph_id": "p_b853f4dbfd157280c4ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx6",
+          "text": "[BPRS18] Atilim Gunes Baydin, Barak A. Pearlmutter, Alexey Andreyevich Radul, and Jeffrey Mark Siskind. Automatic Differentiation in Machine Learning: A Survey. Journal of Machine Learning Research, 18(153):1–43, 2018.",
+          "kind": "list_item",
+          "char_start": 618,
+          "char_end": 836
+        },
+        {
+          "paragraph_id": "p_0ddfbe046db7cbe2d383",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx7",
+          "text": "[DCLT19] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional transformers for language understanding. ACL, 2019.",
+          "kind": "list_item",
+          "char_start": 838,
+          "char_end": 1005
+        },
+        {
+          "paragraph_id": "p_a2fd23800b353abffd13",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx8",
+          "text": "[EGKZ21] Benjamin L. Edelman, Surbhi Goel, Sham Kakade, and Cyril Zhang. Inductive Biases and Variable Creation in Self-Attention Mechanisms. arXiv:2110.10090 [cs, stat], October 2021.",
+          "kind": "list_item",
+          "char_start": 1007,
+          "char_end": 1191
+        },
+        {
+          "paragraph_id": "p_7f89032d0333e663f697",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx9",
+          "text": "[Elh21] Nelson Elhage. A Mathematical Framework for Transformer Circuits. https://transformer-circuits.pub/2021/framework/index.html, 2021.",
+          "kind": "list_item",
+          "char_start": 1193,
+          "char_end": 1332
+        },
+        {
+          "paragraph_id": "p_c9b42d7ef5ba9edce887",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx10",
+          "text": "[EMK+21] Yonathan Efroni, Dipendra Misra, Akshay Krishnamurthy, Alekh Agarwal, and John Langford. Provable RL with Exogenous Distractors via Multistep Inverse Dynamics, March 2021.",
+          "kind": "list_item",
+          "char_start": 1334,
+          "char_end": 1514
+        },
+        {
+          "paragraph_id": "p_f64dc895f47d998b929b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx11",
+          "text": "[FGW+21] Steven Y Feng, Varun Gangal, Jason Wei, Sarath Chandar, Soroush Vosoughi, Teruko Mitamura, and Eduard Hovy. A survey of data augmentation approaches for NLP. In Findings of the Association for Computational Linguistics: ACL-IJCNLP 2021, pages 968–988, 2021.",
+          "kind": "list_item",
+          "char_start": 1516,
+          "char_end": 1782
+        },
+        {
+          "paragraph_id": "p_5ae730a66a0a9b1272a8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx12",
+          "text": "[Gag94] Philip Gage. A new algorithm for data compression. Dr. Dobbs / C Users Journal, 12(2):23–38, 1994.",
+          "kind": "list_item",
+          "char_start": 1784,
+          "char_end": 1890
+        },
+        {
+          "paragraph_id": "p_50bbe64e8b288b64ac82",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx13",
+          "text": "[JGH18] Arthur Jacot, Franck Gabriel, and Clément Hongler. Neural tangent kernel: Convergence and generalization in neural networks. NeurIPS, 2018.",
+          "kind": "list_item",
+          "char_start": 1892,
+          "char_end": 2039
+        },
+        {
+          "paragraph_id": "p_6d67798fb9e02fae4c98",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx14",
+          "text": "[KB15] Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. ICLR, 2015.",
+          "kind": "list_item",
+          "char_start": 2041,
+          "char_end": 2133
+        },
+        {
+          "paragraph_id": "p_052740b57b66014bc75e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx15",
+          "text": "[Ker21] Jonathan Kernes. Master Positional Encoding: Part I. https://towardsdatascience.com/master-positional-encoding-part-i-63c05d90a0c3, March 2021.",
+          "kind": "list_item",
+          "char_start": 2135,
+          "char_end": 2286
+        },
+        {
+          "paragraph_id": "p_ad89be48f7a3aaf37b64",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx16",
+          "text": "[LAD+22] Aitor Lewkowycz, Anders Andreassen, David Dohan, Ethan Dyer, Henryk Michalewski, Vinay Ramasesh, Ambrose Slone, Cem Anil, Imanol Schlag, Theo Gutman-Solo, Yuhuai Wu, Behnam Neyshabur, Guy Gur-Ari, and Vedant Misra. Solving Quantitative Reasoning Problems with Language Models. arXiv:2206.14858 [cs], June 2022.",
+          "kind": "list_item",
+          "char_start": 2288,
+          "char_end": 2607
+        },
+        {
+          "paragraph_id": "p_3587a982bf2da0cb2662",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx17",
+          "text": "[Lem21] Chris Lemke. Data preprocessing in NLP. https://towardsdatascience.com/data-preprocessing-in-nlp-c371d53ba3e0, July 2021.",
+          "kind": "list_item",
+          "char_start": 2609,
+          "char_end": 2738
+        },
+        {
+          "paragraph_id": "p_57072b1fc146f3f980e4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx18",
+          "text": "[LWLQ21] Tianyang Lin, Yuxin Wang, Xiangyang Liu, and Xipeng Qiu. A Survey of Transformers, June 2021.",
+          "kind": "list_item",
+          "char_start": 2740,
+          "char_end": 2842
+        },
+        {
+          "paragraph_id": "p_48b71fc37521320f590d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx19",
+          "text": "[MBM20] Reza Moradi, Reza Berangi, and Behrouz Minaei. A survey of regularization strategies for deep models. Artificial Intelligence Review, 53(6):3947–3986, August 2020.",
+          "kind": "list_item",
+          "char_start": 2844,
+          "char_end": 3015
+        },
+        {
+          "paragraph_id": "p_ca1ada59c2b206604c26",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx20",
+          "text": "[MKS+13] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra, and Martin Riedmiller. Playing Atari with Deep Reinforcement Learning, December 2013.",
+          "kind": "list_item",
+          "char_start": 3017,
+          "char_end": 3208
+        },
+        {
+          "paragraph_id": "p_f13e9ef3c8d85879f465",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx21",
+          "text": "[MPCB14] Guido F Montufar, Razvan Pascanu, Kyunghyun Cho, and Yoshua Bengio. On the number of linear regions of deep neural networks. NeurIPS, 2014.",
+          "kind": "list_item",
+          "char_start": 3210,
+          "char_end": 3358
+        },
+        {
+          "paragraph_id": "p_2cbd39d69f21f5a983fe",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx22",
+          "text": "[PH22] M. Phuong and M. Hutter. Formal algorithms for transformers. Technical report, DeepMind, London, UK, 2022. LaTeX source available at http://arXiv.org",
+          "kind": "list_item",
+          "char_start": 3360,
+          "char_end": 3516
+        },
+        {
+          "paragraph_id": "p_b4b7aabeb92bbaa07935",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx23",
+          "text": "[RBC+21] Jack W. Rae, Sebastian Borgeaud, Trevor Cai, et al. Scaling language models: Methods, analysis & insights from training gopher. arXiv:2112.11446, 2021.",
+          "kind": "list_item",
+          "char_start": 3518,
+          "char_end": 3678
+        },
+        {
+          "paragraph_id": "p_bccf6052b41773f3d1bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx24",
+          "text": "[Rud16] Sebastian Ruder. An overview of gradient descent optimization algorithms. https://ruder.io/optimizing-gradient-descent/, January 2016.",
+          "kind": "list_item",
+          "char_start": 3680,
+          "char_end": 3822
+        },
+        {
+          "paragraph_id": "p_7287ac6cb5cc8a3d11c1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx25",
+          "text": "[RWC+19] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. OpenAI blog, 2019.",
+          "kind": "list_item",
+          "char_start": 3824,
+          "char_end": 3989
+        },
+        {
+          "paragraph_id": "p_11753e87c37110fcce3b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx26",
+          "text": "[RZP+22] Scott Reed, Konrad Żołna, Emilio Parisotto, et al. A generalist agent. arXiv:2205.06175, 2022.",
+          "kind": "list_item",
+          "char_start": 3991,
+          "char_end": 4094
+        },
+        {
+          "paragraph_id": "p_f9aa305d44799243a305",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx27",
+          "text": "[SBB18] Richard S. Sutton, Andrew G. Barto, and Francis Bach. Reinforcement Learning: An Introduction. MIT Press, Cambridge, Massachusetts, second edition edition edition, November 2018.",
+          "kind": "list_item",
+          "char_start": 4096,
+          "char_end": 4282
+        },
+        {
+          "paragraph_id": "p_089926516d17c6a0802d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx28",
+          "text": "[SGBK+21] Eren Sezener, Agnieszka Grabska-Barwińska, Dimitar Kostadinov, Maxime Beau, Sanjukta Krishnagopal, David Budden, Marcus Hutter, Joel Veness, Matthew Botvinick, Claudia Clopath, Michael Häusser, and Peter E. Latham. A rapid and efficient learning rule for biological neural circuits. Technical report, DeepMind, London, UK, 2021.",
+          "kind": "list_item",
+          "char_start": 4284,
+          "char_end": 4622
+        },
+        {
+          "paragraph_id": "p_5331073f38d780c03079",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx29",
+          "text": "[SHB16] Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words with subword units. In 54th Annual Meeting of the Association for Computational Linguistics, pages 1715–1725. Association for Computational Linguistics (ACL), 2016.",
+          "kind": "list_item",
+          "char_start": 4624,
+          "char_end": 4887
+        },
+        {
+          "paragraph_id": "p_256d84558b8aaec16e36",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx30",
+          "text": "[Sut15] Ilya Sutskever. A Brief Overview of Deep Learning. http://yyue.blogspot.com/2015/01/a-brief-overview-of-deep-learning.html, January 2015.",
+          "kind": "list_item",
+          "char_start": 4889,
+          "char_end": 5034
+        },
+        {
+          "paragraph_id": "p_76febac013d1ba5315fb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx31",
+          "text": "[TZ22] Yingjie Tian and Yuqi Zhang. A comprehensive survey on regularization strategies in machine learning. Information Fusion, 80:146–166, April 2022.",
+          "kind": "list_item",
+          "char_start": 5036,
+          "char_end": 5188
+        },
+        {
+          "paragraph_id": "p_10575b22697eabe52078",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx32",
+          "text": "[VSP+17] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. NeurIPS, 2017.",
+          "kind": "list_item",
+          "char_start": 5190,
+          "char_end": 5365
+        }
+      ],
+      "text": "[Ala18] Jay Alammar. The Illustrated Transformer. http://jalammar.github.io/illustrated-transformer/, 2018.\n\n[Ala19] Jay Alammar. The Illustrated GPT-2 (Visualizing Transformer Language Models). http://jalammar.github.io/illustrated-gpt2/, 2019.\n\n[Bel21] Fabrice Bellard. NNCP v2: Lossless Data Compression with Transformer. https://bellard.org/libnc/gpt2tc.html, 2021.\n\n[BFT17] Peter L Bartlett, Dylan J Foster, and Matus J Telgarsky. Spectrally-normalized margin bounds for neural networks. NeurIPS, 2017.\n\n[BMR+20] Tom Brown, Benjamin Mann, Nick Ryder, et al. Language models are few-shot learners. NeurIPS, 2020.\n\n[BPRS18] Atilim Gunes Baydin, Barak A. Pearlmutter, Alexey Andreyevich Radul, and Jeffrey Mark Siskind. Automatic Differentiation in Machine Learning: A Survey. Journal of Machine Learning Research, 18(153):1–43, 2018.\n\n[DCLT19] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional transformers for language understanding. ACL, 2019.\n\n[EGKZ21] Benjamin L. Edelman, Surbhi Goel, Sham Kakade, and Cyril Zhang. Inductive Biases and Variable Creation in Self-Attention Mechanisms. arXiv:2110.10090 [cs, stat], October 2021.\n\n[Elh21] Nelson Elhage. A Mathematical Framework for Transformer Circuits. https://transformer-circuits.pub/2021/framework/index.html, 2021.\n\n[EMK+21] Yonathan Efroni, Dipendra Misra, Akshay Krishnamurthy, Alekh Agarwal, and John Langford. Provable RL with Exogenous Distractors via Multistep Inverse Dynamics, March 2021.\n\n[FGW+21] Steven Y Feng, Varun Gangal, Jason Wei, Sarath Chandar, Soroush Vosoughi, Teruko Mitamura, and Eduard Hovy. A survey of data augmentation approaches for NLP. In Findings of the Association for Computational Linguistics: ACL-IJCNLP 2021, pages 968–988, 2021.\n\n[Gag94] Philip Gage. A new algorithm for data compression. Dr. Dobbs / C Users Journal, 12(2):23–38, 1994.\n\n[JGH18] Arthur Jacot, Franck Gabriel, and Clément Hongler. Neural tangent kernel: Convergence and generalization in neural networks. NeurIPS, 2018.\n\n[KB15] Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. ICLR, 2015.\n\n[Ker21] Jonathan Kernes. Master Positional Encoding: Part I. https://towardsdatascience.com/master-positional-encoding-part-i-63c05d90a0c3, March 2021.\n\n[LAD+22] Aitor Lewkowycz, Anders Andreassen, David Dohan, Ethan Dyer, Henryk Michalewski, Vinay Ramasesh, Ambrose Slone, Cem Anil, Imanol Schlag, Theo Gutman-Solo, Yuhuai Wu, Behnam Neyshabur, Guy Gur-Ari, and Vedant Misra. Solving Quantitative Reasoning Problems with Language Models. arXiv:2206.14858 [cs], June 2022.\n\n[Lem21] Chris Lemke. Data preprocessing in NLP. https://towardsdatascience.com/data-preprocessing-in-nlp-c371d53ba3e0, July 2021.\n\n[LWLQ21] Tianyang Lin, Yuxin Wang, Xiangyang Liu, and Xipeng Qiu. A Survey of Transformers, June 2021.\n\n[MBM20] Reza Moradi, Reza Berangi, and Behrouz Minaei. A survey of regularization strategies for deep models. Artificial Intelligence Review, 53(6):3947–3986, August 2020.\n\n[MKS+13] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra, and Martin Riedmiller. Playing Atari with Deep Reinforcement Learning, December 2013.\n\n[MPCB14] Guido F Montufar, Razvan Pascanu, Kyunghyun Cho, and Yoshua Bengio. On the number of linear regions of deep neural networks. NeurIPS, 2014.\n\n[PH22] M. Phuong and M. Hutter. Formal algorithms for transformers. Technical report, DeepMind, London, UK, 2022. LaTeX source available at http://arXiv.org\n\n[RBC+21] Jack W. Rae, Sebastian Borgeaud, Trevor Cai, et al. Scaling language models: Methods, analysis & insights from training gopher. arXiv:2112.11446, 2021.\n\n[Rud16] Sebastian Ruder. An overview of gradient descent optimization algorithms. https://ruder.io/optimizing-gradient-descent/, January 2016.\n\n[RWC+19] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. OpenAI blog, 2019.\n\n[RZP+22] Scott Reed, Konrad Żołna, Emilio Parisotto, et al. A generalist agent. arXiv:2205.06175, 2022.\n\n[SBB18] Richard S. Sutton, Andrew G. Barto, and Francis Bach. Reinforcement Learning: An Introduction. MIT Press, Cambridge, Massachusetts, second edition edition edition, November 2018.\n\n[SGBK+21] Eren Sezener, Agnieszka Grabska-Barwińska, Dimitar Kostadinov, Maxime Beau, Sanjukta Krishnagopal, David Budden, Marcus Hutter, Joel Veness, Matthew Botvinick, Claudia Clopath, Michael Häusser, and Peter E. Latham. A rapid and efficient learning rule for biological neural circuits. Technical report, DeepMind, London, UK, 2021.\n\n[SHB16] Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words with subword units. In 54th Annual Meeting of the Association for Computational Linguistics, pages 1715–1725. Association for Computational Linguistics (ACL), 2016.\n\n[Sut15] Ilya Sutskever. A Brief Overview of Deep Learning. http://yyue.blogspot.com/2015/01/a-brief-overview-of-deep-learning.html, January 2015.\n\n[TZ22] Yingjie Tian and Yuqi Zhang. A comprehensive survey on regularization strategies in machine learning. Information Fusion, 80:146–166, April 2022.\n\n[VSP+17] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. NeurIPS, 2017."
+    }
+  ]
+}

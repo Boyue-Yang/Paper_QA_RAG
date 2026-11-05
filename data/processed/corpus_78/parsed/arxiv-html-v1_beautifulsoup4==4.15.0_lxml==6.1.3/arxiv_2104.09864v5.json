@@ -1,0 +1,2476 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2104.09864",
+  "version": "v5",
+  "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+  "source_format": "html",
+  "source_sha256": "db7f300b9abd24e0d225bcfcd53d3fd64c0255acb60e8dac28014361005c1f07",
+  "source_url": "https://arxiv.org/html/2104.09864v5",
+  "source_path": "data/corpus_78/html/arxiv_2104.09864v5.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2104.09864_v5_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_011b06d0846052eae6d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "Position encoding recently has shown effective in the transformer architecture. It enables valuable supervision for dependency modeling between elements at different positions of the sequence. In this paper, we first investigate various methods to integrate positional information into the learning process of transformer-based language models. Then, we propose a novel method named Rotary Position Embedding(RoPE) to effectively leverage the positional information. Specifically, the proposed RoPE encodes the absolute position with a rotation matrix and meanwhile incorporates the explicit relative position dependency in self-attention formulation. Notably, RoPE enables valuable properties, including the flexibility of sequence length, decaying inter-token dependency with increasing relative distances, and the capability of equipping the linear self-attention with relative position encoding. Finally, we evaluate the enhanced transformer with rotary position embedding, also called RoFormer, on various long text classification benchmark datasets. Our experiments show that it consistently overcomes its alternatives. Furthermore, we provide a theoretical analysis to explain some experimental results. RoFormer is already integrated into Huggingface: https://huggingface.co/docs/transformers/model_doc/roformer.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1320
+        }
+      ],
+      "text": "Position encoding recently has shown effective in the transformer architecture. It enables valuable supervision for dependency modeling between elements at different positions of the sequence. In this paper, we first investigate various methods to integrate positional information into the learning process of transformer-based language models. Then, we propose a novel method named Rotary Position Embedding(RoPE) to effectively leverage the positional information. Specifically, the proposed RoPE encodes the absolute position with a rotation matrix and meanwhile incorporates the explicit relative position dependency in self-attention formulation. Notably, RoPE enables valuable properties, including the flexibility of sequence length, decaying inter-token dependency with increasing relative distances, and the capability of equipping the linear self-attention with relative position encoding. Finally, we evaluate the enhanced transformer with rotary position embedding, also called RoFormer, on various long text classification benchmark datasets. Our experiments show that it consistently overcomes its alternatives. Furthermore, we provide a theoretical analysis to explain some experimental results. RoFormer is already integrated into Huggingface: https://huggingface.co/docs/transformers/model_doc/roformer."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_018215e0d8484613ee95",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "The sequential order of words is of great value to natural language understanding. Recurrent neural networks (RRNs) based models encode tokens’ order by recursively computing a hidden state along the time dimension. Convolution neural networks (CNNs) based models (CNNs) Gehring et al. (2017) were typically considered position-agnostic, but recent work Islam et al. (2020) has shown that the commonly used padding operation can implicitly learn position information. Recently, the pre-trained language models (PLMs), which were built upon the transformer Vaswani et al. (2017), have achieved the state-of-the-art performance of various natural language processing (NLP) tasks, including context representation learning Devlin et al. (2019), machine translation Vaswani et al. (2017), and language modeling Radford et al. (2019), to name a few. Unlike, RRNs and CNNs-based models, PLMs utilize the self-attention mechanism to semantically capture the contextual representation of a given corpus. As a consequence, PLMs achieve a significant improvement in terms of parallelization over RNNs and improve the modeling ability of longer intra-token relations compared to CNNs.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1173
+        },
+        {
+          "paragraph_id": "p_33be16cc88dddb97988e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Footnote: 1 1 A stack of multiple CNN layers can also capture longer intra-token relation, here we only consider single layer setting.",
+          "kind": "footnote",
+          "char_start": 1175,
+          "char_end": 1309
+        },
+        {
+          "paragraph_id": "p_6f9a192f9d896a6ad48c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "It is noteworthy that the self-attention architecture of the current PLMs has shown to be position-agnostic Yun et al. (2020). Following this claim, various approaches have been proposed to encode the position information into the learning process. On one side, generated absolute position encoding through a pre-defined function Vaswani et al. (2017) was added to the contextual representations, while a trainable absolute position encoding Gehring et al. (2017); Devlin et al. (2019); Lan et al. (2020); Clark et al. (2020); Radford et al. (2019); Radford and Narasimhan (2018). On the other side, the previous work Parikh et al. (2016); Shaw et al. (2018); Huang et al. (2018); Dai et al. (2019); Yang et al. (2019); Raffel et al. (2020); Ke et al. (2020); He et al. (2020); Huang et al. (2020) focuses on relative position encoding, which typically encodes the relative position information into the attention mechanism. In addition to these approaches, the authors of Liu et al. (2020) have proposed to model the dependency of position encoding from the perspective of Neural ODE Chen et al. (2018a), and the authors of Wang et al. (2020) have proposed to model the position information in complex space. Despite the effectiveness of these approaches, they commonly add the position information to the context representation and thus render them unsuitable for the linear self-attention architecture.",
+          "kind": "text",
+          "char_start": 1311,
+          "char_end": 2716
+        },
+        {
+          "paragraph_id": "p_af17d4d3ba1ddbe26893",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "In this paper, we introduce a novel method, namely Rotary Position Embedding(RoPE), to leverage the positional information into the learning process of PLMS. Specifically, RoPE encodes the absolute position with a rotation matrix and meanwhile incorporates the explicit relative position dependency in self-attention formulation. Note that the proposed RoPE is prioritized over the existing methods through valuable properties, including the sequence length flexibility, decaying inter-token dependency with increasing relative distances, and the capability of equipping the linear self-attention with relative position encoding. Experimental results on various long text classification benchmark datasets show that the enhanced transformer with rotary position embedding, namely RoFormer, can give better performance compared to baseline alternatives and thus demonstrates the efficacy of the proposed RoPE.",
+          "kind": "text",
+          "char_start": 2718,
+          "char_end": 3626
+        },
+        {
+          "paragraph_id": "p_5e711152c6288aa592b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "In brief, our contributions are three-folds as follows:",
+          "kind": "text",
+          "char_start": 3628,
+          "char_end": 3683
+        },
+        {
+          "paragraph_id": "p_7dc03e907232c9679237",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i1",
+          "text": "• We investigated the existing approaches to the relative position encoding and found that they are mostly built based on the idea of the decomposition of adding position encoding to the context representations. We introduce a novel method, namely Rotary Position Embedding(RoPE), to leverage the positional information into the learning process of PLMS. The key idea is to encode relative position by multiplying the context representations with a rotation matrix with a clear theoretical interpretation.",
+          "kind": "list_item",
+          "char_start": 3685,
+          "char_end": 4190
+        },
+        {
+          "paragraph_id": "p_287f34671e6a6e126b5d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i2",
+          "text": "• We study the properties of RoPE and show that it decays with the relative distance increased, which is desired for natural language encoding. We kindly argue that previous relative position encoding-based approaches are not compatible with linear self-attention.",
+          "kind": "list_item",
+          "char_start": 4192,
+          "char_end": 4456
+        },
+        {
+          "paragraph_id": "p_16bc7c9aa98525f613c7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i3",
+          "text": "• We evaluate the proposed RoFormer on various long text benchmark datasets. Our experiments show that it consistently achieves better performance compared to its alternatives. Some experiments with pre-trained language models are available on GitHub: https://github.com/ZhuiyiTechnology/roformer.",
+          "kind": "list_item",
+          "char_start": 4458,
+          "char_end": 4755
+        },
+        {
+          "paragraph_id": "p_668256394d0d7f57a9fc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "The remaining of the paper is organized as follows. We establish a formal description of the position encoding problem in self-attention architecture and revisit previous works in Section 2. We then describe the rotary position encoding (RoPE) and study its properties in Section 3. We report experiments in Section 4. Finally, we conclude this paper in Section 5.",
+          "kind": "text",
+          "char_start": 4757,
+          "char_end": 5121
+        }
+      ],
+      "text": "The sequential order of words is of great value to natural language understanding. Recurrent neural networks (RRNs) based models encode tokens’ order by recursively computing a hidden state along the time dimension. Convolution neural networks (CNNs) based models (CNNs) Gehring et al. (2017) were typically considered position-agnostic, but recent work Islam et al. (2020) has shown that the commonly used padding operation can implicitly learn position information. Recently, the pre-trained language models (PLMs), which were built upon the transformer Vaswani et al. (2017), have achieved the state-of-the-art performance of various natural language processing (NLP) tasks, including context representation learning Devlin et al. (2019), machine translation Vaswani et al. (2017), and language modeling Radford et al. (2019), to name a few. Unlike, RRNs and CNNs-based models, PLMs utilize the self-attention mechanism to semantically capture the contextual representation of a given corpus. As a consequence, PLMs achieve a significant improvement in terms of parallelization over RNNs and improve the modeling ability of longer intra-token relations compared to CNNs.\n\nFootnote: 1 1 A stack of multiple CNN layers can also capture longer intra-token relation, here we only consider single layer setting.\n\nIt is noteworthy that the self-attention architecture of the current PLMs has shown to be position-agnostic Yun et al. (2020). Following this claim, various approaches have been proposed to encode the position information into the learning process. On one side, generated absolute position encoding through a pre-defined function Vaswani et al. (2017) was added to the contextual representations, while a trainable absolute position encoding Gehring et al. (2017); Devlin et al. (2019); Lan et al. (2020); Clark et al. (2020); Radford et al. (2019); Radford and Narasimhan (2018). On the other side, the previous work Parikh et al. (2016); Shaw et al. (2018); Huang et al. (2018); Dai et al. (2019); Yang et al. (2019); Raffel et al. (2020); Ke et al. (2020); He et al. (2020); Huang et al. (2020) focuses on relative position encoding, which typically encodes the relative position information into the attention mechanism. In addition to these approaches, the authors of Liu et al. (2020) have proposed to model the dependency of position encoding from the perspective of Neural ODE Chen et al. (2018a), and the authors of Wang et al. (2020) have proposed to model the position information in complex space. Despite the effectiveness of these approaches, they commonly add the position information to the context representation and thus render them unsuitable for the linear self-attention architecture.\n\nIn this paper, we introduce a novel method, namely Rotary Position Embedding(RoPE), to leverage the positional information into the learning process of PLMS. Specifically, RoPE encodes the absolute position with a rotation matrix and meanwhile incorporates the explicit relative position dependency in self-attention formulation. Note that the proposed RoPE is prioritized over the existing methods through valuable properties, including the sequence length flexibility, decaying inter-token dependency with increasing relative distances, and the capability of equipping the linear self-attention with relative position encoding. Experimental results on various long text classification benchmark datasets show that the enhanced transformer with rotary position embedding, namely RoFormer, can give better performance compared to baseline alternatives and thus demonstrates the efficacy of the proposed RoPE.\n\nIn brief, our contributions are three-folds as follows:\n\n• We investigated the existing approaches to the relative position encoding and found that they are mostly built based on the idea of the decomposition of adding position encoding to the context representations. We introduce a novel method, namely Rotary Position Embedding(RoPE), to leverage the positional information into the learning process of PLMS. The key idea is to encode relative position by multiplying the context representations with a rotation matrix with a clear theoretical interpretation.\n\n• We study the properties of RoPE and show that it decays with the relative distance increased, which is desired for natural language encoding. We kindly argue that previous relative position encoding-based approaches are not compatible with linear self-attention.\n\n• We evaluate the proposed RoFormer on various long text benchmark datasets. Our experiments show that it consistently achieves better performance compared to its alternatives. Some experiments with pre-trained language models are available on GitHub: https://github.com/ZhuiyiTechnology/roformer.\n\nThe remaining of the paper is organized as follows. We establish a formal description of the position encoding problem in self-attention architecture and revisit previous works in Section 2. We then describe the rotary position encoding (RoPE) and study its properties in Section 3. We report experiments in Section 4. Finally, we conclude this paper in Section 5."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0002",
+      "title": "2 Background and Related Work",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Background and Related Work"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0003",
+      "title": "2.1 Preliminary",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS1",
+      "path": [
+        "2 Background and Related Work",
+        "2.1 Preliminary"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6d850feadb99bddb5729",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.3",
+          "text": "Let $\\mathbb{S}_{N}=\\{w_{i}\\}_{i=1}^{N}$ be a sequence of $N$ input tokens with $w_{i}$ being the $i^{th}$ element. The corresponding word embedding of $\\mathbb{S}_{N}$ is denoted as $\\mathbb{E}_{N}=\\{{\\boldsymbol{x}}_{i}\\}_{i=1}^{N}$, where ${\\boldsymbol{x}}_{i}\\in\\mathbb{R}^{d}$ is the d-dimensional word embedding vector of token $w_{i}$ without position information. The self-attention first incorporates position information to the word embeddings and transforms them into queries, keys, and value representations.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 520
+        },
+        {
+          "paragraph_id": "p_0a5eae151cc89ad975d2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E1",
+          "text": "\\displaystyle{\\boldsymbol{q}}_{m} \\displaystyle=f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle{\\boldsymbol{k}}_{n} \\displaystyle=f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle{\\boldsymbol{v}}_{n} \\displaystyle=f_{v}({\\boldsymbol{x}}_{n},n),",
+          "kind": "equation",
+          "char_start": 522,
+          "char_end": 756
+        },
+        {
+          "paragraph_id": "p_0c9612eb2e3e5040eeba",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.4",
+          "text": "where ${\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n}$ and ${\\boldsymbol{v}}_{n}$ incorporate the $m^{th}$ and $n^{th}$ positions through $f_{q},f_{k}$ and $f_{v}$, respectively. The query and key values are then used to compute the attention weights, while the output is computed as the weighted sum over the value representation.",
+          "kind": "text",
+          "char_start": 758,
+          "char_end": 1084
+        },
+        {
+          "paragraph_id": "p_84b42accbd5a76c08884",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E2",
+          "text": "\\displaystyle a_{m,n} \\displaystyle=\\frac{\\exp(\\frac{{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}}{\\sqrt{d}})}{\\sum_{j=1}^{N}\\exp(\\frac{{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{j}}{\\sqrt{d}})} \\displaystyle\\mathbf{o}_{m} \\displaystyle=\\sum_{n=1}^{N}a_{m,n}{\\boldsymbol{v}}_{n}",
+          "kind": "equation",
+          "char_start": 1086,
+          "char_end": 1379
+        },
+        {
+          "paragraph_id": "p_b798f7d6c88639b9b347",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.5",
+          "text": "The existing approaches of transformer-based position encoding mainly focus on choosing a suitable function to form Equation 1.",
+          "kind": "text",
+          "char_start": 1381,
+          "char_end": 1508
+        }
+      ],
+      "text": "Let $\\mathbb{S}_{N}=\\{w_{i}\\}_{i=1}^{N}$ be a sequence of $N$ input tokens with $w_{i}$ being the $i^{th}$ element. The corresponding word embedding of $\\mathbb{S}_{N}$ is denoted as $\\mathbb{E}_{N}=\\{{\\boldsymbol{x}}_{i}\\}_{i=1}^{N}$, where ${\\boldsymbol{x}}_{i}\\in\\mathbb{R}^{d}$ is the d-dimensional word embedding vector of token $w_{i}$ without position information. The self-attention first incorporates position information to the word embeddings and transforms them into queries, keys, and value representations.\n\n\\displaystyle{\\boldsymbol{q}}_{m} \\displaystyle=f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle{\\boldsymbol{k}}_{n} \\displaystyle=f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle{\\boldsymbol{v}}_{n} \\displaystyle=f_{v}({\\boldsymbol{x}}_{n},n),\n\nwhere ${\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n}$ and ${\\boldsymbol{v}}_{n}$ incorporate the $m^{th}$ and $n^{th}$ positions through $f_{q},f_{k}$ and $f_{v}$, respectively. The query and key values are then used to compute the attention weights, while the output is computed as the weighted sum over the value representation.\n\n\\displaystyle a_{m,n} \\displaystyle=\\frac{\\exp(\\frac{{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}}{\\sqrt{d}})}{\\sum_{j=1}^{N}\\exp(\\frac{{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{j}}{\\sqrt{d}})} \\displaystyle\\mathbf{o}_{m} \\displaystyle=\\sum_{n=1}^{N}a_{m,n}{\\boldsymbol{v}}_{n}\n\nThe existing approaches of transformer-based position encoding mainly focus on choosing a suitable function to form Equation 1."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0004",
+      "title": "2.2 Absolute position embedding",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS2",
+      "path": [
+        "2 Background and Related Work",
+        "2.2 Absolute position embedding"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_aad79b04aad714c0e729",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p1.1",
+          "text": "A typical choice of Equation 1 is",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 33
+        },
+        {
+          "paragraph_id": "p_06d29cb53af2520b139b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E3",
+          "text": "f_{t:t\\in\\{q,k,v\\}}({\\boldsymbol{x}}_{i},i):={\\boldsymbol{W}}_{t:t\\in\\{q,k,v\\}}({\\boldsymbol{x}}_{i}+{\\boldsymbol{p}}_{i}),",
+          "kind": "equation",
+          "char_start": 35,
+          "char_end": 158
+        },
+        {
+          "paragraph_id": "p_8ae5704d67c568f74cf3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p1.2",
+          "text": "where ${\\boldsymbol{p}}_{i}\\in\\mathbb{R}^{d}$ is a d-dimensional vector depending of the position of token ${\\boldsymbol{x}}_{i}$. Previous work Devlin et al. (2019); Lan et al. (2020); Clark et al. (2020); Radford et al. (2019); Radford and Narasimhan (2018) introduced the use of a set of trainable vectors ${\\boldsymbol{p}}_{i}\\in\\{{\\boldsymbol{p}}_{t}\\}_{t=1}^{L}$, where $L$ is the maximum sequence length. The authors of Vaswani et al. (2017) have proposed to generate ${\\boldsymbol{p}}_{i}$ using the sinusoidal function.",
+          "kind": "text",
+          "char_start": 160,
+          "char_end": 688
+        },
+        {
+          "paragraph_id": "p_40eabe10506f61e97da6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E4",
+          "text": "\\begin{cases}{\\boldsymbol{p}}_{i,2t}&=\\sin(k/10000^{2t/d})\\\\ {\\boldsymbol{p}}_{i,2t+1}&=\\cos(k/10000^{2t/d})\\end{cases}",
+          "kind": "equation",
+          "char_start": 690,
+          "char_end": 809
+        },
+        {
+          "paragraph_id": "p_f45c62e76aec2648396a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p1.3",
+          "text": "in which ${\\boldsymbol{p}}_{i,2t}$ is the $2t^{th}$ element of the d-dimensional vector ${\\boldsymbol{p}}_{i}$. In the next section, we show that our proposed RoPE is related to this intuition from the sinusoidal function perspective. However, instead of directly adding the position to the context representation, RoPE proposes to incorporate the relative position information by multiplying with the sinusoidal functions.",
+          "kind": "text",
+          "char_start": 811,
+          "char_end": 1234
+        }
+      ],
+      "text": "A typical choice of Equation 1 is\n\nf_{t:t\\in\\{q,k,v\\}}({\\boldsymbol{x}}_{i},i):={\\boldsymbol{W}}_{t:t\\in\\{q,k,v\\}}({\\boldsymbol{x}}_{i}+{\\boldsymbol{p}}_{i}),\n\nwhere ${\\boldsymbol{p}}_{i}\\in\\mathbb{R}^{d}$ is a d-dimensional vector depending of the position of token ${\\boldsymbol{x}}_{i}$. Previous work Devlin et al. (2019); Lan et al. (2020); Clark et al. (2020); Radford et al. (2019); Radford and Narasimhan (2018) introduced the use of a set of trainable vectors ${\\boldsymbol{p}}_{i}\\in\\{{\\boldsymbol{p}}_{t}\\}_{t=1}^{L}$, where $L$ is the maximum sequence length. The authors of Vaswani et al. (2017) have proposed to generate ${\\boldsymbol{p}}_{i}$ using the sinusoidal function.\n\n\\begin{cases}{\\boldsymbol{p}}_{i,2t}&=\\sin(k/10000^{2t/d})\\\\ {\\boldsymbol{p}}_{i,2t+1}&=\\cos(k/10000^{2t/d})\\end{cases}\n\nin which ${\\boldsymbol{p}}_{i,2t}$ is the $2t^{th}$ element of the d-dimensional vector ${\\boldsymbol{p}}_{i}$. In the next section, we show that our proposed RoPE is related to this intuition from the sinusoidal function perspective. However, instead of directly adding the position to the context representation, RoPE proposes to incorporate the relative position information by multiplying with the sinusoidal functions."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0005",
+      "title": "2.3 Relative position embedding",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS3",
+      "path": [
+        "2 Background and Related Work",
+        "2.3 Relative position embedding"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9d0ce9a5b54eecc457bd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p1.2",
+          "text": "The authors of Shaw et al. (2018) applied different settings of Equation 1 as following:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 88
+        },
+        {
+          "paragraph_id": "p_570fb84de5a80984a631",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E5",
+          "text": "\\displaystyle f_{q}({\\boldsymbol{x}}_{m}):={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m} \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n):={\\boldsymbol{W}}_{k}({\\boldsymbol{x}}_{n}+\\tilde{{\\boldsymbol{p}}}^{k}_{r}) \\displaystyle f_{v}({\\boldsymbol{x}}_{n},n):={\\boldsymbol{W}}_{v}({\\boldsymbol{x}}_{n}+\\tilde{{\\boldsymbol{p}}}^{v}_{r})",
+          "kind": "equation",
+          "char_start": 90,
+          "char_end": 415
+        },
+        {
+          "paragraph_id": "p_a009bcffcf5ef36fadd8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p1.3",
+          "text": "where $\\tilde{{\\boldsymbol{p}}}^{k}_{r},\\tilde{{\\boldsymbol{p}}}^{v}_{r}\\in\\mathbb{R}^{d}$ are trainable relative position embeddings. Note that $r=\\operatorname{clip}(m-n,r_{\\text{min}},r_{\\text{max}})$ represents the relative distance between position $m$ and $n$. They clipped the relative distance with the hypothesis that precise relative position information is not useful beyond a certain distance. Keeping the form of Equation 3, the authors Dai et al. (2019) have proposed to decompose ${\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}$ of Equation 2 as",
+          "kind": "text",
+          "char_start": 417,
+          "char_end": 983
+        },
+        {
+          "paragraph_id": "p_afaeaac1edde3cbf2587",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E6",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{p}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{p}}_{n},",
+          "kind": "equation",
+          "char_start": 985,
+          "char_end": 1458
+        },
+        {
+          "paragraph_id": "p_43c5f845ac74f938475d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p1.4",
+          "text": "the key idea is to replace the absolute position embedding ${\\boldsymbol{p}}_{n}$ with its sinusoid-encoded relative counterpart $\\tilde{{\\boldsymbol{p}}}_{m-n}$, while the absolute position ${\\boldsymbol{p}}_{m}$ in the third and fourth term with two trainable vectors $\\mathbf{u}$ and $\\mathbf{v}$ independent of the query positions. Further, ${\\boldsymbol{W}}_{k}$ is distinguished for the content-based and location-based key vectors ${\\boldsymbol{x}}_{n}$ and ${\\boldsymbol{p}}_{n}$, denoted as ${\\boldsymbol{W}}_{k}$ and $\\widetilde{{\\boldsymbol{W}}}_{k}$, resulting in:",
+          "kind": "text",
+          "char_start": 1460,
+          "char_end": 2036
+        },
+        {
+          "paragraph_id": "p_ed6d7add5443de649c73",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E7",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}\\widetilde{{\\boldsymbol{W}}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}+\\mathbf{u}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+\\mathbf{v}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}\\widetilde{{\\boldsymbol{W}}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}",
+          "kind": "equation",
+          "char_start": 2038,
+          "char_end": 2534
+        },
+        {
+          "paragraph_id": "p_300af037560b1615ef18",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p2.1",
+          "text": "It is noteworthy that the position information in the value term is removed by setting $f_{v}({\\boldsymbol{x}}_{j}):={\\boldsymbol{W}}_{v}{\\boldsymbol{x}}_{j}$. Later work Raffel et al. (2020); He et al. (2020); Ke et al. (2020); Huang et al. (2020) followed these settings by only encoding the relative position information into the attention weights. However, the authors of Raffel et al. (2020) reformed Equation 6 as:",
+          "kind": "text",
+          "char_start": 2536,
+          "char_end": 2956
+        },
+        {
+          "paragraph_id": "p_456fd3ec8a0e1cd34b0e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E8",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+b_{i,j}",
+          "kind": "equation",
+          "char_start": 2958,
+          "char_end": 3123
+        },
+        {
+          "paragraph_id": "p_5131721801933cffa16e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p2.2",
+          "text": "where $b_{i,j}$ is a trainable bias. The authors of Ke et al. (2020) investigated the middle two terms of Equation 6 and found little correlations between absolute positions and words. The authors of Raffel et al. (2020) proposed to model a pair of words or positions using different projection matrices.",
+          "kind": "text",
+          "char_start": 3125,
+          "char_end": 3429
+        },
+        {
+          "paragraph_id": "p_f39125ec4e78a478e50d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E9",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}\\mathbf{U}_{q}^{\\intercal}\\mathbf{U}_{k}{\\boldsymbol{p}}_{n}+b_{i,j}",
+          "kind": "equation",
+          "char_start": 3431,
+          "char_end": 3689
+        },
+        {
+          "paragraph_id": "p_432fdb08904a7b75d469",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p2.3",
+          "text": "The authors of He et al. (2020) argued that the relative positions of two tokens could only be fully modeled using the middle two terms of Equation 6. As a consequence, the absolute position embeddings ${\\boldsymbol{p}}_{m}$ and ${\\boldsymbol{p}}_{n}$ were simply replaced with the relative position embeddings $\\tilde{{\\boldsymbol{p}}}_{m-n}$:",
+          "kind": "text",
+          "char_start": 3691,
+          "char_end": 4035
+        },
+        {
+          "paragraph_id": "p_5ccdab7733df891208a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E10",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}+\\tilde{{\\boldsymbol{p}}}_{m-n}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}",
+          "kind": "equation",
+          "char_start": 4037,
+          "char_end": 4424
+        },
+        {
+          "paragraph_id": "p_4ed4b4c5ec7531d0d1e3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p2.4",
+          "text": "A comparison of the four variants of the relative position embeddings Radford and Narasimhan (2018) has shown that the variant similar to Equation 10 is the most efficient among the other three. Generally speaking, all these approaches attempt to modify Equation 6 based on the decomposition of Equation 3 under the self-attention settings in Equation 2, which was originally proposed in Vaswani et al. (2017). They commonly introduced to directly add the position information to the context representations. Unlikely, our approach aims to derive the relative position encoding from Equation 1 under some constraints. Next, we show that the derived approach is more interpretable by incorporating relative position information with the rotation of context representations.",
+          "kind": "text",
+          "char_start": 4426,
+          "char_end": 5198
+        }
+      ],
+      "text": "The authors of Shaw et al. (2018) applied different settings of Equation 1 as following:\n\n\\displaystyle f_{q}({\\boldsymbol{x}}_{m}):={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m} \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n):={\\boldsymbol{W}}_{k}({\\boldsymbol{x}}_{n}+\\tilde{{\\boldsymbol{p}}}^{k}_{r}) \\displaystyle f_{v}({\\boldsymbol{x}}_{n},n):={\\boldsymbol{W}}_{v}({\\boldsymbol{x}}_{n}+\\tilde{{\\boldsymbol{p}}}^{v}_{r})\n\nwhere $\\tilde{{\\boldsymbol{p}}}^{k}_{r},\\tilde{{\\boldsymbol{p}}}^{v}_{r}\\in\\mathbb{R}^{d}$ are trainable relative position embeddings. Note that $r=\\operatorname{clip}(m-n,r_{\\text{min}},r_{\\text{max}})$ represents the relative distance between position $m$ and $n$. They clipped the relative distance with the hypothesis that precise relative position information is not useful beyond a certain distance. Keeping the form of Equation 3, the authors Dai et al. (2019) have proposed to decompose ${\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}$ of Equation 2 as\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{p}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{p}}_{n},\n\nthe key idea is to replace the absolute position embedding ${\\boldsymbol{p}}_{n}$ with its sinusoid-encoded relative counterpart $\\tilde{{\\boldsymbol{p}}}_{m-n}$, while the absolute position ${\\boldsymbol{p}}_{m}$ in the third and fourth term with two trainable vectors $\\mathbf{u}$ and $\\mathbf{v}$ independent of the query positions. Further, ${\\boldsymbol{W}}_{k}$ is distinguished for the content-based and location-based key vectors ${\\boldsymbol{x}}_{n}$ and ${\\boldsymbol{p}}_{n}$, denoted as ${\\boldsymbol{W}}_{k}$ and $\\widetilde{{\\boldsymbol{W}}}_{k}$, resulting in:\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}\\widetilde{{\\boldsymbol{W}}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}+\\mathbf{u}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+\\mathbf{v}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}\\widetilde{{\\boldsymbol{W}}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}\n\nIt is noteworthy that the position information in the value term is removed by setting $f_{v}({\\boldsymbol{x}}_{j}):={\\boldsymbol{W}}_{v}{\\boldsymbol{x}}_{j}$. Later work Raffel et al. (2020); He et al. (2020); Ke et al. (2020); Huang et al. (2020) followed these settings by only encoding the relative position information into the attention weights. However, the authors of Raffel et al. (2020) reformed Equation 6 as:\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+b_{i,j}\n\nwhere $b_{i,j}$ is a trainable bias. The authors of Ke et al. (2020) investigated the middle two terms of Equation 6 and found little correlations between absolute positions and words. The authors of Raffel et al. (2020) proposed to model a pair of words or positions using different projection matrices.\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{p}}_{m}^{\\intercal}\\mathbf{U}_{q}^{\\intercal}\\mathbf{U}_{k}{\\boldsymbol{p}}_{n}+b_{i,j}\n\nThe authors of He et al. (2020) argued that the relative positions of two tokens could only be fully modeled using the middle two terms of Equation 6. As a consequence, the absolute position embeddings ${\\boldsymbol{p}}_{m}$ and ${\\boldsymbol{p}}_{n}$ were simply replaced with the relative position embeddings $\\tilde{{\\boldsymbol{p}}}_{m-n}$:\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}={\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}+{\\boldsymbol{x}}_{m}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}\\tilde{{\\boldsymbol{p}}}_{m-n}+\\tilde{{\\boldsymbol{p}}}_{m-n}^{\\intercal}{\\boldsymbol{W}}_{q}^{\\intercal}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}\n\nA comparison of the four variants of the relative position embeddings Radford and Narasimhan (2018) has shown that the variant similar to Equation 10 is the most efficient among the other three. Generally speaking, all these approaches attempt to modify Equation 6 based on the decomposition of Equation 3 under the self-attention settings in Equation 2, which was originally proposed in Vaswani et al. (2017). They commonly introduced to directly add the position information to the context representations. Unlikely, our approach aims to derive the relative position encoding from Equation 1 under some constraints. Next, we show that the derived approach is more interpretable by incorporating relative position information with the rotation of context representations."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0006",
+      "title": "3 Proposed approach",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Proposed approach"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_a19cb55358649a35bf48",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "In this section, we discuss the proposed rotary position embedding (RoPE). We first formulate the relative position encoding problem in Section 3.1, we then derive the RoPE in Section 3.2 and investigate its properties in Section 3.3.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 234
+        }
+      ],
+      "text": "In this section, we discuss the proposed rotary position embedding (RoPE). We first formulate the relative position encoding problem in Section 3.1, we then derive the RoPE in Section 3.2 and investigate its properties in Section 3.3."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0007",
+      "title": "3.1 Formulation",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS1",
+      "path": [
+        "3 Proposed approach",
+        "3.1 Formulation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2e49cd9f447f8ea22f1f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p1.1",
+          "text": "Transformer-based language modeling usually leverages the position information of individual tokens through a self-attention mechanism. As can be observed in Equation 2, ${\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}$ typically enables knowledge conveyance between tokens at different positions. In order to incorporate relative position information, we require the inner product of query ${\\boldsymbol{q}}_{m}$ and key ${\\boldsymbol{k}}_{n}$ to be formulated by a function $g$, which takes only the word embeddings ${\\boldsymbol{x}}_{m}$, ${\\boldsymbol{x}}_{n}$, and their relative position $m-n$ as input variables. In other words, we hope that the inner product encodes position information only in the relative form:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 727
+        },
+        {
+          "paragraph_id": "p_bc84bcb9923080514ad0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E11",
+          "text": "\\langle f_{q}({\\boldsymbol{x}}_{m},m),f_{k}({\\boldsymbol{x}}_{n},n)\\rangle=g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},m-n).",
+          "kind": "equation",
+          "char_start": 729,
+          "char_end": 853
+        },
+        {
+          "paragraph_id": "p_68f75403ab34e5f5bd89",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p2.1",
+          "text": "The ultimate goal is to find an equivalent encoding mechanism to solve the functions $f_{q}({\\boldsymbol{x}}_{m},m)$ and $f_{k}({\\boldsymbol{x}}_{n},n)$ to conform the aforementioned relation.",
+          "kind": "text",
+          "char_start": 855,
+          "char_end": 1047
+        }
+      ],
+      "text": "Transformer-based language modeling usually leverages the position information of individual tokens through a self-attention mechanism. As can be observed in Equation 2, ${\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}$ typically enables knowledge conveyance between tokens at different positions. In order to incorporate relative position information, we require the inner product of query ${\\boldsymbol{q}}_{m}$ and key ${\\boldsymbol{k}}_{n}$ to be formulated by a function $g$, which takes only the word embeddings ${\\boldsymbol{x}}_{m}$, ${\\boldsymbol{x}}_{n}$, and their relative position $m-n$ as input variables. In other words, we hope that the inner product encodes position information only in the relative form:\n\n\\langle f_{q}({\\boldsymbol{x}}_{m},m),f_{k}({\\boldsymbol{x}}_{n},n)\\rangle=g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},m-n).\n\nThe ultimate goal is to find an equivalent encoding mechanism to solve the functions $f_{q}({\\boldsymbol{x}}_{m},m)$ and $f_{k}({\\boldsymbol{x}}_{n},n)$ to conform the aforementioned relation."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0008",
+      "title": "3.2 Rotary position embedding",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2",
+      "path": [
+        "3 Proposed approach",
+        "3.2 Rotary position embedding"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0009",
+      "title": "3.2.1 A 2D case",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2.SSS1",
+      "path": [
+        "3 Proposed approach",
+        "3.2 Rotary position embedding",
+        "3.2.1 A 2D case"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6b539d298f8ef992ce82",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS1.p1.1",
+          "text": "We begin with a simple case with a dimension $d=2$. Under these settings, we make use of the geometric property of vectors on a 2D plane and its complex form to prove (refer Section 3.4.1 for more details) that a solution to our formulation Equation 11 is:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 256
+        },
+        {
+          "paragraph_id": "p_3a49732c615f101fdf05",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E12",
+          "text": "\\displaystyle f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle=({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})e^{im\\theta} \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle=({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})e^{in\\theta} \\displaystyle g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},m-n) \\displaystyle=\\operatorname{Re}[({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})^{*}e^{i(m-n)\\theta}]",
+          "kind": "equation",
+          "char_start": 258,
+          "char_end": 684
+        },
+        {
+          "paragraph_id": "p_6757730818432f56acf2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS1.p2.2",
+          "text": "where $\\operatorname{Re}[\\cdot]$ is the real part of a complex number and $({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})^{*}$ represents the conjugate complex number of $({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})$. $\\theta\\in\\mathbb{R}$ is a preset non-zero constant. We can further write $f_{\\{q,k\\}}$ in a multiplication matrix:",
+          "kind": "text",
+          "char_start": 686,
+          "char_end": 1013
+        },
+        {
+          "paragraph_id": "p_220cf5335bdb3d5d26a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E13",
+          "text": "f_{\\{q,k\\}}({\\boldsymbol{x}}_{m},m)=\\left(\\begin{array}[]{cc}\\cos{m\\theta}&-\\sin{m\\theta}\\\\ \\sin{m\\theta}&\\cos{m\\theta}\\end{array}\\right)\\left(\\begin{array}[]{cc}W^{(11)}_{\\{q,k\\}}&W^{(12)}_{\\{q,k\\}}\\\\ W^{(21)}_{\\{q,k\\}}&W^{(22)}_{\\{q,k\\}}\\end{array}\\right)\\left(\\begin{array}[]{cc}x^{(1)}_{m}\\\\ x^{(2)}_{m}\\end{array}\\right)",
+          "kind": "equation",
+          "char_start": 1015,
+          "char_end": 1340
+        },
+        {
+          "paragraph_id": "p_3090a155c24829187ec6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS1.p2.3",
+          "text": "where $(x^{(1)}_{m},x^{(2)}_{m})$ is ${\\boldsymbol{x}}_{m}$ expressed in the 2D coordinates. Similarly, $g$ can be viewed as a matrix and thus enables the solution of formulation in Section 3.1 under the 2D case. Specifically, incorporating the relative position embedding is straightforward: simply rotate the affine-transformed word embedding vector by amount of angle multiples of its position index and thus interprets the intuition behind Rotary Position Embedding.",
+          "kind": "text",
+          "char_start": 1342,
+          "char_end": 1812
+        }
+      ],
+      "text": "We begin with a simple case with a dimension $d=2$. Under these settings, we make use of the geometric property of vectors on a 2D plane and its complex form to prove (refer Section 3.4.1 for more details) that a solution to our formulation Equation 11 is:\n\n\\displaystyle f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle=({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})e^{im\\theta} \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle=({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})e^{in\\theta} \\displaystyle g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},m-n) \\displaystyle=\\operatorname{Re}[({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})^{*}e^{i(m-n)\\theta}]\n\nwhere $\\operatorname{Re}[\\cdot]$ is the real part of a complex number and $({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})^{*}$ represents the conjugate complex number of $({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})$. $\\theta\\in\\mathbb{R}$ is a preset non-zero constant. We can further write $f_{\\{q,k\\}}$ in a multiplication matrix:\n\nf_{\\{q,k\\}}({\\boldsymbol{x}}_{m},m)=\\left(\\begin{array}[]{cc}\\cos{m\\theta}&-\\sin{m\\theta}\\\\ \\sin{m\\theta}&\\cos{m\\theta}\\end{array}\\right)\\left(\\begin{array}[]{cc}W^{(11)}_{\\{q,k\\}}&W^{(12)}_{\\{q,k\\}}\\\\ W^{(21)}_{\\{q,k\\}}&W^{(22)}_{\\{q,k\\}}\\end{array}\\right)\\left(\\begin{array}[]{cc}x^{(1)}_{m}\\\\ x^{(2)}_{m}\\end{array}\\right)\n\nwhere $(x^{(1)}_{m},x^{(2)}_{m})$ is ${\\boldsymbol{x}}_{m}$ expressed in the 2D coordinates. Similarly, $g$ can be viewed as a matrix and thus enables the solution of formulation in Section 3.1 under the 2D case. Specifically, incorporating the relative position embedding is straightforward: simply rotate the affine-transformed word embedding vector by amount of angle multiples of its position index and thus interprets the intuition behind Rotary Position Embedding."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0010",
+      "title": "3.2.2 General form",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2.SSS2",
+      "path": [
+        "3 Proposed approach",
+        "3.2 Rotary position embedding",
+        "3.2.2 General form"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ea85912a684ff356643a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS2.p1.1",
+          "text": "In order to generalize our results in 2D to any ${\\boldsymbol{x}}_{i}\\in\\mathbb{R}^{d}$ where $d$ is even, we divide the d-dimension space into $d/2$ sub-spaces and combine them in the merit of the linearity of the inner product, turning $f_{\\{q,k\\}}$ into:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 257
+        },
+        {
+          "paragraph_id": "p_c66c9d51a486e409d4e0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E14",
+          "text": "f_{\\{q,k\\}}({\\boldsymbol{x}}_{m},m)={\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{\\{q,k\\}}{\\boldsymbol{x}}_{m}",
+          "kind": "equation",
+          "char_start": 259,
+          "char_end": 372
+        },
+        {
+          "paragraph_id": "p_35af4564a6fe582ee566",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS2.p2.1",
+          "text": "where",
+          "kind": "text",
+          "char_start": 374,
+          "char_end": 379
+        },
+        {
+          "paragraph_id": "p_1e4c0c8243f323b0af11",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E15",
+          "text": "{\\boldsymbol{R}}^{d}_{\\Theta,m}=\\begin{pmatrix}\\cos{m\\theta_{1}}&-\\sin{m\\theta_{1}}&0&0&\\cdots&0&0\\\\ \\sin{m\\theta_{1}}&\\cos{m\\theta_{1}}&0&0&\\cdots&0&0\\\\ 0&0&\\cos{m\\theta_{2}}&-\\sin{m\\theta_{2}}&\\cdots&0&0\\\\ 0&0&\\sin{m\\theta_{2}}&\\cos{m\\theta_{2}}&\\cdots&0&0\\\\ \\vdots&\\vdots&\\vdots&\\vdots&\\ddots&\\vdots&\\vdots\\\\ 0&0&0&0&\\cdots&\\cos{m\\theta_{d/2}}&-\\sin{m\\theta_{d/2}}\\\\ 0&0&0&0&\\cdots&\\sin{m\\theta_{d/2}}&\\cos{m\\theta_{d/2}}\\end{pmatrix}",
+          "kind": "equation",
+          "char_start": 381,
+          "char_end": 818
+        },
+        {
+          "paragraph_id": "p_382125e8b84e2caf3fb8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS2.p2.2",
+          "text": "is the rotary matrix with pre-defined parameters $\\Theta=\\{\\theta_{i}=10000^{-2(i-1)/d},i\\in[1,2,...,d/2]\\}$. A graphic illustration of RoPE is shown in Figure 1. Applying our RoPE to self-attention in Equation 2, we obtain:",
+          "kind": "text",
+          "char_start": 820,
+          "char_end": 1044
+        },
+        {
+          "paragraph_id": "p_a6714fdf7a0df7a8abfb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E16",
+          "text": "{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}=({\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})^{\\intercal}({\\boldsymbol{R}}^{d}_{\\Theta,n}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})={\\boldsymbol{x}}^{\\intercal}{\\boldsymbol{W}}_{q}R^{d}_{\\Theta,n-m}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}",
+          "kind": "equation",
+          "char_start": 1046,
+          "char_end": 1364
+        },
+        {
+          "paragraph_id": "p_601b86fae8099112af91",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS2.p2.3",
+          "text": "where ${\\boldsymbol{R}}^{d}_{\\Theta,n-m}=({\\boldsymbol{R}}^{d}_{\\Theta,m})^{\\intercal}{\\boldsymbol{R}}^{d}_{\\Theta,n}$. Note that ${\\boldsymbol{R}}^{d}_{\\Theta}$ is an orthogonal matrix, which ensures stability during the process of encoding position information. In addition, due to the sparsity of $R^{d}_{\\Theta}$, applying matrix multiplication directly as in Equation 16 is not computationally efficient; we provide another realization in theoretical explanation.",
+          "kind": "text",
+          "char_start": 1366,
+          "char_end": 1834
+        },
+        {
+          "paragraph_id": "p_40a0d856b1b625b4d417",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.SSS2.p3.1",
+          "text": "In contrast to the additive nature of position embedding method adopted in the previous works, i.e., Equations 3, 4, 5, 6, 7, 8, 9 and 10, our approach is multiplicative. Moreover, RoPE naturally incorporates relative position information through rotation matrix product instead of altering terms in the expanded formulation of additive position encoding when applied with self-attention.",
+          "kind": "text",
+          "char_start": 1836,
+          "char_end": 2224
+        },
+        {
+          "paragraph_id": "p_f70ea67040f1c8b0dad5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F1",
+          "text": "Figure 1: Implementation of Rotary Position Embedding(RoPE).",
+          "kind": "caption",
+          "char_start": 2226,
+          "char_end": 2286
+        }
+      ],
+      "text": "In order to generalize our results in 2D to any ${\\boldsymbol{x}}_{i}\\in\\mathbb{R}^{d}$ where $d$ is even, we divide the d-dimension space into $d/2$ sub-spaces and combine them in the merit of the linearity of the inner product, turning $f_{\\{q,k\\}}$ into:\n\nf_{\\{q,k\\}}({\\boldsymbol{x}}_{m},m)={\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{\\{q,k\\}}{\\boldsymbol{x}}_{m}\n\nwhere\n\n{\\boldsymbol{R}}^{d}_{\\Theta,m}=\\begin{pmatrix}\\cos{m\\theta_{1}}&-\\sin{m\\theta_{1}}&0&0&\\cdots&0&0\\\\ \\sin{m\\theta_{1}}&\\cos{m\\theta_{1}}&0&0&\\cdots&0&0\\\\ 0&0&\\cos{m\\theta_{2}}&-\\sin{m\\theta_{2}}&\\cdots&0&0\\\\ 0&0&\\sin{m\\theta_{2}}&\\cos{m\\theta_{2}}&\\cdots&0&0\\\\ \\vdots&\\vdots&\\vdots&\\vdots&\\ddots&\\vdots&\\vdots\\\\ 0&0&0&0&\\cdots&\\cos{m\\theta_{d/2}}&-\\sin{m\\theta_{d/2}}\\\\ 0&0&0&0&\\cdots&\\sin{m\\theta_{d/2}}&\\cos{m\\theta_{d/2}}\\end{pmatrix}\n\nis the rotary matrix with pre-defined parameters $\\Theta=\\{\\theta_{i}=10000^{-2(i-1)/d},i\\in[1,2,...,d/2]\\}$. A graphic illustration of RoPE is shown in Figure 1. Applying our RoPE to self-attention in Equation 2, we obtain:\n\n{\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}=({\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})^{\\intercal}({\\boldsymbol{R}}^{d}_{\\Theta,n}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})={\\boldsymbol{x}}^{\\intercal}{\\boldsymbol{W}}_{q}R^{d}_{\\Theta,n-m}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}\n\nwhere ${\\boldsymbol{R}}^{d}_{\\Theta,n-m}=({\\boldsymbol{R}}^{d}_{\\Theta,m})^{\\intercal}{\\boldsymbol{R}}^{d}_{\\Theta,n}$. Note that ${\\boldsymbol{R}}^{d}_{\\Theta}$ is an orthogonal matrix, which ensures stability during the process of encoding position information. In addition, due to the sparsity of $R^{d}_{\\Theta}$, applying matrix multiplication directly as in Equation 16 is not computationally efficient; we provide another realization in theoretical explanation.\n\nIn contrast to the additive nature of position embedding method adopted in the previous works, i.e., Equations 3, 4, 5, 6, 7, 8, 9 and 10, our approach is multiplicative. Moreover, RoPE naturally incorporates relative position information through rotation matrix product instead of altering terms in the expanded formulation of additive position encoding when applied with self-attention.\n\nFigure 1: Implementation of Rotary Position Embedding(RoPE)."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0011",
+      "title": "3.3 Properties of RoPE",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS3",
+      "path": [
+        "3 Proposed approach",
+        "3.3 Properties of RoPE"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_736c651b009daaefb712",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px1",
+          "text": "Long-term decay:",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 16
+        },
+        {
+          "paragraph_id": "p_40e2ebd45bb03f50982a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px1.p1.1",
+          "text": "Following Vaswani et al. (2017), we set $\\theta_{i}=10000^{-2i/d}$. One can prove that this setting provides a long-term decay property (refer to Section 3.4.3 for more details), which means the inner-product will decay when the relative position increase. This property coincides with the intuition that a pair of tokens with a long relative distance should have less connection.",
+          "kind": "text",
+          "char_start": 18,
+          "char_end": 398
+        },
+        {
+          "paragraph_id": "p_4b5998698756967a362d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2",
+          "text": "RoPE with linear attention:",
+          "kind": "heading",
+          "char_start": 400,
+          "char_end": 427
+        },
+        {
+          "paragraph_id": "p_1fc142c53bb7dae6a1ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2.p1.1",
+          "text": "The self-attention can be rewritten in a more general form.",
+          "kind": "text",
+          "char_start": 429,
+          "char_end": 488
+        },
+        {
+          "paragraph_id": "p_8802072b2ac8d259afa2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E17",
+          "text": "\\operatorname{Attention}(\\mathbf{Q},\\mathbf{K},\\mathbf{V})_{m}=\\frac{\\sum_{n=1}^{N}\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n}){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n})}.",
+          "kind": "equation",
+          "char_start": 490,
+          "char_end": 733
+        },
+        {
+          "paragraph_id": "p_3ebf6396672e7e24e86f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2.p2.1",
+          "text": "The original self-attention chooses $\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n})=\\exp({\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}/\\sqrt{d})$. Note that the original self-attention should compute the inner product of query and key for every pair of tokens, which has a quadratic complexity $\\mathbb{O}(N^{2})$. Follow Katharopoulos et al. (2020), the linear attentions reformulate Equation 17 as",
+          "kind": "text",
+          "char_start": 735,
+          "char_end": 1156
+        },
+        {
+          "paragraph_id": "p_b4d73bd2fc02665b43cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E18",
+          "text": "\\operatorname{Attention}({\\boldsymbol{Q}},{\\boldsymbol{K}},{\\boldsymbol{V}})_{m}=\\frac{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n}){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n})},",
+          "kind": "equation",
+          "char_start": 1158,
+          "char_end": 1431
+        },
+        {
+          "paragraph_id": "p_6c903d650e4f288cd7de",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2.p3.1",
+          "text": "where $\\phi(\\cdot),\\varphi(\\cdot)$ are usually non-negative functions. The authors of Katharopoulos et al. (2020) have proposed $\\phi(x)=\\varphi(x)=\\operatorname{elu}(x)+1$ and first computed the multiplication between keys and values using the associative property of matrix multiplication. A softmax function is used in Shen et al. (2021) to normalize queries and keys separately before the inner product, which is equivalent to $\\phi({\\boldsymbol{q}}_{i})=\\operatorname{softmax}({\\boldsymbol{q}}_{i})$ and $\\phi({\\boldsymbol{k}}_{j})=\\exp({\\boldsymbol{k}}_{j})$. For more details about linear attention, we encourage readers to refer to original papers. In this section, we focus on discussing incorporating RoPE with Equation 18. Since RoPE injects position information by rotation, which keeps the norm of hidden representations unchanged, we can combine RoPE with linear attention by multiplying the rotation matrix with the outputs of the non-negative functions.",
+          "kind": "text",
+          "char_start": 1433,
+          "char_end": 2402
+        },
+        {
+          "paragraph_id": "p_f33d17faaafcc6b749c9",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E19",
+          "text": "\\operatorname{Attention}(\\mathbf{Q},\\mathbf{K},\\mathbf{V})_{m}=\\frac{\\sum_{n=1}^{N}\\big({\\boldsymbol{R}}^{d}_{\\Theta,m}\\phi({\\boldsymbol{q}}_{m})\\big)^{\\intercal}\\big({\\boldsymbol{R}}^{d}_{\\Theta,n}\\varphi({\\boldsymbol{k}}_{n})\\big){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n})}.",
+          "kind": "equation",
+          "char_start": 2404,
+          "char_end": 2741
+        },
+        {
+          "paragraph_id": "p_dbcb15837443db69e957",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2.p5.1",
+          "text": "It is noteworthy that we keep the denominator unchanged to avoid the risk of dividing zero, and the summation in the numerator could contain negative terms. Although the weights for each value ${\\boldsymbol{v}}_{i}$ in Equation 19 are not strictly probabilistic normalized, we kindly argue that the computation can still model the importance of values.",
+          "kind": "text",
+          "char_start": 2743,
+          "char_end": 3095
+        }
+      ],
+      "text": "Long-term decay:\n\nFollowing Vaswani et al. (2017), we set $\\theta_{i}=10000^{-2i/d}$. One can prove that this setting provides a long-term decay property (refer to Section 3.4.3 for more details), which means the inner-product will decay when the relative position increase. This property coincides with the intuition that a pair of tokens with a long relative distance should have less connection.\n\nRoPE with linear attention:\n\nThe self-attention can be rewritten in a more general form.\n\n\\operatorname{Attention}(\\mathbf{Q},\\mathbf{K},\\mathbf{V})_{m}=\\frac{\\sum_{n=1}^{N}\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n}){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n})}.\n\nThe original self-attention chooses $\\operatorname{sim}({\\boldsymbol{q}}_{m},{\\boldsymbol{k}}_{n})=\\exp({\\boldsymbol{q}}_{m}^{\\intercal}{\\boldsymbol{k}}_{n}/\\sqrt{d})$. Note that the original self-attention should compute the inner product of query and key for every pair of tokens, which has a quadratic complexity $\\mathbb{O}(N^{2})$. Follow Katharopoulos et al. (2020), the linear attentions reformulate Equation 17 as\n\n\\operatorname{Attention}({\\boldsymbol{Q}},{\\boldsymbol{K}},{\\boldsymbol{V}})_{m}=\\frac{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n}){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n})},\n\nwhere $\\phi(\\cdot),\\varphi(\\cdot)$ are usually non-negative functions. The authors of Katharopoulos et al. (2020) have proposed $\\phi(x)=\\varphi(x)=\\operatorname{elu}(x)+1$ and first computed the multiplication between keys and values using the associative property of matrix multiplication. A softmax function is used in Shen et al. (2021) to normalize queries and keys separately before the inner product, which is equivalent to $\\phi({\\boldsymbol{q}}_{i})=\\operatorname{softmax}({\\boldsymbol{q}}_{i})$ and $\\phi({\\boldsymbol{k}}_{j})=\\exp({\\boldsymbol{k}}_{j})$. For more details about linear attention, we encourage readers to refer to original papers. In this section, we focus on discussing incorporating RoPE with Equation 18. Since RoPE injects position information by rotation, which keeps the norm of hidden representations unchanged, we can combine RoPE with linear attention by multiplying the rotation matrix with the outputs of the non-negative functions.\n\n\\operatorname{Attention}(\\mathbf{Q},\\mathbf{K},\\mathbf{V})_{m}=\\frac{\\sum_{n=1}^{N}\\big({\\boldsymbol{R}}^{d}_{\\Theta,m}\\phi({\\boldsymbol{q}}_{m})\\big)^{\\intercal}\\big({\\boldsymbol{R}}^{d}_{\\Theta,n}\\varphi({\\boldsymbol{k}}_{n})\\big){\\boldsymbol{v}}_{n}}{\\sum_{n=1}^{N}\\phi({\\boldsymbol{q}}_{m})^{\\intercal}\\varphi({\\boldsymbol{k}}_{n})}.\n\nIt is noteworthy that we keep the denominator unchanged to avoid the risk of dividing zero, and the summation in the numerator could contain negative terms. Although the weights for each value ${\\boldsymbol{v}}_{i}$ in Equation 19 are not strictly probabilistic normalized, we kindly argue that the computation can still model the importance of values."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0012",
+      "title": "3.4 Theoretical Explanation",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4",
+      "path": [
+        "3 Proposed approach",
+        "3.4 Theoretical Explanation"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0013",
+      "title": "3.4.1 Derivation of RoPE under 2D",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4.SSS1",
+      "path": [
+        "3 Proposed approach",
+        "3.4 Theoretical Explanation",
+        "3.4.1 Derivation of RoPE under 2D"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9e461ea323cc771f0f11",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p1.3",
+          "text": "Under the case of $d=2$, we consider two-word embedding vectors ${\\boldsymbol{x}}_{q}$, ${\\boldsymbol{x}}_{k}$ corresponds to query and key and their position $m$ and $n$, respectively. According to eq. 1, their position-encoded counterparts are:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 246
+        },
+        {
+          "paragraph_id": "p_e56ec2ced88531a1e05e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E20",
+          "text": "\\displaystyle{\\boldsymbol{q}}_{m} \\displaystyle=f_{q}({\\boldsymbol{x}}_{q},m), \\displaystyle{\\boldsymbol{k}}_{n} \\displaystyle=f_{k}({\\boldsymbol{x}}_{k},n),",
+          "kind": "equation",
+          "char_start": 248,
+          "char_end": 405
+        },
+        {
+          "paragraph_id": "p_3306a202a22221e67493",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p1.4",
+          "text": "where the subscripts of ${\\boldsymbol{q}}_{m}$ and ${\\boldsymbol{k}}_{n}$ indicate the encoded positions information. Assume that there exists a function $g$ that defines the inner product between vectors produced by $f_{\\{q,k\\}}$:",
+          "kind": "text",
+          "char_start": 407,
+          "char_end": 638
+        },
+        {
+          "paragraph_id": "p_1dc4a2622cba840ddb84",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E21",
+          "text": "{\\boldsymbol{q}}^{\\intercal}_{m}{\\boldsymbol{k}}_{n}=\\langle f_{q}({\\boldsymbol{x}}_{m},m),f_{k}({\\boldsymbol{x}}_{n},n)\\rangle=g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},n-m),",
+          "kind": "equation",
+          "char_start": 640,
+          "char_end": 817
+        },
+        {
+          "paragraph_id": "p_c6b69e1b6b0dd7f2f603",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p1.5",
+          "text": "we further require below initial condition to be satisfied:",
+          "kind": "text",
+          "char_start": 819,
+          "char_end": 878
+        },
+        {
+          "paragraph_id": "p_bbbdd135a219729a1829",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E22",
+          "text": "\\displaystyle{\\boldsymbol{q}} \\displaystyle=f_{q}({\\boldsymbol{x}}_{q},0), \\displaystyle{\\boldsymbol{k}} \\displaystyle=f_{k}({\\boldsymbol{x}}_{k},0),",
+          "kind": "equation",
+          "char_start": 880,
+          "char_end": 1029
+        },
+        {
+          "paragraph_id": "p_6510ad9a070b9a1622d0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p1.6",
+          "text": "which can be read as the vectors with empty position information encoded. Given these settings, we attempt to find a solution of $f_{q}$, $f_{k}$. First, we take advantage of the geometric meaning of vector in 2D and its complex counter part, decompose functions in Equations 20 and 21 into:",
+          "kind": "text",
+          "char_start": 1031,
+          "char_end": 1322
+        },
+        {
+          "paragraph_id": "p_04f85395ad78395b3765",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E23",
+          "text": "\\displaystyle f_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=R_{q}({\\boldsymbol{x}}_{q},m)e^{i\\Theta_{q}({\\boldsymbol{x}}_{q},m)}, \\displaystyle f_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{k}({\\boldsymbol{x}}_{k},n)e^{i\\Theta_{k}({\\boldsymbol{x}}_{k},n)}, \\displaystyle g({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m)e^{i\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m)},",
+          "kind": "equation",
+          "char_start": 1324,
+          "char_end": 1772
+        },
+        {
+          "paragraph_id": "p_b203e1f91f880ed71ebe",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p1.7",
+          "text": "where $R_{f}$, $R_{g}$ and $\\Theta_{f}$, $\\Theta_{g}$ are the radical and angular components for $f_{\\{q,k\\}}$ and $g$, respectively. Plug them into Equation 21, we get the relation:",
+          "kind": "text",
+          "char_start": 1774,
+          "char_end": 1956
+        },
+        {
+          "paragraph_id": "p_8b93afef7386d7329300",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E24",
+          "text": "\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m)R_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m), \\displaystyle\\Theta_{k}({\\boldsymbol{x}}_{k},n)-\\Theta_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m),",
+          "kind": "equation",
+          "char_start": 1958,
+          "char_end": 2254
+        },
+        {
+          "paragraph_id": "p_bac96d9f96bf28f6e292",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p2.3",
+          "text": "with the corresponding initial condition as:",
+          "kind": "text",
+          "char_start": 2256,
+          "char_end": 2300
+        },
+        {
+          "paragraph_id": "p_4a4b660323cc423cf85c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E25",
+          "text": "\\displaystyle{\\boldsymbol{q}} \\displaystyle=\\|{\\boldsymbol{q}}\\|e^{i\\theta_{q}}=R_{q}({\\boldsymbol{x}}_{q},0)e^{i\\Theta_{q}({\\boldsymbol{x}}_{q},0)}, \\displaystyle{\\boldsymbol{k}} \\displaystyle=\\|{\\boldsymbol{k}}\\|e^{i\\theta_{k}}=R_{k}({\\boldsymbol{x}}_{k},0)e^{i\\Theta_{k}({\\boldsymbol{x}}_{k},0)},",
+          "kind": "equation",
+          "char_start": 2302,
+          "char_end": 2601
+        },
+        {
+          "paragraph_id": "p_86c68544cf637b89e03a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p2.4",
+          "text": "where $\\|{\\boldsymbol{q}}\\|$, $\\|{\\boldsymbol{k}}\\|$ and $\\theta_{q}$, $\\theta_{k}$ are the radial and angular part of ${\\boldsymbol{q}}$ and ${\\boldsymbol{k}}$ on the 2D plane.",
+          "kind": "text",
+          "char_start": 2603,
+          "char_end": 2780
+        },
+        {
+          "paragraph_id": "p_b14cea2033241f8df15a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.2",
+          "text": "Next, we set $m=n$ in Equation 24 and take into account initial conditions in Equation 25:",
+          "kind": "text",
+          "char_start": 2782,
+          "char_end": 2872
+        },
+        {
+          "paragraph_id": "p_b9089b385cabca766da8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E26",
+          "text": "\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m)R_{k}({\\boldsymbol{x}}_{k},m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=R_{q}({\\boldsymbol{x}}_{q},0)R_{k}({\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{q}}\\|\\|{\\boldsymbol{k}}\\|, \\displaystyle\\Theta_{k}({\\boldsymbol{x}}_{k},m)-\\Theta_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=\\Theta_{k}({\\boldsymbol{x}}_{k},0)-\\Theta_{q}({\\boldsymbol{x}}_{q},0)=\\theta_{k}-\\theta_{q}.",
+          "kind": "equation",
+          "char_start": 2874,
+          "char_end": 3358
+        },
+        {
+          "paragraph_id": "p_3edaee145e4c3dd25756",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.3",
+          "text": "On one hand, from, a straightforward solution of $R_{f}$ could be formed from Equation 26a :",
+          "kind": "text",
+          "char_start": 3360,
+          "char_end": 3452
+        },
+        {
+          "paragraph_id": "p_bbcf24403a06c147f60b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E27",
+          "text": "\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=R_{q}({\\boldsymbol{x}}_{q},0)=\\|{\\boldsymbol{q}}\\| \\displaystyle R_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{k}({\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{k}}\\| \\displaystyle R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{q}}\\|\\|{\\boldsymbol{k}}\\|",
+          "kind": "equation",
+          "char_start": 3454,
+          "char_end": 3844
+        },
+        {
+          "paragraph_id": "p_78541c86ff721fa9b915",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.4",
+          "text": "which interprets the radial functions $R_{q}$, $R_{k}$ and $R_{g}$ are independent from the position information. On the other hand, as can be noticed in Equation 26b, $\\Theta_{q}({\\boldsymbol{x}}_{q},m)-\\theta_{q}=\\Theta_{k}({\\boldsymbol{x}}_{k},m)-\\theta_{k}$ indicates that the angular functions does not dependent on query and key, we set them to $\\Theta_{f}:=\\Theta_{q}=\\Theta_{k}$ and term $\\Theta_{f}({\\boldsymbol{x}}_{\\{q,k\\}},m)-\\theta_{\\{q,k\\}}$ is a function of position $m$ and is independent of word embedding ${\\boldsymbol{x}}_{\\{q,k\\}}$, we denote it as $\\phi(m)$, yielding:",
+          "kind": "text",
+          "char_start": 3846,
+          "char_end": 4435
+        },
+        {
+          "paragraph_id": "p_4ef35d452074374eb191",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E28",
+          "text": "\\Theta_{f}({\\boldsymbol{x}}_{\\{q,k\\}},m)=\\phi(m)+\\theta_{\\{q,k\\}},",
+          "kind": "equation",
+          "char_start": 4437,
+          "char_end": 4503
+        },
+        {
+          "paragraph_id": "p_0d894ece9e48041ef17c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.5",
+          "text": "Further, by plugging $n=m+1$ to Equation 24 and consider the above equation, we can get:",
+          "kind": "text",
+          "char_start": 4505,
+          "char_end": 4593
+        },
+        {
+          "paragraph_id": "p_e40515a3e2c15aa47e38",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E29",
+          "text": "\\phi(m+1)-\\phi(m)=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},1)+\\theta_{q}-\\theta_{k},",
+          "kind": "equation",
+          "char_start": 4595,
+          "char_end": 4691
+        },
+        {
+          "paragraph_id": "p_225f31fc350d1048a872",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.6",
+          "text": "Since RHS is a constant irrelevant to $m$, $\\phi(m)$ with continuous integer inputs produce an arithmetic progression:",
+          "kind": "text",
+          "char_start": 4693,
+          "char_end": 4811
+        },
+        {
+          "paragraph_id": "p_203f7cfb1493b8bfc341",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E30",
+          "text": "\\phi(m)=m\\theta+\\gamma,",
+          "kind": "equation",
+          "char_start": 4813,
+          "char_end": 4836
+        },
+        {
+          "paragraph_id": "p_64a68e5b12c385f1233f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p3.7",
+          "text": "where $\\theta,\\gamma\\in\\mathbb{R}$ are constants and $\\theta$ is non-zero. To summarize our solutions from Equations 27, 28, 29 and 30:",
+          "kind": "text",
+          "char_start": 4838,
+          "char_end": 4973
+        },
+        {
+          "paragraph_id": "p_0eaf6a17a797f226ec8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E31",
+          "text": "\\displaystyle f_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\|{\\boldsymbol{q}}\\|e^{i\\theta_{q}+m\\theta+\\gamma}={\\boldsymbol{q}}e^{i(m\\theta+\\gamma)}, \\displaystyle f_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=\\|{\\boldsymbol{k}}\\|e^{i\\theta_{k}+n\\theta+\\gamma}={\\boldsymbol{k}}e^{i(n\\theta+\\gamma)}.",
+          "kind": "equation",
+          "char_start": 4975,
+          "char_end": 5270
+        },
+        {
+          "paragraph_id": "p_d1876c58eca571d49933",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p5.1",
+          "text": "Note that we do not apply any constrains to $f_{q}$ and $f_{k}$ of Equation 22, thus $f_{q}({\\boldsymbol{x}}_{m},0)$ and $f_{k}({\\boldsymbol{x}}_{n},0)$ are left to choose freely. To make our results comparable to Equation 3, we define:",
+          "kind": "text",
+          "char_start": 5272,
+          "char_end": 5508
+        },
+        {
+          "paragraph_id": "p_d97df9a874dd0ab0ae0e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E32",
+          "text": "\\displaystyle{\\boldsymbol{q}}=f_{q}({\\boldsymbol{x}}_{m},0) \\displaystyle={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{n}, \\displaystyle{\\boldsymbol{k}}=f_{k}({\\boldsymbol{x}}_{n},0) \\displaystyle={\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}.",
+          "kind": "equation",
+          "char_start": 5510,
+          "char_end": 5741
+        },
+        {
+          "paragraph_id": "p_a6f142ea8ed312484270",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS1.p5.2",
+          "text": "Then, we simply set $\\gamma=0$ in Equation 31 of the final solution:",
+          "kind": "text",
+          "char_start": 5743,
+          "char_end": 5811
+        },
+        {
+          "paragraph_id": "p_cda8b09286815016bd40",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E33",
+          "text": "\\displaystyle f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle=({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})e^{im\\theta}, \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle=({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})e^{in\\theta}.",
+          "kind": "equation",
+          "char_start": 5813,
+          "char_end": 6040
+        }
+      ],
+      "text": "Under the case of $d=2$, we consider two-word embedding vectors ${\\boldsymbol{x}}_{q}$, ${\\boldsymbol{x}}_{k}$ corresponds to query and key and their position $m$ and $n$, respectively. According to eq. 1, their position-encoded counterparts are:\n\n\\displaystyle{\\boldsymbol{q}}_{m} \\displaystyle=f_{q}({\\boldsymbol{x}}_{q},m), \\displaystyle{\\boldsymbol{k}}_{n} \\displaystyle=f_{k}({\\boldsymbol{x}}_{k},n),\n\nwhere the subscripts of ${\\boldsymbol{q}}_{m}$ and ${\\boldsymbol{k}}_{n}$ indicate the encoded positions information. Assume that there exists a function $g$ that defines the inner product between vectors produced by $f_{\\{q,k\\}}$:\n\n{\\boldsymbol{q}}^{\\intercal}_{m}{\\boldsymbol{k}}_{n}=\\langle f_{q}({\\boldsymbol{x}}_{m},m),f_{k}({\\boldsymbol{x}}_{n},n)\\rangle=g({\\boldsymbol{x}}_{m},{\\boldsymbol{x}}_{n},n-m),\n\nwe further require below initial condition to be satisfied:\n\n\\displaystyle{\\boldsymbol{q}} \\displaystyle=f_{q}({\\boldsymbol{x}}_{q},0), \\displaystyle{\\boldsymbol{k}} \\displaystyle=f_{k}({\\boldsymbol{x}}_{k},0),\n\nwhich can be read as the vectors with empty position information encoded. Given these settings, we attempt to find a solution of $f_{q}$, $f_{k}$. First, we take advantage of the geometric meaning of vector in 2D and its complex counter part, decompose functions in Equations 20 and 21 into:\n\n\\displaystyle f_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=R_{q}({\\boldsymbol{x}}_{q},m)e^{i\\Theta_{q}({\\boldsymbol{x}}_{q},m)}, \\displaystyle f_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{k}({\\boldsymbol{x}}_{k},n)e^{i\\Theta_{k}({\\boldsymbol{x}}_{k},n)}, \\displaystyle g({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m)e^{i\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m)},\n\nwhere $R_{f}$, $R_{g}$ and $\\Theta_{f}$, $\\Theta_{g}$ are the radical and angular components for $f_{\\{q,k\\}}$ and $g$, respectively. Plug them into Equation 21, we get the relation:\n\n\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m)R_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m), \\displaystyle\\Theta_{k}({\\boldsymbol{x}}_{k},n)-\\Theta_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m),\n\nwith the corresponding initial condition as:\n\n\\displaystyle{\\boldsymbol{q}} \\displaystyle=\\|{\\boldsymbol{q}}\\|e^{i\\theta_{q}}=R_{q}({\\boldsymbol{x}}_{q},0)e^{i\\Theta_{q}({\\boldsymbol{x}}_{q},0)}, \\displaystyle{\\boldsymbol{k}} \\displaystyle=\\|{\\boldsymbol{k}}\\|e^{i\\theta_{k}}=R_{k}({\\boldsymbol{x}}_{k},0)e^{i\\Theta_{k}({\\boldsymbol{x}}_{k},0)},\n\nwhere $\\|{\\boldsymbol{q}}\\|$, $\\|{\\boldsymbol{k}}\\|$ and $\\theta_{q}$, $\\theta_{k}$ are the radial and angular part of ${\\boldsymbol{q}}$ and ${\\boldsymbol{k}}$ on the 2D plane.\n\nNext, we set $m=n$ in Equation 24 and take into account initial conditions in Equation 25:\n\n\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m)R_{k}({\\boldsymbol{x}}_{k},m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=R_{q}({\\boldsymbol{x}}_{q},0)R_{k}({\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{q}}\\|\\|{\\boldsymbol{k}}\\|, \\displaystyle\\Theta_{k}({\\boldsymbol{x}}_{k},m)-\\Theta_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=\\Theta_{k}({\\boldsymbol{x}}_{k},0)-\\Theta_{q}({\\boldsymbol{x}}_{q},0)=\\theta_{k}-\\theta_{q}.\n\nOn one hand, from, a straightforward solution of $R_{f}$ could be formed from Equation 26a :\n\n\\displaystyle R_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=R_{q}({\\boldsymbol{x}}_{q},0)=\\|{\\boldsymbol{q}}\\| \\displaystyle R_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=R_{k}({\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{k}}\\| \\displaystyle R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},n-m) \\displaystyle=R_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},0)=\\|{\\boldsymbol{q}}\\|\\|{\\boldsymbol{k}}\\|\n\nwhich interprets the radial functions $R_{q}$, $R_{k}$ and $R_{g}$ are independent from the position information. On the other hand, as can be noticed in Equation 26b, $\\Theta_{q}({\\boldsymbol{x}}_{q},m)-\\theta_{q}=\\Theta_{k}({\\boldsymbol{x}}_{k},m)-\\theta_{k}$ indicates that the angular functions does not dependent on query and key, we set them to $\\Theta_{f}:=\\Theta_{q}=\\Theta_{k}$ and term $\\Theta_{f}({\\boldsymbol{x}}_{\\{q,k\\}},m)-\\theta_{\\{q,k\\}}$ is a function of position $m$ and is independent of word embedding ${\\boldsymbol{x}}_{\\{q,k\\}}$, we denote it as $\\phi(m)$, yielding:\n\n\\Theta_{f}({\\boldsymbol{x}}_{\\{q,k\\}},m)=\\phi(m)+\\theta_{\\{q,k\\}},\n\nFurther, by plugging $n=m+1$ to Equation 24 and consider the above equation, we can get:\n\n\\phi(m+1)-\\phi(m)=\\Theta_{g}({\\boldsymbol{x}}_{q},{\\boldsymbol{x}}_{k},1)+\\theta_{q}-\\theta_{k},\n\nSince RHS is a constant irrelevant to $m$, $\\phi(m)$ with continuous integer inputs produce an arithmetic progression:\n\n\\phi(m)=m\\theta+\\gamma,\n\nwhere $\\theta,\\gamma\\in\\mathbb{R}$ are constants and $\\theta$ is non-zero. To summarize our solutions from Equations 27, 28, 29 and 30:\n\n\\displaystyle f_{q}({\\boldsymbol{x}}_{q},m) \\displaystyle=\\|{\\boldsymbol{q}}\\|e^{i\\theta_{q}+m\\theta+\\gamma}={\\boldsymbol{q}}e^{i(m\\theta+\\gamma)}, \\displaystyle f_{k}({\\boldsymbol{x}}_{k},n) \\displaystyle=\\|{\\boldsymbol{k}}\\|e^{i\\theta_{k}+n\\theta+\\gamma}={\\boldsymbol{k}}e^{i(n\\theta+\\gamma)}.\n\nNote that we do not apply any constrains to $f_{q}$ and $f_{k}$ of Equation 22, thus $f_{q}({\\boldsymbol{x}}_{m},0)$ and $f_{k}({\\boldsymbol{x}}_{n},0)$ are left to choose freely. To make our results comparable to Equation 3, we define:\n\n\\displaystyle{\\boldsymbol{q}}=f_{q}({\\boldsymbol{x}}_{m},0) \\displaystyle={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{n}, \\displaystyle{\\boldsymbol{k}}=f_{k}({\\boldsymbol{x}}_{n},0) \\displaystyle={\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}.\n\nThen, we simply set $\\gamma=0$ in Equation 31 of the final solution:\n\n\\displaystyle f_{q}({\\boldsymbol{x}}_{m},m) \\displaystyle=({\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})e^{im\\theta}, \\displaystyle f_{k}({\\boldsymbol{x}}_{n},n) \\displaystyle=({\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})e^{in\\theta}."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0014",
+      "title": "3.4.2 Computational efficient realization of rotary matrix multiplication",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4.SSS2",
+      "path": [
+        "3 Proposed approach",
+        "3.4 Theoretical Explanation",
+        "3.4.2 Computational efficient realization of rotary matrix multiplication"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6153e37c8e433ef3154a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS2.p1.1",
+          "text": "Taking the advantage of the sparsity of ${\\boldsymbol{R}}^{d}_{\\Theta,m}$ in Equation 15, a more computational efficient realization of a multiplication of $R^{d}_{\\Theta}$ and ${\\boldsymbol{x}}\\in\\mathbb{R}^{d}$ is:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 216
+        },
+        {
+          "paragraph_id": "p_98f6f7aebfeab38e71e7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E34",
+          "text": "{\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{x}}=\\begin{pmatrix}x_{1}\\\\ x_{2}\\\\ x_{3}\\\\ x_{4}\\\\ \\vdots\\\\ x_{d-1}\\\\ x_{d}\\end{pmatrix}\\otimes\\begin{pmatrix}\\cos{m\\theta_{1}}\\\\ \\cos{m\\theta_{1}}\\\\ \\cos{m\\theta_{2}}\\\\ \\cos{m\\theta_{2}}\\\\ \\vdots\\\\ \\cos{m\\theta_{d/2}}\\\\ \\cos{m\\theta_{d/2}}\\end{pmatrix}+\\begin{pmatrix}-x_{2}\\\\ x_{1}\\\\ -x_{4}\\\\ x_{3}\\\\ \\vdots\\\\ -x_{d}\\\\ x_{d-1}\\end{pmatrix}\\otimes\\begin{pmatrix}\\sin{m\\theta_{1}}\\\\ \\sin{m\\theta_{1}}\\\\ \\sin{m\\theta_{2}}\\\\ \\sin{m\\theta_{2}}\\\\ \\vdots\\\\ \\sin{m\\theta_{d/2}}\\\\ \\sin{m\\theta_{d/2}}\\end{pmatrix}",
+          "kind": "equation",
+          "char_start": 218,
+          "char_end": 768
+        }
+      ],
+      "text": "Taking the advantage of the sparsity of ${\\boldsymbol{R}}^{d}_{\\Theta,m}$ in Equation 15, a more computational efficient realization of a multiplication of $R^{d}_{\\Theta}$ and ${\\boldsymbol{x}}\\in\\mathbb{R}^{d}$ is:\n\n{\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{x}}=\\begin{pmatrix}x_{1}\\\\ x_{2}\\\\ x_{3}\\\\ x_{4}\\\\ \\vdots\\\\ x_{d-1}\\\\ x_{d}\\end{pmatrix}\\otimes\\begin{pmatrix}\\cos{m\\theta_{1}}\\\\ \\cos{m\\theta_{1}}\\\\ \\cos{m\\theta_{2}}\\\\ \\cos{m\\theta_{2}}\\\\ \\vdots\\\\ \\cos{m\\theta_{d/2}}\\\\ \\cos{m\\theta_{d/2}}\\end{pmatrix}+\\begin{pmatrix}-x_{2}\\\\ x_{1}\\\\ -x_{4}\\\\ x_{3}\\\\ \\vdots\\\\ -x_{d}\\\\ x_{d-1}\\end{pmatrix}\\otimes\\begin{pmatrix}\\sin{m\\theta_{1}}\\\\ \\sin{m\\theta_{1}}\\\\ \\sin{m\\theta_{2}}\\\\ \\sin{m\\theta_{2}}\\\\ \\vdots\\\\ \\sin{m\\theta_{d/2}}\\\\ \\sin{m\\theta_{d/2}}\\end{pmatrix}"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0015",
+      "title": "3.4.3 Long-term decay of RoPE",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4.SSS3",
+      "path": [
+        "3 Proposed approach",
+        "3.4 Theoretical Explanation",
+        "3.4.3 Long-term decay of RoPE"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_08a2072a276068e9a236",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS3.p1.1",
+          "text": "We can group entries of vectors ${\\boldsymbol{q}}={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m}$ and ${\\boldsymbol{k}}={\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}$ in pairs, and the inner product of RoPE in Equation 16 can be written as a complex number multiplication.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 261
+        },
+        {
+          "paragraph_id": "p_a3fb15a9f58b2cbb89d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E35",
+          "text": "({\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})^{\\intercal}({\\boldsymbol{R}}^{d}_{\\Theta,n}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})=\\operatorname{Re}\\bigg[\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}\\bigg]",
+          "kind": "equation",
+          "char_start": 263,
+          "char_end": 549
+        },
+        {
+          "paragraph_id": "p_fb198ec9eb5fa3b1c448",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS3.p2.1",
+          "text": "where ${\\boldsymbol{q}}_{[2i:2i+1]}$ represents the $2i^{th}$ to $(2i+1)^{th}$ entries of ${\\boldsymbol{q}}$. Denote $h_{i}={\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}$ and $S_{j}=\\sum_{i=0}^{j-1}e^{i(m-n)\\theta_{i}}$, and let $h_{d/2}=0$ and $S_{0}=0$, we can rewrite the summation using Abel transformation",
+          "kind": "text",
+          "char_start": 551,
+          "char_end": 876
+        },
+        {
+          "paragraph_id": "p_9dc5ccba202ff900b4d8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E36",
+          "text": "\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}=\\sum_{i=0}^{d/2-1}h_{i}(S_{i+1}-S_{i})=-\\sum_{i=0}^{d/2-1}S_{i+1}(h_{i+1}-h_{i}).",
+          "kind": "equation",
+          "char_start": 878,
+          "char_end": 1058
+        },
+        {
+          "paragraph_id": "p_edafa770159fa8438859",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS3.p4.1",
+          "text": "Thus,",
+          "kind": "text",
+          "char_start": 1060,
+          "char_end": 1065
+        },
+        {
+          "paragraph_id": "p_d0109c30e28582b61a7b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E37",
+          "text": "\\displaystyle\\bigg|\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}\\bigg| \\displaystyle=\\bigg|\\sum_{i=0}^{d/2-1}S_{i+1}(h_{i+1}-h_{i})\\bigg| \\displaystyle\\leq\\sum_{i=0}^{d/2-1}|S_{i+1}||(h_{i+1}-{h_{i}})| \\displaystyle\\leq\\big(\\max_{i}|h_{i+1}-h_{i}|\\big)\\sum_{i=0}^{d/2-1}|S_{i+1}|",
+          "kind": "equation",
+          "char_start": 1067,
+          "char_end": 1399
+        },
+        {
+          "paragraph_id": "p_efb6ae5df492015eda44",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.SSS3.p5.1",
+          "text": "Note that the value of $\\frac{1}{d/2}\\sum_{i=1}^{d/2}|S_{i}|$ decay with the relative distance $m-n$ increases by setting $\\theta_{i}=10000^{-2i/d}$, as shown in Figure 2.",
+          "kind": "text",
+          "char_start": 1401,
+          "char_end": 1572
+        },
+        {
+          "paragraph_id": "p_31db278e7f94444686bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F2",
+          "text": "Figure 2: Long-term decay of RoPE.",
+          "kind": "caption",
+          "char_start": 1574,
+          "char_end": 1608
+        }
+      ],
+      "text": "We can group entries of vectors ${\\boldsymbol{q}}={\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m}$ and ${\\boldsymbol{k}}={\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n}$ in pairs, and the inner product of RoPE in Equation 16 can be written as a complex number multiplication.\n\n({\\boldsymbol{R}}^{d}_{\\Theta,m}{\\boldsymbol{W}}_{q}{\\boldsymbol{x}}_{m})^{\\intercal}({\\boldsymbol{R}}^{d}_{\\Theta,n}{\\boldsymbol{W}}_{k}{\\boldsymbol{x}}_{n})=\\operatorname{Re}\\bigg[\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}\\bigg]\n\nwhere ${\\boldsymbol{q}}_{[2i:2i+1]}$ represents the $2i^{th}$ to $(2i+1)^{th}$ entries of ${\\boldsymbol{q}}$. Denote $h_{i}={\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}$ and $S_{j}=\\sum_{i=0}^{j-1}e^{i(m-n)\\theta_{i}}$, and let $h_{d/2}=0$ and $S_{0}=0$, we can rewrite the summation using Abel transformation\n\n\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}=\\sum_{i=0}^{d/2-1}h_{i}(S_{i+1}-S_{i})=-\\sum_{i=0}^{d/2-1}S_{i+1}(h_{i+1}-h_{i}).\n\nThus,\n\n\\displaystyle\\bigg|\\sum_{i=0}^{d/2-1}{\\boldsymbol{q}}_{[2i:2i+1]}{\\boldsymbol{k}}_{[2i:2i+1]}^{*}e^{i(m-n)\\theta_{i}}\\bigg| \\displaystyle=\\bigg|\\sum_{i=0}^{d/2-1}S_{i+1}(h_{i+1}-h_{i})\\bigg| \\displaystyle\\leq\\sum_{i=0}^{d/2-1}|S_{i+1}||(h_{i+1}-{h_{i}})| \\displaystyle\\leq\\big(\\max_{i}|h_{i+1}-h_{i}|\\big)\\sum_{i=0}^{d/2-1}|S_{i+1}|\n\nNote that the value of $\\frac{1}{d/2}\\sum_{i=1}^{d/2}|S_{i}|$ decay with the relative distance $m-n$ increases by setting $\\theta_{i}=10000^{-2i/d}$, as shown in Figure 2.\n\nFigure 2: Long-term decay of RoPE."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0016",
+      "title": "4 Experiments and Evaluation",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Experiments and Evaluation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_cb3b78f3ed5f1397d382",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "We evaluate the proposed RoFormer on various NLP tasks as follows. We validate the performance of the proposed solution on machine translation task Section 4.1. Then, we compare our RoPE implementation with BERTDevlin et al. (2019) during the pre-training stage in Section 4.2. Based on the pre-trained model, in Section 4.3, we further carry out evaluations across different downstream tasks from GLUE benchmarksSingh et al. (2018). In Addition, we conduct experiments using the proposed RoPE with the linear attention of PerFormer Choromanski et al. (2020) in Section 4.4. By the end, additional tests on Chinese data are included in Section 4.5. All the experiments were run on two cloud severs with 4 x V100 GPUs.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 717
+        }
+      ],
+      "text": "We evaluate the proposed RoFormer on various NLP tasks as follows. We validate the performance of the proposed solution on machine translation task Section 4.1. Then, we compare our RoPE implementation with BERTDevlin et al. (2019) during the pre-training stage in Section 4.2. Based on the pre-trained model, in Section 4.3, we further carry out evaluations across different downstream tasks from GLUE benchmarksSingh et al. (2018). In Addition, we conduct experiments using the proposed RoPE with the linear attention of PerFormer Choromanski et al. (2020) in Section 4.4. By the end, additional tests on Chinese data are included in Section 4.5. All the experiments were run on two cloud severs with 4 x V100 GPUs."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0017",
+      "title": "4.1 Machine Translation",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.1 Machine Translation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_28b51c168295c8de44ed",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p1.1",
+          "text": "We first demonstrate the performance of RoFormer on sequence-to-sequence language translation tasks.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 100
+        }
+      ],
+      "text": "We first demonstrate the performance of RoFormer on sequence-to-sequence language translation tasks."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0018",
+      "title": "4.1.1 Experimental Settings",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1.SSS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.1 Machine Translation",
+        "4.1.1 Experimental Settings"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5dde25acdfe71173bb87",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.SSS1.p1.1",
+          "text": "We choose the standard WMT 2014 English-German datasetBojar et al. (2014), which consists of approximately 4.5 million sentence pairs. We compare to the transformer-based baseline alternative Vaswani et al. (2017).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 214
+        }
+      ],
+      "text": "We choose the standard WMT 2014 English-German datasetBojar et al. (2014), which consists of approximately 4.5 million sentence pairs. We compare to the transformer-based baseline alternative Vaswani et al. (2017)."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0019",
+      "title": "4.1.2 Implementation details",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1.SSS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.1 Machine Translation",
+        "4.1.2 Implementation details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5780e25952713556e5a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.SSS2.p1.1",
+          "text": "We carry out some modifications on self-attention layer of the baseline model Vaswani et al. (2017) to enable RoPE to its learning process. We replicate the setup for English-to-German translation with a vocabulary of 37k based on a joint source and target byte pair encoding(BPE)Sennrich et al. (2015). During the evaluation, a single model is obtained by averaging the last 5 checkpoints. The result uses beam search with a beam size of 4 and length penalty 0.6. We implement the experiment in PyTorch in the fairseq toolkit (MIT License)Ott et al. (2019). Our model is optimized with the Adam optimizer using $\\beta_{1}=0.9$, $\\beta_{2}=0.98$, learning rate is increased linearly from $1e-7$ to $5e-4$ and then decayed proportionally to the inverse square root of the step number. Label smoothing with 0.1 is also adopted. We report the BLEUPapineni et al. (2002) score on the test set as the final metric.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 909
+        }
+      ],
+      "text": "We carry out some modifications on self-attention layer of the baseline model Vaswani et al. (2017) to enable RoPE to its learning process. We replicate the setup for English-to-German translation with a vocabulary of 37k based on a joint source and target byte pair encoding(BPE)Sennrich et al. (2015). During the evaluation, a single model is obtained by averaging the last 5 checkpoints. The result uses beam search with a beam size of 4 and length penalty 0.6. We implement the experiment in PyTorch in the fairseq toolkit (MIT License)Ott et al. (2019). Our model is optimized with the Adam optimizer using $\\beta_{1}=0.9$, $\\beta_{2}=0.98$, learning rate is increased linearly from $1e-7$ to $5e-4$ and then decayed proportionally to the inverse square root of the step number. Label smoothing with 0.1 is also adopted. We report the BLEUPapineni et al. (2002) score on the test set as the final metric."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0020",
+      "title": "4.1.3 Results",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1.SSS3",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.1 Machine Translation",
+        "4.1.3 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_418612b16341c0e8d7a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.SSS3.p1.1",
+          "text": "We train the baseline model and our RoFormer under the same settings and report the results in Table 1. As can be seen, our model gives better BLEU scores compared to the baseline Transformer.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 192
+        },
+        {
+          "paragraph_id": "p_104fa470dfbf0409f328",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1",
+          "text": "Table 1: The proposed RoFormer gives better BLEU scores compared to its baseline alternative Vaswani et al. (2017) on the WMT 2014 English-to-German translation taskBojar et al. (2014).",
+          "kind": "caption",
+          "char_start": 194,
+          "char_end": 379
+        },
+        {
+          "paragraph_id": "p_7d346cafbd05d94afbce",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1.2",
+          "text": "Model | BLEU\nTransformer-baseVaswani et al. (2017) | 27.3\nRoFormer | 27.5",
+          "kind": "table",
+          "char_start": 381,
+          "char_end": 454
+        }
+      ],
+      "text": "We train the baseline model and our RoFormer under the same settings and report the results in Table 1. As can be seen, our model gives better BLEU scores compared to the baseline Transformer.\n\nTable 1: The proposed RoFormer gives better BLEU scores compared to its baseline alternative Vaswani et al. (2017) on the WMT 2014 English-to-German translation taskBojar et al. (2014).\n\nModel | BLEU\nTransformer-baseVaswani et al. (2017) | 27.3\nRoFormer | 27.5"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0021",
+      "title": "4.2 Pre-training Language Modeling",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.2 Pre-training Language Modeling"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2e6f77d1150479c15b98",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p1.1",
+          "text": "The second experiment is to validate the performance of our proposal in terms of learning contextual representations. To achieve this, we replace the original sinusoidal position encoding of BERT with our RoPE during the pre-training step.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 239
+        }
+      ],
+      "text": "The second experiment is to validate the performance of our proposal in terms of learning contextual representations. To achieve this, we replace the original sinusoidal position encoding of BERT with our RoPE during the pre-training step."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0022",
+      "title": "4.2.1 Experimental Settings",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2.SSS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.2 Pre-training Language Modeling",
+        "4.2.1 Experimental Settings"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_72e07f6c48cb1e305d38",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.SSS1.p1.1",
+          "text": "We use the BookCorpus Zhu et al. (2015) and the Wikipedia Corpus Foundation (2021) from Huggingface Datasets library (Apache License 2.0) for pre-training. The corpus is further split into train and validation sets at 8:2 ratio. We use the masked language-modeling (MLM) loss values of the training process as an evaluation metric. The well-known BERT Devlin et al. (2019) is adopted as our baseline model. Note that we use bert-base-uncased in our experiments.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 461
+        }
+      ],
+      "text": "We use the BookCorpus Zhu et al. (2015) and the Wikipedia Corpus Foundation (2021) from Huggingface Datasets library (Apache License 2.0) for pre-training. The corpus is further split into train and validation sets at 8:2 ratio. We use the masked language-modeling (MLM) loss values of the training process as an evaluation metric. The well-known BERT Devlin et al. (2019) is adopted as our baseline model. Note that we use bert-base-uncased in our experiments."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0023",
+      "title": "4.2.2 Implementation details",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2.SSS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.2 Pre-training Language Modeling",
+        "4.2.2 Implementation details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_1e6d488fd29ee28c6a41",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.SSS2.p1.1",
+          "text": "For RoFormer, we replace the sinusoidal position encoding in the self-attention block of the baseline model with our proposed RoPE and realizes self-attention according to Equation 16. We train both BERT and RoFormer with batch size 64 and maximum sequence length of 512 for 100k steps. AdamW Loshchilov and Hutter (2017) is used as the optimizer with learning rate 1e-5.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 371
+        }
+      ],
+      "text": "For RoFormer, we replace the sinusoidal position encoding in the self-attention block of the baseline model with our proposed RoPE and realizes self-attention according to Equation 16. We train both BERT and RoFormer with batch size 64 and maximum sequence length of 512 for 100k steps. AdamW Loshchilov and Hutter (2017) is used as the optimizer with learning rate 1e-5."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0024",
+      "title": "4.2.3 Results",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2.SSS3",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.2 Pre-training Language Modeling",
+        "4.2.3 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f1c8c834bb3ae9041d17",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.SSS3.p1.1",
+          "text": "The MLM loss during pre-training is shown on the left plot of Figure 3. Compare to the vanilla BERT, RoFormer experiences faster convergence.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 141
+        },
+        {
+          "paragraph_id": "p_2d75bf01521c3cc57213",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F3",
+          "text": "Figure 3: Evaluation of RoPE in language modeling pre-training. Left: training loss for BERT and RoFormer. Right: training loss for PerFormer with and without RoPE.",
+          "kind": "caption",
+          "char_start": 143,
+          "char_end": 307
+        }
+      ],
+      "text": "The MLM loss during pre-training is shown on the left plot of Figure 3. Compare to the vanilla BERT, RoFormer experiences faster convergence.\n\nFigure 3: Evaluation of RoPE in language modeling pre-training. Left: training loss for BERT and RoFormer. Right: training loss for PerFormer with and without RoPE."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0025",
+      "title": "4.3 Fine-tuning on GLUE tasks",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.3 Fine-tuning on GLUE tasks"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_06b2b9f73e3aea031ab4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.p1.1",
+          "text": "Consistent with the previous experiments, we fine-tune the weights of our pre-trained RoFormer across various GLUE tasks in order to evaluate its generalization ability on the downstream NLP tasks.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 197
+        }
+      ],
+      "text": "Consistent with the previous experiments, we fine-tune the weights of our pre-trained RoFormer across various GLUE tasks in order to evaluate its generalization ability on the downstream NLP tasks."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0026",
+      "title": "4.3.1 Experimental Settings",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3.SSS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.3 Fine-tuning on GLUE tasks",
+        "4.3.1 Experimental Settings"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0239fdeacc89adf149e3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.SSS1.p1.1",
+          "text": "We look at several datasets from GLUE, i.e. MRPC Dolan and Brockett (2005), SST-2 Socher et al. (2013), QNLI Rajpurkar et al. (2016), STS-B Al-Natsheh (2017), QQP Chen et al. (2018b) and MNLI Williams et al. (2018). We use F1-score for MRPC and QQP dataset, spearman correlation for STS-B, and accuracy for the remaining as the evaluation metrics.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 347
+        }
+      ],
+      "text": "We look at several datasets from GLUE, i.e. MRPC Dolan and Brockett (2005), SST-2 Socher et al. (2013), QNLI Rajpurkar et al. (2016), STS-B Al-Natsheh (2017), QQP Chen et al. (2018b) and MNLI Williams et al. (2018). We use F1-score for MRPC and QQP dataset, spearman correlation for STS-B, and accuracy for the remaining as the evaluation metrics."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0027",
+      "title": "4.3.2 Implementation details",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3.SSS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.3 Fine-tuning on GLUE tasks",
+        "4.3.2 Implementation details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2e893224a110a9d71bd5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.SSS2.p1.1",
+          "text": "We use Huggingface Transformers library (Apache License 2.0)Wolf et al. (2020) to fine-tune each of the aforementioned downstream tasks for 3 epochs, with a maximum sequence length of 512, batch size of 32 and learning rates 2,3,4,5e-5. Following Devlin et al. (2019), we report the best-averaged results on the validation set.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 327
+        },
+        {
+          "paragraph_id": "p_e40ee43088c47bdce7a3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2",
+          "text": "Table 2: Comparing RoFormer and BERT by fine tuning on downstream GLEU tasks.",
+          "kind": "caption",
+          "char_start": 329,
+          "char_end": 406
+        },
+        {
+          "paragraph_id": "p_cc848d11ddee279d0cc7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2.2",
+          "text": "Model | MRPC | SST-2 | QNLI | STS-B | QQP | MNLI(m/mm)\nBERTDevlin et al. (2019) | 88.9 | 93.5 | 90.5 | 85.8 | 71.2 | 84.6/83.4\nRoFormer | 89.5 | 90.7 | 88.0 | 87.0 | 86.4 | 80.2/79.8",
+          "kind": "table",
+          "char_start": 408,
+          "char_end": 590
+        }
+      ],
+      "text": "We use Huggingface Transformers library (Apache License 2.0)Wolf et al. (2020) to fine-tune each of the aforementioned downstream tasks for 3 epochs, with a maximum sequence length of 512, batch size of 32 and learning rates 2,3,4,5e-5. Following Devlin et al. (2019), we report the best-averaged results on the validation set.\n\nTable 2: Comparing RoFormer and BERT by fine tuning on downstream GLEU tasks.\n\nModel | MRPC | SST-2 | QNLI | STS-B | QQP | MNLI(m/mm)\nBERTDevlin et al. (2019) | 88.9 | 93.5 | 90.5 | 85.8 | 71.2 | 84.6/83.4\nRoFormer | 89.5 | 90.7 | 88.0 | 87.0 | 86.4 | 80.2/79.8"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0028",
+      "title": "4.3.3 Results",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3.SSS3",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.3 Fine-tuning on GLUE tasks",
+        "4.3.3 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_fa4fb8c6767e23bc959b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.SSS3.p1.1",
+          "text": "The evaluation results of the fine-tuning tasks are reported in Table 2. As can be seen, RoFormer can significantly outperform BERT in three out of six datasets, and the improvements are considerable.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 200
+        }
+      ],
+      "text": "The evaluation results of the fine-tuning tasks are reported in Table 2. As can be seen, RoFormer can significantly outperform BERT in three out of six datasets, and the improvements are considerable."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0029",
+      "title": "4.4 Performer with RoPE",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS4",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.4 Performer with RoPE"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_83eb5b83e938fbb7fffe",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.p1.1",
+          "text": "Performer Choromanski et al. (2020) introduces an alternative attention mechanism, linear attention, which is designed to avoid quadratic computation cost that scales with input sequence length. As discussed in Section 3.3, the proposed RoPE can be easily implemented in the PerFormer model to realize the relative position encoding while keeping its linearly scaled complexity in self-attention. We demonstrate its performance with the pre-training task of language modeling.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 476
+        }
+      ],
+      "text": "Performer Choromanski et al. (2020) introduces an alternative attention mechanism, linear attention, which is designed to avoid quadratic computation cost that scales with input sequence length. As discussed in Section 3.3, the proposed RoPE can be easily implemented in the PerFormer model to realize the relative position encoding while keeping its linearly scaled complexity in self-attention. We demonstrate its performance with the pre-training task of language modeling."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0030",
+      "title": "4.4.1 Implementation details",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS4.SSS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.4 Performer with RoPE",
+        "4.4.1 Implementation details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5145ce3f585c595618f6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.SSS1.p1.1",
+          "text": "We carry out tests on the Enwik8 dataset Mahoney (2006), which is from English Wikipedia that includes markup, special characters and text in other languages in addition to English text. We incorporate RoPE into the 12 layer char-based PerFormer with 768 dimensions and 12 heads. To better illustrate the efficacy of RoPE, we report the loss curves of the pre-training process with and without RoPE under the same settings, i.e., learning rate 1e-4, batch size 128 and a fixed maximum sequence length of 1024, etc.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 514
+        },
+        {
+          "paragraph_id": "p_9415862fb0989559cce5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.SSS1.p1.1",
+          "text": "Footnote: 2 2 For this experiment, we adopt code (MIT License) from https://github.com/lucidrains/performer-pytorch",
+          "kind": "footnote",
+          "char_start": 516,
+          "char_end": 631
+        }
+      ],
+      "text": "We carry out tests on the Enwik8 dataset Mahoney (2006), which is from English Wikipedia that includes markup, special characters and text in other languages in addition to English text. We incorporate RoPE into the 12 layer char-based PerFormer with 768 dimensions and 12 heads. To better illustrate the efficacy of RoPE, we report the loss curves of the pre-training process with and without RoPE under the same settings, i.e., learning rate 1e-4, batch size 128 and a fixed maximum sequence length of 1024, etc.\n\nFootnote: 2 2 For this experiment, we adopt code (MIT License) from https://github.com/lucidrains/performer-pytorch"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0031",
+      "title": "4.4.2 Results",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS4.SSS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.4 Performer with RoPE",
+        "4.4.2 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_93e5c6416abd44e7d8ba",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.SSS2.p1.1",
+          "text": "As shown on the right plot of Figure 3, substituting RoPE into Performer leads to rapid convergence and lower loss under the same amount of training steps. These improvements, in addition to the linear complexity, make Performer more attractive.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 245
+        }
+      ],
+      "text": "As shown on the right plot of Figure 3, substituting RoPE into Performer leads to rapid convergence and lower loss under the same amount of training steps. These improvements, in addition to the linear complexity, make Performer more attractive."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0032",
+      "title": "4.5 Evaluation on Chinese Data",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9c8205f76746f1adac86",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.p1.1",
+          "text": "In addition to experiments on English data, we show additional results on Chinese data. To validate the performance of RoFormer on long texts, we conduct experiments on long documents whose length exceeds 512 characters.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 220
+        }
+      ],
+      "text": "In addition to experiments on English data, we show additional results on Chinese data. To validate the performance of RoFormer on long texts, we conduct experiments on long documents whose length exceeds 512 characters."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0033",
+      "title": "4.5.1 Implementation",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5.SSS1",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data",
+        "4.5.1 Implementation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_21720d4584cb1a080c6f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS1.p1.1",
+          "text": "In these experiments, we carried out some modifications on WoBERT Su (2020) by replacing the absolute position embedding with our proposed RoPE. As a cross-comparison with other pre-trained Transformer-based models in Chinese, i.e. BERT Devlin et al. (2019), WoBERT Su (2020), and NEZHA Wei et al. (2019), we tabulate their tokenization level and position embedding information in Table 3.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 389
+        },
+        {
+          "paragraph_id": "p_bdad5d0ca5ca42d1ec15",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T3",
+          "text": "Table 3: Cross-comparison between our RoFormer and other pre-trained models on Chinese data. ’abs’ and ’rel’ annotates absolute position embedding and relative position embedding, respectively.",
+          "kind": "caption",
+          "char_start": 391,
+          "char_end": 584
+        },
+        {
+          "paragraph_id": "p_4fbd8b7e6750b0040997",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T3.2",
+          "text": "Model | BERTDevlin et al. (2019) | WoBERTSu (2020) | NEZHAWei et al. (2019) | RoFormer\nTokenization level | char | word | char | word\nPosition embedding | abs. | abs. | rel. | RoPE",
+          "kind": "table",
+          "char_start": 586,
+          "char_end": 766
+        }
+      ],
+      "text": "In these experiments, we carried out some modifications on WoBERT Su (2020) by replacing the absolute position embedding with our proposed RoPE. As a cross-comparison with other pre-trained Transformer-based models in Chinese, i.e. BERT Devlin et al. (2019), WoBERT Su (2020), and NEZHA Wei et al. (2019), we tabulate their tokenization level and position embedding information in Table 3.\n\nTable 3: Cross-comparison between our RoFormer and other pre-trained models on Chinese data. ’abs’ and ’rel’ annotates absolute position embedding and relative position embedding, respectively.\n\nModel | BERTDevlin et al. (2019) | WoBERTSu (2020) | NEZHAWei et al. (2019) | RoFormer\nTokenization level | char | word | char | word\nPosition embedding | abs. | abs. | rel. | RoPE"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0034",
+      "title": "4.5.2 Pre-training",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5.SSS2",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data",
+        "4.5.2 Pre-training"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d935c44d0d94c46fa579",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS2.p1.1",
+          "text": "We pre-train RoFormer on approximately 34GB of data collected from Chinese Wikipedia, news and forums. The pre-training is carried out in multiple stages with changing batch size and maximum input sequence length in order to adapt the model to various scenarios. As shown in Table 4, the accuracy of RoFormer elevates with an increasing upper bound of sequence length, which demonstrates the ability of RoFormer in dealing with long texts. We claim that this is the attribute to the excellent generalizability of the proposed RoPE.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 531
+        },
+        {
+          "paragraph_id": "p_405eb8ce80ed1047a9b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T4",
+          "text": "Table 4: Pre-training strategy of RoFormer on Chinese dataset. The training procedure is divided into various consecutive stages. In each stage, we train the model with a specific combination of maximum sequence length and batch size.",
+          "kind": "caption",
+          "char_start": 533,
+          "char_end": 767
+        },
+        {
+          "paragraph_id": "p_8f5a8fca810fb3786983",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T4.2",
+          "text": "Stage | Max seq length | Batch size | Training steps | Loss | Accuracy\n1 | 512 | 256 | 200k | 1.73 | 65.0%\n2 | 1536 | 256 | 12.5k | 1.61 | 66.8%\n3 | 256 | 256 | 120k | 1.75 | 64.6%\n4 | 128 | 512 | 80k | 1.83 | 63.4%\n5 | 1536 | 256 | 10k | 1.58 | 67.4%\n6 | 512 | 512 | 30k | 1.66 | 66.2%",
+          "kind": "table",
+          "char_start": 769,
+          "char_end": 1055
+        }
+      ],
+      "text": "We pre-train RoFormer on approximately 34GB of data collected from Chinese Wikipedia, news and forums. The pre-training is carried out in multiple stages with changing batch size and maximum input sequence length in order to adapt the model to various scenarios. As shown in Table 4, the accuracy of RoFormer elevates with an increasing upper bound of sequence length, which demonstrates the ability of RoFormer in dealing with long texts. We claim that this is the attribute to the excellent generalizability of the proposed RoPE.\n\nTable 4: Pre-training strategy of RoFormer on Chinese dataset. The training procedure is divided into various consecutive stages. In each stage, we train the model with a specific combination of maximum sequence length and batch size.\n\nStage | Max seq length | Batch size | Training steps | Loss | Accuracy\n1 | 512 | 256 | 200k | 1.73 | 65.0%\n2 | 1536 | 256 | 12.5k | 1.61 | 66.8%\n3 | 256 | 256 | 120k | 1.75 | 64.6%\n4 | 128 | 512 | 80k | 1.83 | 63.4%\n5 | 1536 | 256 | 10k | 1.58 | 67.4%\n6 | 512 | 512 | 30k | 1.66 | 66.2%"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0035",
+      "title": "4.5.3 Downstream Tasks & Dataset",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5.SSS3",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data",
+        "4.5.3 Downstream Tasks & Dataset"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_8c66183a4fe8006dfdad",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS3.p1.1",
+          "text": "We choose Chinese AI and Law 2019 Similar Case Matching (CAIL2019-SCM)Xiao et al. (2019) dataset to illustrate the ability of RoFormer in dealing with long texts, i.e., semantic text matching. CAIL2019-SCM contains 8964 triplets of cases published by the Supreme People’s Court of China. The input triplet, denoted as (A, B and C), are fact descriptions of three cases. The task is to predict whether the pair (A, B) is closer than (A, C) under a predefined similarity measure. Note that existing methods mostly cannot perform significantly on CAIL2019-SCM dataset due to the length of documents (i.e., mostly more than 512 characters). We split train, validation and test sets based on the well-known ratio 6:2:2.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 714
+        }
+      ],
+      "text": "We choose Chinese AI and Law 2019 Similar Case Matching (CAIL2019-SCM)Xiao et al. (2019) dataset to illustrate the ability of RoFormer in dealing with long texts, i.e., semantic text matching. CAIL2019-SCM contains 8964 triplets of cases published by the Supreme People’s Court of China. The input triplet, denoted as (A, B and C), are fact descriptions of three cases. The task is to predict whether the pair (A, B) is closer than (A, C) under a predefined similarity measure. Note that existing methods mostly cannot perform significantly on CAIL2019-SCM dataset due to the length of documents (i.e., mostly more than 512 characters). We split train, validation and test sets based on the well-known ratio 6:2:2."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0036",
+      "title": "4.5.4 Results",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5.SSS4",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data",
+        "4.5.4 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_8a1666a1a184c2b3f41f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS4.p1.1",
+          "text": "We apply the pre-trained RoFormer model to CAIL2019-SCM with different input lengths. The model is compared with the pre-trained BERT and WoBERT model on the same pre-training data, as shown in Table 5. With short text cut-offs, i.e., 512, the result from RoFormer is comparable to WoBERT and is slightly better than the BERT implementation. However, when increasing the maximum input text length to 1024, RoFormer outperforms WoBERT by an absolute improvement of 1.5%.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 469
+        },
+        {
+          "paragraph_id": "p_a4a2889dd92d8fc57f89",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T5",
+          "text": "Table 5: Experiment results on CAIL2019-SCM task. Numbers in the first column denote the maximum cut-off sequence length. The results are presented in terms of percent accuracy.",
+          "kind": "caption",
+          "char_start": 471,
+          "char_end": 648
+        },
+        {
+          "paragraph_id": "p_af0b1b21b8bc019d2017",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T5.2",
+          "text": "Model | Validation | Test\nBERT-512 | 64.13% | 67.77%\nWoBERT-512 | 64.07% | 68.10%\nRoFormer-512 | 64.13% | 68.29%\nRoFormer-1024 | 66.07% | 69.79%",
+          "kind": "table",
+          "char_start": 650,
+          "char_end": 794
+        }
+      ],
+      "text": "We apply the pre-trained RoFormer model to CAIL2019-SCM with different input lengths. The model is compared with the pre-trained BERT and WoBERT model on the same pre-training data, as shown in Table 5. With short text cut-offs, i.e., 512, the result from RoFormer is comparable to WoBERT and is slightly better than the BERT implementation. However, when increasing the maximum input text length to 1024, RoFormer outperforms WoBERT by an absolute improvement of 1.5%.\n\nTable 5: Experiment results on CAIL2019-SCM task. Numbers in the first column denote the maximum cut-off sequence length. The results are presented in terms of percent accuracy.\n\nModel | Validation | Test\nBERT-512 | 64.13% | 67.77%\nWoBERT-512 | 64.07% | 68.10%\nRoFormer-512 | 64.13% | 68.29%\nRoFormer-1024 | 66.07% | 69.79%"
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0037",
+      "title": "4.5.5 Limitations of the work",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5.SSS5",
+      "path": [
+        "4 Experiments and Evaluation",
+        "4.5 Evaluation on Chinese Data",
+        "4.5.5 Limitations of the work"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_19cbf6af3184831f088d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS5.p1.1",
+          "text": "Although we provide theoretical groundings as well as promising experimental justifications, our method is limited by following facts:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 134
+        },
+        {
+          "paragraph_id": "p_4b6a623a806cc06b7847",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i1",
+          "text": "• Despite the fact that we mathematically format the relative position relations as rotations under 2D sub-spaces, there lacks of thorough explanations on why it converges faster than baseline models that incorporates other position encoding strategies.",
+          "kind": "list_item",
+          "char_start": 136,
+          "char_end": 389
+        },
+        {
+          "paragraph_id": "p_de3467515d9eed9bbefa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i2",
+          "text": "• Although we have proved that our model has favourable property of long-term decay for intern-token products, Section 3.3, which is similar to the existing position encoding mechanisms, our model shows superior performance on long texts than peer models, we have not come up with a faithful explanation.",
+          "kind": "list_item",
+          "char_start": 391,
+          "char_end": 695
+        },
+        {
+          "paragraph_id": "p_618c588fee72251549aa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.SSS5.p1.2",
+          "text": "Our proposed RoFormer is built upon the Transformer-based infrastructure, which requires hardware resources for pre-training purpose.",
+          "kind": "text",
+          "char_start": 697,
+          "char_end": 830
+        }
+      ],
+      "text": "Although we provide theoretical groundings as well as promising experimental justifications, our method is limited by following facts:\n\n• Despite the fact that we mathematically format the relative position relations as rotations under 2D sub-spaces, there lacks of thorough explanations on why it converges faster than baseline models that incorporates other position encoding strategies.\n\n• Although we have proved that our model has favourable property of long-term decay for intern-token products, Section 3.3, which is similar to the existing position encoding mechanisms, our model shows superior performance on long texts than peer models, we have not come up with a faithful explanation.\n\nOur proposed RoFormer is built upon the Transformer-based infrastructure, which requires hardware resources for pre-training purpose."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0038",
+      "title": "5 Conclusions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Conclusions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ee62fcbd7001ae669230",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "In this work, we proposed a new position embedding method that incorporates explicit relative position dependency in self-attention to enhance the performance of transformer architectures. Our theoretical analysis indicates that relative position can be naturally formulated using vector production in self-attention, with absolution position information being encoded through a rotation matrix. In addition, we mathematically illustrated the advantageous properties of the proposed method when applied to the Transformer. Finally, experiments on both English and Chinese benchmark datasets demonstrate that our method encourages faster convergence in pre-training. The experimental results also show that our proposed RoFormer can achieve better performance on long texts task.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 778
+        }
+      ],
+      "text": "In this work, we proposed a new position embedding method that incorporates explicit relative position dependency in self-attention to enhance the performance of transformer architectures. Our theoretical analysis indicates that relative position can be naturally formulated using vector production in self-attention, with absolution position information being encoded through a rotation matrix. In addition, we mathematically illustrated the advantageous properties of the proposed method when applied to the Transformer. Finally, experiments on both English and Chinese benchmark datasets demonstrate that our method encourages faster convergence in pre-training. The experimental results also show that our proposed RoFormer can achieve better performance on long texts task."
+    },
+    {
+      "section_id": "arxiv_2104.09864_v5_s0039",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_dacd947ca18369332b84",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "Gehring et al. [2017] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N Dauphin. Convolutional sequence to sequence learning. In International Conference on Machine Learning, pages 1243–1252. PMLR, 2017.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 223
+        },
+        {
+          "paragraph_id": "p_2489ea3eb8d569f59fa4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "Islam et al. [2020] Md. Amirul Islam, Sen Jia, and Neil D. B. Bruce. How much position information do convolutional neural networks encode? ArXiv, abs/2001.08248, 2020.",
+          "kind": "list_item",
+          "char_start": 225,
+          "char_end": 393
+        },
+        {
+          "paragraph_id": "p_72b3f0c693097ef2be68",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "Vaswani et al. [2017] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, L ukasz Kaiser, and Illia Polosukhin. Attention is all you need. In I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems, volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf.",
+          "kind": "list_item",
+          "char_start": 395,
+          "char_end": 861
+        },
+        {
+          "paragraph_id": "p_a1ee5af8f26fdc90ee3f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "Devlin et al. [2019] J. Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. In NAACL-HLT, 2019.",
+          "kind": "list_item",
+          "char_start": 863,
+          "char_end": 1048
+        },
+        {
+          "paragraph_id": "p_26f853facb462b4fc7df",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "Radford et al. [2019] A. Radford, Jeffrey Wu, R. Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. 2019.",
+          "kind": "list_item",
+          "char_start": 1050,
+          "char_end": 1210
+        },
+        {
+          "paragraph_id": "p_d925ab476471f8201e03",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "Yun et al. [2020] Chulhee Yun, Srinadh Bhojanapalli, Ankit Singh Rawat, Sashank Reddi, and Sanjiv Kumar. Are transformers universal approximators of sequence-to-sequence functions? In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=ByxRM0Ntvr.",
+          "kind": "list_item",
+          "char_start": 1212,
+          "char_end": 1503
+        },
+        {
+          "paragraph_id": "p_07b40a9d5c9a6c2bb86e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "Lan et al. [2020] Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and Radu Soricut. Albert: A lite bert for self-supervised learning of language representations. In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=H1eA7AEtvS.",
+          "kind": "list_item",
+          "char_start": 1505,
+          "char_end": 1805
+        },
+        {
+          "paragraph_id": "p_30d34a816313a6f6c805",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "Clark et al. [2020] Kevin Clark, Minh-Thang Luong, Quoc V. Le, and Christopher D. Manning. ELECTRA: Pre-training text encoders as discriminators rather than generators. In ICLR, 2020. URL https://openreview.net/pdf?id=r1xMH1BtvB.",
+          "kind": "list_item",
+          "char_start": 1807,
+          "char_end": 2036
+        },
+        {
+          "paragraph_id": "p_33ced3712a379d0983d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "Radford and Narasimhan [2018] A. Radford and Karthik Narasimhan. Improving language understanding by generative pre-training. 2018.",
+          "kind": "list_item",
+          "char_start": 2038,
+          "char_end": 2169
+        },
+        {
+          "paragraph_id": "p_5ff1e5e25817e97454e6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "Parikh et al. [2016] Ankur P. Parikh, Oscar Täckström, Dipanjan Das, and Jakob Uszkoreit. A decomposable attention model for natural language inference. In EMNLP, 2016.",
+          "kind": "list_item",
+          "char_start": 2171,
+          "char_end": 2339
+        },
+        {
+          "paragraph_id": "p_6d7d1e74cbecc84b70e7",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "Shaw et al. [2018] Peter Shaw, Jakob Uszkoreit, and Ashish Vaswani. Self-attention with relative position representations. In NAACL-HLT, 2018.",
+          "kind": "list_item",
+          "char_start": 2341,
+          "char_end": 2483
+        },
+        {
+          "paragraph_id": "p_87ff9947f9aa31091e50",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "Huang et al. [2018] Cheng-Zhi Anna Huang, Ashish Vaswani, Jakob Uszkoreit, Noam Shazeer, I. Simon, C. Hawthorne, Andrew M. Dai, M. Hoffman, M. Dinculescu, and D. Eck. Music transformer. arXiv: Learning, 2018.",
+          "kind": "list_item",
+          "char_start": 2485,
+          "char_end": 2693
+        },
+        {
+          "paragraph_id": "p_d3393e462f398b08a60d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "Dai et al. [2019] Zihang Dai, Z. Yang, Yiming Yang, J. Carbonell, Quoc V. Le, and R. Salakhutdinov. Transformer-xl: Attentive language models beyond a fixed-length context. In ACL, 2019.",
+          "kind": "list_item",
+          "char_start": 2695,
+          "char_end": 2881
+        },
+        {
+          "paragraph_id": "p_cd91cadcd11f7efb9014",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "Yang et al. [2019] Z. Yang, Zihang Dai, Yiming Yang, J. Carbonell, R. Salakhutdinov, and Quoc V. Le. Xlnet: Generalized autoregressive pretraining for language understanding. In NeurIPS, 2019.",
+          "kind": "list_item",
+          "char_start": 2883,
+          "char_end": 3075
+        },
+        {
+          "paragraph_id": "p_736dba6875056774aa88",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "Raffel et al. [2020] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, W. Li, and Peter J. Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. J. Mach. Learn. Res., 21:140:1–140:67, 2020.",
+          "kind": "list_item",
+          "char_start": 3077,
+          "char_end": 3350
+        },
+        {
+          "paragraph_id": "p_1fdf8bf40f5971218ded",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "Ke et al. [2020] Guolin Ke, Di He, and T. Liu. Rethinking positional encoding in language pre-training. ArXiv, abs/2006.15595, 2020.",
+          "kind": "list_item",
+          "char_start": 3352,
+          "char_end": 3484
+        },
+        {
+          "paragraph_id": "p_fe552f95f88295325ac3",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "He et al. [2020] Pengcheng He, Xiaodong Liu, Jianfeng Gao, and Weizhu Chen. Deberta: Decoding-enhanced bert with disentangled attention. ArXiv, abs/2006.03654, 2020.",
+          "kind": "list_item",
+          "char_start": 3486,
+          "char_end": 3651
+        },
+        {
+          "paragraph_id": "p_e7b4217f7ceb0bd4ad08",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "Huang et al. [2020] Zhiheng Huang, Davis Liang, Peng Xu, and Bing Xiang. Improve transformer models with better relative position embeddings. In Findings of the Association for Computational Linguistics: EMNLP 2020, pages 3327–3335, Online, November 2020. Association for Computational Linguistics. doi:10.18653/v1/2020.findings-emnlp.298. URL https://www.aclweb.org/anthology/2020.findings-emnlp.298.",
+          "kind": "list_item",
+          "char_start": 3653,
+          "char_end": 4054
+        },
+        {
+          "paragraph_id": "p_05c42020261a58771a69",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "Liu et al. [2020] Xuanqing Liu, Hsiang-Fu Yu, Inderjit S. Dhillon, and Cho-Jui Hsieh. Learning to encode position for transformer with continuous dynamical model. In Proceedings of the 37th International Conference on Machine Learning, ICML 2020, 13-18 July 2020, Virtual Event, volume 119 of Proceedings of Machine Learning Research, pages 6327–6335. PMLR, 2020. URL http://proceedings.mlr.press/v119/liu20n.html.",
+          "kind": "list_item",
+          "char_start": 4056,
+          "char_end": 4470
+        },
+        {
+          "paragraph_id": "p_df81b0e59b96ff11b6cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "Chen et al. [2018a] Tian Qi Chen, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. Neural ordinary differential equations. In Samy Bengio, Hanna M. Wallach, Hugo Larochelle, Kristen Grauman, Nicolò Cesa-Bianchi, and Roman Garnett, editors, Advances in Neural Information Processing Systems 31: Annual Conference on Neural Information Processing Systems 2018, NeurIPS 2018, December 3-8, 2018, Montréal, Canada, pages 6572–6583, 2018a. URL https://proceedings.neurips.cc/paper/2018/hash/69386f6bb1dfed68692a24c8686939b9-Abstract.html.",
+          "kind": "list_item",
+          "char_start": 4472,
+          "char_end": 5011
+        },
+        {
+          "paragraph_id": "p_38aa3946d08a7210aef3",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "Wang et al. [2020] Benyou Wang, Donghao Zhao, Christina Lioma, Qiuchi Li, Peng Zhang, and Jakob Grue Simonsen. Encoding word order in complex embeddings. In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=Hke-WTVtwr.",
+          "kind": "list_item",
+          "char_start": 5013,
+          "char_end": 5277
+        },
+        {
+          "paragraph_id": "p_2798c4efd118df727b10",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "Katharopoulos et al. [2020] Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and François Fleuret. Transformers are rnns: Fast autoregressive transformers with linear attention. In International Conference on Machine Learning, pages 5156–5165. PMLR, 2020.",
+          "kind": "list_item",
+          "char_start": 5279,
+          "char_end": 5538
+        },
+        {
+          "paragraph_id": "p_b432f57340a1d3c5d73f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "Shen et al. [2021] Zhuoran Shen, Mingyuan Zhang, Haiyu Zhao, Shuai Yi, and Hongsheng Li. Efficient attention: Attention with linear complexities. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision, pages 3531–3539, 2021.",
+          "kind": "list_item",
+          "char_start": 5540,
+          "char_end": 5793
+        },
+        {
+          "paragraph_id": "p_e27631d636014bc39d61",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "Singh et al. [2018] Amapreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. Glue: A multi-task benchmark and analysis platform for natural language understanding. 04 2018.",
+          "kind": "list_item",
+          "char_start": 5795,
+          "char_end": 5984
+        },
+        {
+          "paragraph_id": "p_cf928c633f970840e29c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "Choromanski et al. [2020] Krzysztof Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, A. Gane, Tamás Sarlós, Peter Hawkins, J. Davis, Afroz Mohiuddin, Lukasz Kaiser, David Belanger, Lucy J. Colwell, and Adrian Weller. Rethinking attention with performers. ArXiv, abs/2009.14794, 2020.",
+          "kind": "list_item",
+          "char_start": 5986,
+          "char_end": 6283
+        },
+        {
+          "paragraph_id": "p_cc8714b84d154452f08f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "Bojar et al. [2014] Ondrej Bojar, Christian Buck, Christian Federmann, Barry Haddow, Philipp Koehn, Johannes Leveling, Christof Monz, Pavel Pecina, Matt Post, Herve Saint-Amand, Radu Soricut, Lucia Specia, and Alevs Tamchyna. Findings of the 2014 workshop on statistical machine translation. pages 12–58, 06 2014. doi:10.3115/v1/W14-3302.",
+          "kind": "list_item",
+          "char_start": 6285,
+          "char_end": 6623
+        },
+        {
+          "paragraph_id": "p_5dc0f40bacbd7b446f5d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "Sennrich et al. [2015] Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words with subword units. 08 2015.",
+          "kind": "list_item",
+          "char_start": 6625,
+          "char_end": 6767
+        },
+        {
+          "paragraph_id": "p_15e3424bbc3b527acacc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "Ott et al. [2019] Myle Ott, Sergey Edunov, Alexei Baevski, Angela Fan, Sam Gross, Nathan Ng, David Grangier, and Michael Auli. fairseq: A fast, extensible toolkit for sequence modeling. pages 48–53, 01 2019. doi:10.18653/v1/N19-4009.",
+          "kind": "list_item",
+          "char_start": 6769,
+          "char_end": 7002
+        },
+        {
+          "paragraph_id": "p_2b982e24176cc15f3286",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib29",
+          "text": "Papineni et al. [2002] Kishore Papineni, Salim Roukos, Todd Ward, and Wei Jing Zhu. Bleu: a method for automatic evaluation of machine translation. 10 2002. doi:10.3115/1073083.1073135.",
+          "kind": "list_item",
+          "char_start": 7004,
+          "char_end": 7189
+        },
+        {
+          "paragraph_id": "p_b07fd94d12d7aa98eb4a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib30",
+          "text": "Zhu et al. [2015] Yukun Zhu, Ryan Kiros, Richard Zemel, Ruslan Salakhutdinov, Raquel Urtasun, Antonio Torralba, and Sanja Fidler. Aligning books and movies: Towards story-like visual explanations by watching movies and reading books. In arXiv preprint arXiv:1506.06724, 2015.",
+          "kind": "list_item",
+          "char_start": 7191,
+          "char_end": 7466
+        },
+        {
+          "paragraph_id": "p_ed3dbc2cca38fe0fde8c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib31",
+          "text": "Foundation [2021] Wikimedia Foundation. Wikimedia downloads, https://dumps.wikimedia.org, 2021.",
+          "kind": "list_item",
+          "char_start": 7468,
+          "char_end": 7563
+        },
+        {
+          "paragraph_id": "p_e475aeaf3c9fa5487d37",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib32",
+          "text": "Loshchilov and Hutter [2017] Ilya Loshchilov and Frank Hutter. Decoupled Weight Decay Regularization. arXiv e-prints, art. arXiv:1711.05101, November 2017.",
+          "kind": "list_item",
+          "char_start": 7565,
+          "char_end": 7720
+        },
+        {
+          "paragraph_id": "p_5bb94ed667e2f7897168",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib33",
+          "text": "Dolan and Brockett [2005] William B. Dolan and Chris Brockett. Automatically constructing a corpus of sentential paraphrases. In Proceedings of the Third International Workshop on Paraphrasing (IWP2005), 2005. URL https://www.aclweb.org/anthology/I05-5002.",
+          "kind": "list_item",
+          "char_start": 7722,
+          "char_end": 7978
+        },
+        {
+          "paragraph_id": "p_5c56fead03590f71dc9a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib34",
+          "text": "Socher et al. [2013] Richard Socher, A. Perelygin, J.Y. Wu, J. Chuang, C.D. Manning, A.Y. Ng, and C. Potts. Recursive deep models for semantic compositionality over a sentiment treebank. EMNLP, 1631:1631–1642, 01 2013.",
+          "kind": "list_item",
+          "char_start": 7980,
+          "char_end": 8198
+        },
+        {
+          "paragraph_id": "p_3a0aa8c0239151306d6f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib35",
+          "text": "Rajpurkar et al. [2016] Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and Percy Liang. Squad: 100,000+ questions for machine comprehension of text. pages 2383–2392, 01 2016. doi:10.18653/v1/D16-1264.",
+          "kind": "list_item",
+          "char_start": 8200,
+          "char_end": 8403
+        },
+        {
+          "paragraph_id": "p_7055bcc35f7de6d4bfd2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib36",
+          "text": "Al-Natsheh [2017] Hussein Al-Natsheh. Udl at semeval-2017 task 1: Semantic textual similarity estimation of english sentence pairs using regression model over pairwise features. 08 2017.",
+          "kind": "list_item",
+          "char_start": 8405,
+          "char_end": 8591
+        },
+        {
+          "paragraph_id": "p_567c49090c6b0dc26458",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib37",
+          "text": "Chen et al. [2018b] Z. Chen, H. Zhang, and L. Zhang, X.and Zhao. Quora question pairs., 2018b. URL https://www.kaggle.com/c/quora-question-pairs.",
+          "kind": "list_item",
+          "char_start": 8593,
+          "char_end": 8738
+        },
+        {
+          "paragraph_id": "p_fddd6a8e183f0f38461b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib38",
+          "text": "Williams et al. [2018] Adina Williams, Nikita Nangia, and Samuel Bowman. A broad-coverage challenge corpus for sentence understanding through inference. pages 1112–1122, 01 2018. doi:10.18653/v1/N18-1101.",
+          "kind": "list_item",
+          "char_start": 8740,
+          "char_end": 8944
+        },
+        {
+          "paragraph_id": "p_b01cf785a474e2d64eea",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib39",
+          "text": "Wolf et al. [2020] Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. Transformers: State-of-the-art natural language processing. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pages 38–45, Online, October 2020. Association for Computational Linguistics. URL https://www.aclweb.org/anthology/2020.emnlp-demos.6.",
+          "kind": "list_item",
+          "char_start": 8946,
+          "char_end": 9600
+        },
+        {
+          "paragraph_id": "p_32fd7e6c78965d8fe34b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib40",
+          "text": "Mahoney [2006] Matt Mahoney. Large text compression benchmark, http://www.mattmahoney.net/dc/text.html, 2006.",
+          "kind": "list_item",
+          "char_start": 9602,
+          "char_end": 9711
+        },
+        {
+          "paragraph_id": "p_702350fd329eba72094e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib41",
+          "text": "Su [2020] Jianlin Su. Wobert: Word-based chinese bert model - zhuiyiai. Technical report, 2020. URL https://github.com/ZhuiyiTechnology/WoBERT.",
+          "kind": "list_item",
+          "char_start": 9713,
+          "char_end": 9856
+        },
+        {
+          "paragraph_id": "p_d49f8a2db1ffa7694e47",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib42",
+          "text": "Wei et al. [2019] Victor Junqiu Wei, Xiaozhe Ren, Xiaoguang Li, Wenyong Huang, Yi Liao, Yasheng Wang, Jiashu Lin, Xin Jiang, Xiao Chen, and Qun Liu. Nezha: Neural contextualized representation for chinese language understanding. 08 2019.",
+          "kind": "list_item",
+          "char_start": 9858,
+          "char_end": 10095
+        },
+        {
+          "paragraph_id": "p_bed860d335de17e8c82e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib43",
+          "text": "Xiao et al. [2019] Chaojun Xiao, Haoxi Zhong, Zhipeng Guo, Cunchao Tu, Zhiyuan Liu, Maosong Sun, Tianyang Zhang, Xianpei Han, Zhen hu, Heng Wang, and Jianfeng Xu. Cail2019-scm: A dataset of similar case matching in legal domain. 11 2019.",
+          "kind": "list_item",
+          "char_start": 10097,
+          "char_end": 10334
+        }
+      ],
+      "text": "Gehring et al. [2017] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N Dauphin. Convolutional sequence to sequence learning. In International Conference on Machine Learning, pages 1243–1252. PMLR, 2017.\n\nIslam et al. [2020] Md. Amirul Islam, Sen Jia, and Neil D. B. Bruce. How much position information do convolutional neural networks encode? ArXiv, abs/2001.08248, 2020.\n\nVaswani et al. [2017] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, L ukasz Kaiser, and Illia Polosukhin. Attention is all you need. In I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors, Advances in Neural Information Processing Systems, volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf.\n\nDevlin et al. [2019] J. Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. In NAACL-HLT, 2019.\n\nRadford et al. [2019] A. Radford, Jeffrey Wu, R. Child, David Luan, Dario Amodei, and Ilya Sutskever. Language models are unsupervised multitask learners. 2019.\n\nYun et al. [2020] Chulhee Yun, Srinadh Bhojanapalli, Ankit Singh Rawat, Sashank Reddi, and Sanjiv Kumar. Are transformers universal approximators of sequence-to-sequence functions? In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=ByxRM0Ntvr.\n\nLan et al. [2020] Zhenzhong Lan, Mingda Chen, Sebastian Goodman, Kevin Gimpel, Piyush Sharma, and Radu Soricut. Albert: A lite bert for self-supervised learning of language representations. In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=H1eA7AEtvS.\n\nClark et al. [2020] Kevin Clark, Minh-Thang Luong, Quoc V. Le, and Christopher D. Manning. ELECTRA: Pre-training text encoders as discriminators rather than generators. In ICLR, 2020. URL https://openreview.net/pdf?id=r1xMH1BtvB.\n\nRadford and Narasimhan [2018] A. Radford and Karthik Narasimhan. Improving language understanding by generative pre-training. 2018.\n\nParikh et al. [2016] Ankur P. Parikh, Oscar Täckström, Dipanjan Das, and Jakob Uszkoreit. A decomposable attention model for natural language inference. In EMNLP, 2016.\n\nShaw et al. [2018] Peter Shaw, Jakob Uszkoreit, and Ashish Vaswani. Self-attention with relative position representations. In NAACL-HLT, 2018.\n\nHuang et al. [2018] Cheng-Zhi Anna Huang, Ashish Vaswani, Jakob Uszkoreit, Noam Shazeer, I. Simon, C. Hawthorne, Andrew M. Dai, M. Hoffman, M. Dinculescu, and D. Eck. Music transformer. arXiv: Learning, 2018.\n\nDai et al. [2019] Zihang Dai, Z. Yang, Yiming Yang, J. Carbonell, Quoc V. Le, and R. Salakhutdinov. Transformer-xl: Attentive language models beyond a fixed-length context. In ACL, 2019.\n\nYang et al. [2019] Z. Yang, Zihang Dai, Yiming Yang, J. Carbonell, R. Salakhutdinov, and Quoc V. Le. Xlnet: Generalized autoregressive pretraining for language understanding. In NeurIPS, 2019.\n\nRaffel et al. [2020] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, W. Li, and Peter J. Liu. Exploring the limits of transfer learning with a unified text-to-text transformer. J. Mach. Learn. Res., 21:140:1–140:67, 2020.\n\nKe et al. [2020] Guolin Ke, Di He, and T. Liu. Rethinking positional encoding in language pre-training. ArXiv, abs/2006.15595, 2020.\n\nHe et al. [2020] Pengcheng He, Xiaodong Liu, Jianfeng Gao, and Weizhu Chen. Deberta: Decoding-enhanced bert with disentangled attention. ArXiv, abs/2006.03654, 2020.\n\nHuang et al. [2020] Zhiheng Huang, Davis Liang, Peng Xu, and Bing Xiang. Improve transformer models with better relative position embeddings. In Findings of the Association for Computational Linguistics: EMNLP 2020, pages 3327–3335, Online, November 2020. Association for Computational Linguistics. doi:10.18653/v1/2020.findings-emnlp.298. URL https://www.aclweb.org/anthology/2020.findings-emnlp.298.\n\nLiu et al. [2020] Xuanqing Liu, Hsiang-Fu Yu, Inderjit S. Dhillon, and Cho-Jui Hsieh. Learning to encode position for transformer with continuous dynamical model. In Proceedings of the 37th International Conference on Machine Learning, ICML 2020, 13-18 July 2020, Virtual Event, volume 119 of Proceedings of Machine Learning Research, pages 6327–6335. PMLR, 2020. URL http://proceedings.mlr.press/v119/liu20n.html.\n\nChen et al. [2018a] Tian Qi Chen, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. Neural ordinary differential equations. In Samy Bengio, Hanna M. Wallach, Hugo Larochelle, Kristen Grauman, Nicolò Cesa-Bianchi, and Roman Garnett, editors, Advances in Neural Information Processing Systems 31: Annual Conference on Neural Information Processing Systems 2018, NeurIPS 2018, December 3-8, 2018, Montréal, Canada, pages 6572–6583, 2018a. URL https://proceedings.neurips.cc/paper/2018/hash/69386f6bb1dfed68692a24c8686939b9-Abstract.html.\n\nWang et al. [2020] Benyou Wang, Donghao Zhao, Christina Lioma, Qiuchi Li, Peng Zhang, and Jakob Grue Simonsen. Encoding word order in complex embeddings. In International Conference on Learning Representations, 2020. URL https://openreview.net/forum?id=Hke-WTVtwr.\n\nKatharopoulos et al. [2020] Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and François Fleuret. Transformers are rnns: Fast autoregressive transformers with linear attention. In International Conference on Machine Learning, pages 5156–5165. PMLR, 2020.\n\nShen et al. [2021] Zhuoran Shen, Mingyuan Zhang, Haiyu Zhao, Shuai Yi, and Hongsheng Li. Efficient attention: Attention with linear complexities. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision, pages 3531–3539, 2021.\n\nSingh et al. [2018] Amapreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel Bowman. Glue: A multi-task benchmark and analysis platform for natural language understanding. 04 2018.\n\nChoromanski et al. [2020] Krzysztof Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, A. Gane, Tamás Sarlós, Peter Hawkins, J. Davis, Afroz Mohiuddin, Lukasz Kaiser, David Belanger, Lucy J. Colwell, and Adrian Weller. Rethinking attention with performers. ArXiv, abs/2009.14794, 2020.\n\nBojar et al. [2014] Ondrej Bojar, Christian Buck, Christian Federmann, Barry Haddow, Philipp Koehn, Johannes Leveling, Christof Monz, Pavel Pecina, Matt Post, Herve Saint-Amand, Radu Soricut, Lucia Specia, and Alevs Tamchyna. Findings of the 2014 workshop on statistical machine translation. pages 12–58, 06 2014. doi:10.3115/v1/W14-3302.\n\nSennrich et al. [2015] Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare words with subword units. 08 2015.\n\nOtt et al. [2019] Myle Ott, Sergey Edunov, Alexei Baevski, Angela Fan, Sam Gross, Nathan Ng, David Grangier, and Michael Auli. fairseq: A fast, extensible toolkit for sequence modeling. pages 48–53, 01 2019. doi:10.18653/v1/N19-4009.\n\nPapineni et al. [2002] Kishore Papineni, Salim Roukos, Todd Ward, and Wei Jing Zhu. Bleu: a method for automatic evaluation of machine translation. 10 2002. doi:10.3115/1073083.1073135.\n\nZhu et al. [2015] Yukun Zhu, Ryan Kiros, Richard Zemel, Ruslan Salakhutdinov, Raquel Urtasun, Antonio Torralba, and Sanja Fidler. Aligning books and movies: Towards story-like visual explanations by watching movies and reading books. In arXiv preprint arXiv:1506.06724, 2015.\n\nFoundation [2021] Wikimedia Foundation. Wikimedia downloads, https://dumps.wikimedia.org, 2021.\n\nLoshchilov and Hutter [2017] Ilya Loshchilov and Frank Hutter. Decoupled Weight Decay Regularization. arXiv e-prints, art. arXiv:1711.05101, November 2017.\n\nDolan and Brockett [2005] William B. Dolan and Chris Brockett. Automatically constructing a corpus of sentential paraphrases. In Proceedings of the Third International Workshop on Paraphrasing (IWP2005), 2005. URL https://www.aclweb.org/anthology/I05-5002.\n\nSocher et al. [2013] Richard Socher, A. Perelygin, J.Y. Wu, J. Chuang, C.D. Manning, A.Y. Ng, and C. Potts. Recursive deep models for semantic compositionality over a sentiment treebank. EMNLP, 1631:1631–1642, 01 2013.\n\nRajpurkar et al. [2016] Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and Percy Liang. Squad: 100,000+ questions for machine comprehension of text. pages 2383–2392, 01 2016. doi:10.18653/v1/D16-1264.\n\nAl-Natsheh [2017] Hussein Al-Natsheh. Udl at semeval-2017 task 1: Semantic textual similarity estimation of english sentence pairs using regression model over pairwise features. 08 2017.\n\nChen et al. [2018b] Z. Chen, H. Zhang, and L. Zhang, X.and Zhao. Quora question pairs., 2018b. URL https://www.kaggle.com/c/quora-question-pairs.\n\nWilliams et al. [2018] Adina Williams, Nikita Nangia, and Samuel Bowman. A broad-coverage challenge corpus for sentence understanding through inference. pages 1112–1122, 01 2018. doi:10.18653/v1/N18-1101.\n\nWolf et al. [2020] Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pierric Cistac, Tim Rault, Rémi Louf, Morgan Funtowicz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander M. Rush. Transformers: State-of-the-art natural language processing. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pages 38–45, Online, October 2020. Association for Computational Linguistics. URL https://www.aclweb.org/anthology/2020.emnlp-demos.6.\n\nMahoney [2006] Matt Mahoney. Large text compression benchmark, http://www.mattmahoney.net/dc/text.html, 2006.\n\nSu [2020] Jianlin Su. Wobert: Word-based chinese bert model - zhuiyiai. Technical report, 2020. URL https://github.com/ZhuiyiTechnology/WoBERT.\n\nWei et al. [2019] Victor Junqiu Wei, Xiaozhe Ren, Xiaoguang Li, Wenyong Huang, Yi Liao, Yasheng Wang, Jiashu Lin, Xin Jiang, Xiao Chen, and Qun Liu. Nezha: Neural contextualized representation for chinese language understanding. 08 2019.\n\nXiao et al. [2019] Chaojun Xiao, Haoxi Zhong, Zhipeng Guo, Cunchao Tu, Zhiyuan Liu, Maosong Sun, Tianyang Zhang, Xianpei Han, Zhen hu, Heng Wang, and Jianfeng Xu. Cail2019-scm: A dataset of similar case matching in legal domain. 11 2019."
+    }
+  ]
+}

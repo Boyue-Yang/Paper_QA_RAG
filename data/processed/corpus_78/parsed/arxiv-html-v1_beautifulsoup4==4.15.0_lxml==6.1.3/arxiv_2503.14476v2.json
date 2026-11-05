@@ -1,0 +1,2020 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2503.14476",
+  "version": "v2",
+  "title": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale",
+  "source_format": "html",
+  "source_sha256": "9ff01d5839f64b7fe16ebce861b7bc82618fd1790d1f7a4c174f9cacbaf74689",
+  "source_url": "https://arxiv.org/html/2503.14476v2",
+  "source_path": "data/corpus_78/html/arxiv_2503.14476v2.html",
+  "latex_error_elements": 2,
+  "quality_flags": [
+    "latex_conversion_errors_in_body"
+  ],
+  "sections": [
+    {
+      "section_id": "arxiv_2503.14476_v2_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_b16805303d1d2b5cd969",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "Inference scaling empowers LLMs with unprecedented reasoning ability, with reinforcement learning as the core technique to elicit complex reasoning. However, key technical details of state-of-the-art reasoning LLMs are concealed (such as in OpenAI o1 blog and DeepSeek R1 technical report), thus the community still struggles to reproduce their RL training results. We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and fully open-source a state-of-the-art large-scale RL system that achieves 50 points on AIME 2024 using Qwen2.5-32B base model. Unlike previous works that withhold training details, we introduce four key techniques of our algorithm that make large-scale LLM RL a success. In addition, we open-source our training code, which is built on the verl framework , along with a carefully curated and processed dataset. These components of our open-source system enhance reproducibility and support future research in large-scale LLM RL.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 986
+        }
+      ],
+      "text": "Inference scaling empowers LLMs with unprecedented reasoning ability, with reinforcement learning as the core technique to elicit complex reasoning. However, key technical details of state-of-the-art reasoning LLMs are concealed (such as in OpenAI o1 blog and DeepSeek R1 technical report), thus the community still struggles to reproduce their RL training results. We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and fully open-source a state-of-the-art large-scale RL system that achieves 50 points on AIME 2024 using Qwen2.5-32B base model. Unlike previous works that withhold training details, we introduce four key techniques of our algorithm that make large-scale LLM RL a success. In addition, we open-source our training code, which is built on the verl framework , along with a carefully curated and processed dataset. These components of our open-source system enhance reproducibility and support future research in large-scale LLM RL."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_dc3a4ba7dfd7bde1fcaf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Test-time scaling such as OpenAI’s o1 [1] and DeepSeek’s R1 [2] brings a profound paradigm shift to Large Language Models (LLMs) [3, 4, 5, 6, 7]. Test-time scaling enables longer Chain-of-Thought thinking and induces sophisticated reasoning behaviors, which makes the models superior in competitive math and coding tasks like AIME and Codeforces.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 346
+        },
+        {
+          "paragraph_id": "p_c4e65abf24818a6108c3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "The central technique driving the revolution is large-scale Reinforcement Learning (RL), which elicits complex reasoning behaviors such as self-verification and iterative refinement. However, the actual algorithm and key recipe for scalable RL training remains a myth, hidden from technical reports of existing reasoning models [1, 2, 8, 9, 10, 11]. In this paper, we reveal significant obstacles in large-scale RL training and open-source a scalable RL system with fully open-sourced algorithm, training code and dataset that provides democratized solutions with industry-level RL results.",
+          "kind": "text",
+          "char_start": 348,
+          "char_end": 938
+        },
+        {
+          "paragraph_id": "p_5d1dd985299cb7c4598b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "We experiment over Qwen2.5-32B [12] as the pretrained model for RL. In our initial GRPO run, we achieved only 30 points on AIME — a performance significantly below DeepSeek’s RL (47 points). A thorough analysis reveals that the naive GRPO baseline suffers from several key issues such as entropy collapse, reward noise, and training instability. The broader community has encountered similar challenges in reproducing DeepSeek’s results [13, 14, 15, 16, 17, 18, 19] suggesting that critical training details may have been omitted in the R1 paper that are required to develop an industry-level, large-scale, and reproducible RL system.",
+          "kind": "text",
+          "char_start": 940,
+          "char_end": 1574
+        },
+        {
+          "paragraph_id": "p_c74b1e97b642bb17a6cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "To close this gap, we release an open-source state-of-the-art system for large-scale LLM RL, which achieves 50 points on AIME 2024 based on Qwen2.5-32B model, outperforming previous state-of-the-art results achieved by DeepSeek-R1-Zero-Qwen-32B [2] (47 points) using 50% training steps (Figure 1). We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and introduce 4 key techniques to make RL shine in the long-CoT RL scenario. Details are presented in Section 3.",
+          "kind": "text",
+          "char_start": 1576,
+          "char_end": 2075
+        },
+        {
+          "paragraph_id": "p_5b1d7a1d26d0b8e28ea1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i1",
+          "text": "1. Clip-Higher, which promotes the diversity of the system and avoids entropy collapse;",
+          "kind": "list_item",
+          "char_start": 2077,
+          "char_end": 2164
+        },
+        {
+          "paragraph_id": "p_a407b8b92025aa2cb93c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i2",
+          "text": "2. Dynamic Sampling, which improves training efficiency and stability;",
+          "kind": "list_item",
+          "char_start": 2166,
+          "char_end": 2236
+        },
+        {
+          "paragraph_id": "p_ea6cdb2ca31361a30079",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i3",
+          "text": "3. Token-Level Policy Gradient Loss, which is critical in long-CoT RL scenarios;",
+          "kind": "list_item",
+          "char_start": 2238,
+          "char_end": 2318
+        },
+        {
+          "paragraph_id": "p_fc74075416c28c875947",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i4",
+          "text": "4. Overlong Reward Shaping, which reduces reward noise and stabilizes training.",
+          "kind": "list_item",
+          "char_start": 2320,
+          "char_end": 2399
+        },
+        {
+          "paragraph_id": "p_f445727582b526c11001",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.2",
+          "text": "Our implementation is based on verl [20]. By fully releasing our state-of-the-art RL system including training code and data, we aim to reveal valuable insights to large-scale LLM RL that benefit the larger community.",
+          "kind": "text",
+          "char_start": 2401,
+          "char_end": 2618
+        }
+      ],
+      "text": "Test-time scaling such as OpenAI’s o1 [1] and DeepSeek’s R1 [2] brings a profound paradigm shift to Large Language Models (LLMs) [3, 4, 5, 6, 7]. Test-time scaling enables longer Chain-of-Thought thinking and induces sophisticated reasoning behaviors, which makes the models superior in competitive math and coding tasks like AIME and Codeforces.\n\nThe central technique driving the revolution is large-scale Reinforcement Learning (RL), which elicits complex reasoning behaviors such as self-verification and iterative refinement. However, the actual algorithm and key recipe for scalable RL training remains a myth, hidden from technical reports of existing reasoning models [1, 2, 8, 9, 10, 11]. In this paper, we reveal significant obstacles in large-scale RL training and open-source a scalable RL system with fully open-sourced algorithm, training code and dataset that provides democratized solutions with industry-level RL results.\n\nWe experiment over Qwen2.5-32B [12] as the pretrained model for RL. In our initial GRPO run, we achieved only 30 points on AIME — a performance significantly below DeepSeek’s RL (47 points). A thorough analysis reveals that the naive GRPO baseline suffers from several key issues such as entropy collapse, reward noise, and training instability. The broader community has encountered similar challenges in reproducing DeepSeek’s results [13, 14, 15, 16, 17, 18, 19] suggesting that critical training details may have been omitted in the R1 paper that are required to develop an industry-level, large-scale, and reproducible RL system.\n\nTo close this gap, we release an open-source state-of-the-art system for large-scale LLM RL, which achieves 50 points on AIME 2024 based on Qwen2.5-32B model, outperforming previous state-of-the-art results achieved by DeepSeek-R1-Zero-Qwen-32B [2] (47 points) using 50% training steps (Figure 1). We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and introduce 4 key techniques to make RL shine in the long-CoT RL scenario. Details are presented in Section 3.\n\n1. Clip-Higher, which promotes the diversity of the system and avoids entropy collapse;\n\n2. Dynamic Sampling, which improves training efficiency and stability;\n\n3. Token-Level Policy Gradient Loss, which is critical in long-CoT RL scenarios;\n\n4. Overlong Reward Shaping, which reduces reward noise and stabilizes training.\n\nOur implementation is based on verl [20]. By fully releasing our state-of-the-art RL system including training code and data, we aim to reveal valuable insights to large-scale LLM RL that benefit the larger community."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0002",
+      "title": "2 Preliminary",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Preliminary"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0003",
+      "title": "2.1 Proximal Policy Optimization (PPO)",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS1",
+      "path": [
+        "2 Preliminary",
+        "2.1 Proximal Policy Optimization (PPO)"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_1c749862c158b0cb4cbf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.2",
+          "text": "PPO [21] introduces a clipped surrogate objective for policy optimization. By constraining the policy updates within a proximal region of the previous policy using clip, PPO stabilizes training and improves sample efficiency. Specifically, PPO updates the policy by maximizing the following objective:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 301
+        },
+        {
+          "paragraph_id": "p_c44344d9fc2dff3563a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E1",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{PPO}}(\\theta)=\\mathbb{E}_{(q,a)\\sim\\mathcal{D},o_{\\leq t}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)}\\Bigg[\\min\\Bigg(\\frac{\\pi_{\\theta}(o_{t}\\mid q,o_{<t})}{\\pi_{\\theta_{\\text{old}}}(o_{t}\\mid q,o_{<t})}\\hat{A}_{t},\\ \\text{clip}\\Bigg(\\frac{\\pi_{\\theta}(o_{t}\\mid q,o_{<t})}{\\pi_{\\theta_{\\text{old}}}(o_{t}\\mid q,o_{<t})},1-\\varepsilon,1+\\varepsilon\\Bigg)\\hat{A}_{t}\\Bigg)\\Bigg],",
+          "kind": "equation",
+          "char_start": 303,
+          "char_end": 712
+        },
+        {
+          "paragraph_id": "p_24a87617bcf4fc513540",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.3",
+          "text": "where $(q,a)$ is a question-answer pair from the data distribution $\\mathcal{D}$, $\\varepsilon$ is the clipping range of importance sampling ratio, and $\\hat{A}_{t}$ is an estimator of the advantage at time step $t$. Given the value function $V$ and the reward function $R$, $\\hat{A}_{t}$ is computed using the Generalized Advantage Estimation (GAE) [22]:",
+          "kind": "text",
+          "char_start": 714,
+          "char_end": 1069
+        },
+        {
+          "paragraph_id": "p_3bf6b6ce93f0fa671f76",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E2",
+          "text": "\\displaystyle\\hat{A}_{t}^{\\text{GAE}(\\gamma,\\lambda)}=\\sum_{l=0}^{\\infty}(\\gamma\\lambda)^{l}\\delta_{t+l},",
+          "kind": "equation",
+          "char_start": 1071,
+          "char_end": 1176
+        },
+        {
+          "paragraph_id": "p_0cf95b6c2d7bc31ebe83",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.4",
+          "text": "where",
+          "kind": "text",
+          "char_start": 1178,
+          "char_end": 1183
+        },
+        {
+          "paragraph_id": "p_ddb31160e38809e6bdb1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E3",
+          "text": "\\delta_{l}=R_{l}+\\gamma V(s_{l+1})-V(s_{l}),\\quad 0\\leq\\gamma,\\lambda\\leq 1.",
+          "kind": "equation",
+          "char_start": 1185,
+          "char_end": 1261
+        }
+      ],
+      "text": "PPO [21] introduces a clipped surrogate objective for policy optimization. By constraining the policy updates within a proximal region of the previous policy using clip, PPO stabilizes training and improves sample efficiency. Specifically, PPO updates the policy by maximizing the following objective:\n\n\\displaystyle\\mathcal{J}_{\\text{PPO}}(\\theta)=\\mathbb{E}_{(q,a)\\sim\\mathcal{D},o_{\\leq t}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)}\\Bigg[\\min\\Bigg(\\frac{\\pi_{\\theta}(o_{t}\\mid q,o_{<t})}{\\pi_{\\theta_{\\text{old}}}(o_{t}\\mid q,o_{<t})}\\hat{A}_{t},\\ \\text{clip}\\Bigg(\\frac{\\pi_{\\theta}(o_{t}\\mid q,o_{<t})}{\\pi_{\\theta_{\\text{old}}}(o_{t}\\mid q,o_{<t})},1-\\varepsilon,1+\\varepsilon\\Bigg)\\hat{A}_{t}\\Bigg)\\Bigg],\n\nwhere $(q,a)$ is a question-answer pair from the data distribution $\\mathcal{D}$, $\\varepsilon$ is the clipping range of importance sampling ratio, and $\\hat{A}_{t}$ is an estimator of the advantage at time step $t$. Given the value function $V$ and the reward function $R$, $\\hat{A}_{t}$ is computed using the Generalized Advantage Estimation (GAE) [22]:\n\n\\displaystyle\\hat{A}_{t}^{\\text{GAE}(\\gamma,\\lambda)}=\\sum_{l=0}^{\\infty}(\\gamma\\lambda)^{l}\\delta_{t+l},\n\nwhere\n\n\\delta_{l}=R_{l}+\\gamma V(s_{l+1})-V(s_{l}),\\quad 0\\leq\\gamma,\\lambda\\leq 1."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0004",
+      "title": "2.2 Group Relative Policy Optimization (GRPO)",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS2",
+      "path": [
+        "2 Preliminary",
+        "2.2 Group Relative Policy Optimization (GRPO)"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_441e26306e17135c6a70",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p1.1",
+          "text": "Compared to PPO, GRPO eliminates the value function and estimates the advantage in a group-relative manner. For a specific question-answer pair $(q,a)$, the behavior policy $\\pi_{\\theta_{\\text{old}}}$ samples a group of $G$ individual responses $\\{o_{i}\\}_{i=1}^{G}$. Then, the advantage of the $i$-th response is calculated by normalizing the group-level rewards $\\{R_{i}\\}_{i=1}^{G}$:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 386
+        },
+        {
+          "paragraph_id": "p_dcec603c14f559234c22",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E4",
+          "text": "\\hat{A}_{i,t}=\\frac{r_{i}-\\text{mean}(\\{R_{i}\\}_{i=1}^{G})}{\\text{std}(\\{R_{i}\\}_{i=1}^{G})}.",
+          "kind": "equation",
+          "char_start": 388,
+          "char_end": 481
+        },
+        {
+          "paragraph_id": "p_e8c5ece6d83a67f0af7f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p2.2",
+          "text": "Similar to PPO, GRPO adopts a clipped objective, together with a directly imposed KL penalty term:",
+          "kind": "text",
+          "char_start": 483,
+          "char_end": 581
+        },
+        {
+          "paragraph_id": "p_a305ada04cf016e5fb77",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E5",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{GRPO}}(\\theta) \\displaystyle=\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{G}\\sum_{i=1}^{G}\\frac{1}{|o_{i}|}\\sum_{t=1}^{|o_{i}|}\\Bigg(\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-\\varepsilon,1+\\varepsilon\\Big)\\hat{A}_{i,t}\\Big)-\\beta D_{\\text{KL}}(\\pi_{\\theta}||\\pi_{\\text{ref}})\\Bigg)\\Bigg],",
+          "kind": "equation",
+          "char_start": 583,
+          "char_end": 1014
+        },
+        {
+          "paragraph_id": "p_aba59c2a9df4050835aa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p2.3",
+          "text": "where",
+          "kind": "text",
+          "char_start": 1016,
+          "char_end": 1021
+        },
+        {
+          "paragraph_id": "p_6d9cec45a742416ab8c8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E6",
+          "text": "r_{i,t}(\\theta)=\\frac{\\pi_{\\theta}(o_{i,t}\\mid q,o_{i,<t})}{\\pi_{\\theta_{\\text{old}}}(o_{i,t}\\mid q,o_{i,<t})}.",
+          "kind": "equation",
+          "char_start": 1023,
+          "char_end": 1134
+        },
+        {
+          "paragraph_id": "p_a213cd25d2913d9ea705",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.p3.1",
+          "text": "It is also worth noting that GRPO computes the objective at the sample-level. To be exact, GRPO first calculates the mean loss within each generated sequence, before averaging the loss of different samples. As we will be discussing in Section 3.3, such difference may have an impact on the performance of the algorithm.",
+          "kind": "text",
+          "char_start": 1136,
+          "char_end": 1455
+        },
+        {
+          "paragraph_id": "p_e9e5d74c200344f1cac3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.F2",
+          "text": "Figure 2: The accuracy on the AIME test set and the entropy of the actor model’s generated probabilities during the RL training process, both before and after applying Clip-Higher strategy.",
+          "kind": "caption",
+          "char_start": 1457,
+          "char_end": 1646
+        }
+      ],
+      "text": "Compared to PPO, GRPO eliminates the value function and estimates the advantage in a group-relative manner. For a specific question-answer pair $(q,a)$, the behavior policy $\\pi_{\\theta_{\\text{old}}}$ samples a group of $G$ individual responses $\\{o_{i}\\}_{i=1}^{G}$. Then, the advantage of the $i$-th response is calculated by normalizing the group-level rewards $\\{R_{i}\\}_{i=1}^{G}$:\n\n\\hat{A}_{i,t}=\\frac{r_{i}-\\text{mean}(\\{R_{i}\\}_{i=1}^{G})}{\\text{std}(\\{R_{i}\\}_{i=1}^{G})}.\n\nSimilar to PPO, GRPO adopts a clipped objective, together with a directly imposed KL penalty term:\n\n\\displaystyle\\mathcal{J}_{\\text{GRPO}}(\\theta) \\displaystyle=\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{G}\\sum_{i=1}^{G}\\frac{1}{|o_{i}|}\\sum_{t=1}^{|o_{i}|}\\Bigg(\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-\\varepsilon,1+\\varepsilon\\Big)\\hat{A}_{i,t}\\Big)-\\beta D_{\\text{KL}}(\\pi_{\\theta}||\\pi_{\\text{ref}})\\Bigg)\\Bigg],\n\nwhere\n\nr_{i,t}(\\theta)=\\frac{\\pi_{\\theta}(o_{i,t}\\mid q,o_{i,<t})}{\\pi_{\\theta_{\\text{old}}}(o_{i,t}\\mid q,o_{i,<t})}.\n\nIt is also worth noting that GRPO computes the objective at the sample-level. To be exact, GRPO first calculates the mean loss within each generated sequence, before averaging the loss of different samples. As we will be discussing in Section 3.3, such difference may have an impact on the performance of the algorithm.\n\nFigure 2: The accuracy on the AIME test set and the entropy of the actor model’s generated probabilities during the RL training process, both before and after applying Clip-Higher strategy."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0005",
+      "title": "2.3 Removing KL Divergence",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS3",
+      "path": [
+        "2 Preliminary",
+        "2.3 Removing KL Divergence"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2444a29ae10e132b49a6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.p1.1",
+          "text": "The KL penalty term is used to regulate the divergence between the online policy and the frozen reference policy. In the RLHF scenario [23], the goal of RL is to align the model behavior without diverging too far from the initial model. However, during training the long-CoT reasoning model, the model distribution can diverge significantly from the initial model, thus this restriction is not necessary. Therefore, we will exclude the KL term from our proposed algorithm.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 472
+        }
+      ],
+      "text": "The KL penalty term is used to regulate the divergence between the online policy and the frozen reference policy. In the RLHF scenario [23], the goal of RL is to align the model behavior without diverging too far from the initial model. However, during training the long-CoT reasoning model, the model distribution can diverge significantly from the initial model, thus this restriction is not necessary. Therefore, we will exclude the KL term from our proposed algorithm."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0006",
+      "title": "2.4 Rule-based Reward Modeling",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS4",
+      "path": [
+        "2 Preliminary",
+        "2.4 Rule-based Reward Modeling"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_af874a2dfac97b9c2d64",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS4.p1.1",
+          "text": "The use of reward model usually suffers from the reward hacking problem [24, 25, 26, 27, 28, 29]. Instead, we directly use the final accuracy of a verifiable task as the outcome reward, computed using the following rule:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 220
+        },
+        {
+          "paragraph_id": "p_967f73fa1157e657d1c1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E7",
+          "text": "R(\\hat{y},y)=\\begin{cases}1,&\\texttt{is\\_equivalent}(\\hat{y},y)\\\\ -1,&\\text{otherwise}\\end{cases}",
+          "kind": "equation",
+          "char_start": 222,
+          "char_end": 319
+        },
+        {
+          "paragraph_id": "p_55838ecd87a571c1c835",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS4.p1.2",
+          "text": "where $y$ is the ground-truth answer and $\\hat{y}$ is the predicted answer. This is proved to be an effective approach to activating the base model’s reasoning capability, as shown in multiple domains such as automated theorem proving [30, 31, 32, 33], computer programming [34, 35, 36, 37], and mathematics competition [2].",
+          "kind": "text",
+          "char_start": 321,
+          "char_end": 645
+        }
+      ],
+      "text": "The use of reward model usually suffers from the reward hacking problem [24, 25, 26, 27, 28, 29]. Instead, we directly use the final accuracy of a verifiable task as the outcome reward, computed using the following rule:\n\nR(\\hat{y},y)=\\begin{cases}1,&\\texttt{is\\_equivalent}(\\hat{y},y)\\\\ -1,&\\text{otherwise}\\end{cases}\n\nwhere $y$ is the ground-truth answer and $\\hat{y}$ is the predicted answer. This is proved to be an effective approach to activating the base model’s reasoning capability, as shown in multiple domains such as automated theorem proving [30, 31, 32, 33], computer programming [34, 35, 36, 37], and mathematics competition [2]."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0007",
+      "title": "3 DAPO",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 DAPO"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_3cefe2aff1d33d026d28",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.2",
+          "text": "We propose the Decouple Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm. DAPO samples a group of outputs $\\{o_{i}\\}_{i=1}^{G}$ for each question $q$ paired with the answer $a$, and optimizes the policy via the following objective:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 245
+        },
+        {
+          "paragraph_id": "p_29493b155a0aa1178348",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E8",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G,",
+          "kind": "equation",
+          "char_start": 247,
+          "char_end": 747
+        },
+        {
+          "paragraph_id": "p_42b7188c843b93c9bc33",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.3",
+          "text": "where",
+          "kind": "text",
+          "char_start": 749,
+          "char_end": 754
+        },
+        {
+          "paragraph_id": "p_2c3cd8251363815912dd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E9",
+          "text": "r_{i,t}(\\theta)=\\frac{\\pi_{\\theta}(o_{i,t}\\mid q,o_{i,<t})}{\\pi_{\\theta_{\\text{old}}}(o_{i,t}\\mid q,o_{i,<t})},\\quad\\hat{A}_{i,t}=\\frac{R_{i}-\\text{mean}(\\{R_{i}\\}_{i=1}^{G})}{\\text{std}(\\{R_{i}\\}_{i=1}^{G})}.",
+          "kind": "equation",
+          "char_start": 756,
+          "char_end": 965
+        },
+        {
+          "paragraph_id": "p_7b8aa89ee16fa5f081f5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.4",
+          "text": "The full algorithm can be found in Algorithm 1. In this section, we will introduce the key techniques associated with DAPO.",
+          "kind": "text",
+          "char_start": 967,
+          "char_end": 1090
+        }
+      ],
+      "text": "We propose the Decouple Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm. DAPO samples a group of outputs $\\{o_{i}\\}_{i=1}^{G}$ for each question $q$ paired with the answer $a$, and optimizes the policy via the following objective:\n\n\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G,\n\nwhere\n\nr_{i,t}(\\theta)=\\frac{\\pi_{\\theta}(o_{i,t}\\mid q,o_{i,<t})}{\\pi_{\\theta_{\\text{old}}}(o_{i,t}\\mid q,o_{i,<t})},\\quad\\hat{A}_{i,t}=\\frac{R_{i}-\\text{mean}(\\{R_{i}\\}_{i=1}^{G})}{\\text{std}(\\{R_{i}\\}_{i=1}^{G})}.\n\nThe full algorithm can be found in Algorithm 1. In this section, we will introduce the key techniques associated with DAPO."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0008",
+      "title": "3.1 Raise the Ceiling: Clip-Higher",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS1",
+      "path": [
+        "3 DAPO",
+        "3.1 Raise the Ceiling: Clip-Higher"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_98b0aa48b94c8e2e768f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p1.1",
+          "text": "In our initial experiments using naive PPO [21] or GRPO [38], we observed the entropy collapse phenomenon: the entropy of the policy decreases quickly as training progresses (Figure 2(b)). The sampled responses of certain groups tend to be nearly identical. This indicates limited exploration and early deterministic policy, which can hinder the scaling process.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 362
+        },
+        {
+          "paragraph_id": "p_3a81e8b9465a6604355f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p2.1",
+          "text": "We propose the Clip-Higher strategy to address this issue. Clipping over the importance sampling ratio is introduced in Clipped Proximal Policy Optimization (PPO-Clip) [21] to restrict the trust region and enhance the stability of RL. We identify that the upper clip can restrict the exploration of the policy, where making an ‘exploitation’ token more probable is much easier yet the probability of an unlikely ‘exploration’ token is too tightly bounded to be uplifted.",
+          "kind": "text",
+          "char_start": 364,
+          "char_end": 834
+        },
+        {
+          "paragraph_id": "p_91db9db0004ae92a826a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p3.1",
+          "text": "Concretely, when $\\varepsilon=0.2$ (the default value of most algorithms) and $\\hat{A}_{i,t}>0$ (the system tries to increase the probability), consider two actions with probabilities $\\pi_{\\theta_{\\text{old}}}(o_{i}\\mid q)=0.01$ and $0.9$. The upper bounds of the increased probabilities $\\pi_{\\theta}(o_{i}\\mid q)$ are $0.012$ and $1.08$, respectively $\\left(\\pi_{\\theta_{\\text{old}}}\\cdot(1+\\epsilon)\\right)$. This implies that ‘exploitation’ tokens with a higher probability (e.g., 0.9) are not constrained to get even extremely larger probabilities like 0.999. Conversely, for low-probability ‘exploration’ tokens, achieving a non-trivial increase in probability is considerably more challenging. Empirically, we also observe that the mean probability of up-clipped tokens is low: $\\pi_{\\theta}(o_{i}\\mid q)<0.2$ (Figure 3(a)). This finding supports our intuition that the upper clipping threshold indeed restricts the probability increase of low-probability ‘exploration’ tokens, thereby potentially constraining the exploration of the system.",
+          "kind": "text",
+          "char_start": 836,
+          "char_end": 1885
+        },
+        {
+          "paragraph_id": "p_8406407bab8d5914f753",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p4.2",
+          "text": "Adhering to the Clip-Higher strategy, we decouple the lower and higher clipping range as $\\varepsilon_{\\text{low}}$ and $\\varepsilon_{\\text{high}}$, as highlighted in Equation 10:",
+          "kind": "text",
+          "char_start": 1887,
+          "char_end": 2066
+        },
+        {
+          "paragraph_id": "p_917a5bfb73d6db858248",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E10",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\color[rgb]{1,0,0}\\varepsilon_{\\text{low}}},1+{\\color[rgb]{1,0,0}\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G.",
+          "kind": "equation",
+          "char_start": 2068,
+          "char_end": 2604
+        },
+        {
+          "paragraph_id": "p_51007e9c77f336ed4fd2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p4.3",
+          "text": "We increase the value of $\\varepsilon_{\\text{high}}$ to leave more room for the increase of low-probability tokens. As shown in Figure 2, this adjustment effectively enhances the policy’s entropy and facilitates the generation of more diverse samples. We keep $\\varepsilon_{\\text{low}}$ as it is, because increasing it will suppress the probability of these tokens to $0$, resulting in the collapse of the sampling space.",
+          "kind": "text",
+          "char_start": 2606,
+          "char_end": 3027
+        },
+        {
+          "paragraph_id": "p_21e0bf6d53155b106439",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F3",
+          "text": "Figure 3: The mean up-clipped probability as well as the ratio of prompts with accuracy=1.",
+          "kind": "caption",
+          "char_start": 3029,
+          "char_end": 3119
+        }
+      ],
+      "text": "In our initial experiments using naive PPO [21] or GRPO [38], we observed the entropy collapse phenomenon: the entropy of the policy decreases quickly as training progresses (Figure 2(b)). The sampled responses of certain groups tend to be nearly identical. This indicates limited exploration and early deterministic policy, which can hinder the scaling process.\n\nWe propose the Clip-Higher strategy to address this issue. Clipping over the importance sampling ratio is introduced in Clipped Proximal Policy Optimization (PPO-Clip) [21] to restrict the trust region and enhance the stability of RL. We identify that the upper clip can restrict the exploration of the policy, where making an ‘exploitation’ token more probable is much easier yet the probability of an unlikely ‘exploration’ token is too tightly bounded to be uplifted.\n\nConcretely, when $\\varepsilon=0.2$ (the default value of most algorithms) and $\\hat{A}_{i,t}>0$ (the system tries to increase the probability), consider two actions with probabilities $\\pi_{\\theta_{\\text{old}}}(o_{i}\\mid q)=0.01$ and $0.9$. The upper bounds of the increased probabilities $\\pi_{\\theta}(o_{i}\\mid q)$ are $0.012$ and $1.08$, respectively $\\left(\\pi_{\\theta_{\\text{old}}}\\cdot(1+\\epsilon)\\right)$. This implies that ‘exploitation’ tokens with a higher probability (e.g., 0.9) are not constrained to get even extremely larger probabilities like 0.999. Conversely, for low-probability ‘exploration’ tokens, achieving a non-trivial increase in probability is considerably more challenging. Empirically, we also observe that the mean probability of up-clipped tokens is low: $\\pi_{\\theta}(o_{i}\\mid q)<0.2$ (Figure 3(a)). This finding supports our intuition that the upper clipping threshold indeed restricts the probability increase of low-probability ‘exploration’ tokens, thereby potentially constraining the exploration of the system.\n\nAdhering to the Clip-Higher strategy, we decouple the lower and higher clipping range as $\\varepsilon_{\\text{low}}$ and $\\varepsilon_{\\text{high}}$, as highlighted in Equation 10:\n\n\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\color[rgb]{1,0,0}\\varepsilon_{\\text{low}}},1+{\\color[rgb]{1,0,0}\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G.\n\nWe increase the value of $\\varepsilon_{\\text{high}}$ to leave more room for the increase of low-probability tokens. As shown in Figure 2, this adjustment effectively enhances the policy’s entropy and facilitates the generation of more diverse samples. We keep $\\varepsilon_{\\text{low}}$ as it is, because increasing it will suppress the probability of these tokens to $0$, resulting in the collapse of the sampling space.\n\nFigure 3: The mean up-clipped probability as well as the ratio of prompts with accuracy=1."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0009",
+      "title": "3.2 The More the Merrier: Dynamic Sampling",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2",
+      "path": [
+        "3 DAPO",
+        "3.2 The More the Merrier: Dynamic Sampling"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_75c4610acb5826657fa7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p1.1",
+          "text": "Existing RL algorithm suffers from the gradient-decreasing problem when some prompts have accuracy equal to 1. For example for GRPO, if all outputs $\\{o_{i}\\}_{i=1}^{G}$ of a particular prompt are correct and receive the same reward, the resulting advantage for this group is zero. A zero advantage results in zero policy gradients, shrinking the magnitude and increasing the noise sensitivity of the batch gradient, thereby degrading sample efficiency. Empirically, the number of samples with accuracy equal to 1 continues to increase, as shown in Figure 3(b). This means that the effective number of prompts in each batch keeps decreasing, which can lead to larger variance in gradient and dampens the gradient signals for model training.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 740
+        },
+        {
+          "paragraph_id": "p_c48962c10efa4b9feb29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p2.1",
+          "text": "To this end, we propose to over-sample and filter out prompts with the accuracy equal to 1 and 0 as illustrated in Equation 11, leaving all prompts in the batch with effective gradients and keeping a consistent number of prompts. The sampling cost for each batch is dynamic. Before training, we keep sampling until the batch is fully filled with samples whose accuracy is neither 0 nor 1.",
+          "kind": "text",
+          "char_start": 742,
+          "char_end": 1130
+        },
+        {
+          "paragraph_id": "p_dfef9ff1ae205a9ee0c2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E11",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle\\color[rgb]{1,0,0}{\\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G}.",
+          "kind": "equation",
+          "char_start": 1132,
+          "char_end": 1665
+        },
+        {
+          "paragraph_id": "p_a71c048ed1d7ed63570c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p4.1",
+          "text": "Note that this strategy does not necessarily impede training efficiency, because the generation time is typically dominated by the generation of long-tail samples if the RL system is synchronized and the generation stage is not pipelined. Besides, we find that with dynamic sampling the experiment achieves the same performance faster as shown in Figure 6.",
+          "kind": "text",
+          "char_start": 1667,
+          "char_end": 2023
+        }
+      ],
+      "text": "Existing RL algorithm suffers from the gradient-decreasing problem when some prompts have accuracy equal to 1. For example for GRPO, if all outputs $\\{o_{i}\\}_{i=1}^{G}$ of a particular prompt are correct and receive the same reward, the resulting advantage for this group is zero. A zero advantage results in zero policy gradients, shrinking the magnitude and increasing the noise sensitivity of the batch gradient, thereby degrading sample efficiency. Empirically, the number of samples with accuracy equal to 1 continues to increase, as shown in Figure 3(b). This means that the effective number of prompts in each batch keeps decreasing, which can lead to larger variance in gradient and dampens the gradient signals for model training.\n\nTo this end, we propose to over-sample and filter out prompts with the accuracy equal to 1 and 0 as illustrated in Equation 11, leaving all prompts in the batch with effective gradients and keeping a consistent number of prompts. The sampling cost for each batch is dynamic. Before training, we keep sampling until the batch is fully filled with samples whose accuracy is neither 0 nor 1.\n\n\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\sum_{i=1}^{G}|o_{i}|}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg] \\displaystyle\\text{s.t.} \\displaystyle\\color[rgb]{1,0,0}{\\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G}.\n\nNote that this strategy does not necessarily impede training efficiency, because the generation time is typically dominated by the generation of long-tail samples if the RL system is synchronized and the generation stage is not pipelined. Besides, we find that with dynamic sampling the experiment achieves the same performance faster as shown in Figure 6."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0010",
+      "title": "3.3 Rebalancing Act: Token-Level Policy Gradient Loss",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS3",
+      "path": [
+        "3 DAPO",
+        "3.3 Rebalancing Act: Token-Level Policy Gradient Loss"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_62acccbcc2a26751f30e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p1.1",
+          "text": "The original GRPO algorithm employs a sample-level loss calculation, which involves first averaging the losses by token within each sample and then aggregating the losses across samples. In this approach, each sample is assigned an equal weight in the final loss computation. However, we find that this method of loss reduction introduces several challenges in the context of long-CoT RL scenarios.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 398
+        },
+        {
+          "paragraph_id": "p_cb4ca11660a80c444a98",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p2.1",
+          "text": "Since all samples are assigned the same weight in the loss calculation, tokens within longer responses (which contain more tokens) may have a disproportionately lower contribution to the overall loss, which can lead to two adverse effects. First, for high-quality long samples, this effect can impede the model’s ability to learn reasoning-relevant patterns within them. Second, we observe that excessively long samples often exhibit low-quality patterns such as gibberish and repetitive words. Thus, sample-level loss calculation, due to its inability to effectively penalize those undesirable patterns in long samples, leads to an unhealthy increase in entropy and response length, as shown in Figure 4(a) and Figure 4(b).",
+          "kind": "text",
+          "char_start": 400,
+          "char_end": 1124
+        },
+        {
+          "paragraph_id": "p_300a6cb66fbdd942bba7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F4",
+          "text": "Figure 4: The entropy of the probability distribution of the actor model, as well as the changes in response length.",
+          "kind": "caption",
+          "char_start": 1126,
+          "char_end": 1242
+        },
+        {
+          "paragraph_id": "p_397a75016c44080e8a59",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p3.2",
+          "text": "We introduce a Token-level Policy Gradient Loss in the long-CoT RL scenario to address the above limitations:",
+          "kind": "text",
+          "char_start": 1244,
+          "char_end": 1353
+        },
+        {
+          "paragraph_id": "p_e891b0180be1bddc6034",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E12",
+          "text": "\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\color[rgb]{1,0,0}\\sum_{i=1}^{G}|o_{i}|}{\\color[rgb]{1,0,0}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg], \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G.",
+          "kind": "equation",
+          "char_start": 1355,
+          "char_end": 1894
+        },
+        {
+          "paragraph_id": "p_0f97ffa37f96fabeadc6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p3.3",
+          "text": "In this setting, longer sequences can have more influence on the overall gradient update compared to shorter sequences. Moreover, from the perspective of individual tokens, if a particular generation pattern can lead to an increase or decrease in reward, it will be equally prompted or suppressed, regardless of the length of the response in which it appears.",
+          "kind": "text",
+          "char_start": 1896,
+          "char_end": 2255
+        }
+      ],
+      "text": "The original GRPO algorithm employs a sample-level loss calculation, which involves first averaging the losses by token within each sample and then aggregating the losses across samples. In this approach, each sample is assigned an equal weight in the final loss computation. However, we find that this method of loss reduction introduces several challenges in the context of long-CoT RL scenarios.\n\nSince all samples are assigned the same weight in the loss calculation, tokens within longer responses (which contain more tokens) may have a disproportionately lower contribution to the overall loss, which can lead to two adverse effects. First, for high-quality long samples, this effect can impede the model’s ability to learn reasoning-relevant patterns within them. Second, we observe that excessively long samples often exhibit low-quality patterns such as gibberish and repetitive words. Thus, sample-level loss calculation, due to its inability to effectively penalize those undesirable patterns in long samples, leads to an unhealthy increase in entropy and response length, as shown in Figure 4(a) and Figure 4(b).\n\nFigure 4: The entropy of the probability distribution of the actor model, as well as the changes in response length.\n\nWe introduce a Token-level Policy Gradient Loss in the long-CoT RL scenario to address the above limitations:\n\n\\displaystyle\\mathcal{J}_{\\text{DAPO}}(\\theta)= \\displaystyle\\mathbb{E}_{(q,a)\\sim\\mathcal{D},\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot\\mid q)} \\displaystyle\\Bigg[\\frac{1}{\\color[rgb]{1,0,0}\\sum_{i=1}^{G}|o_{i}|}{\\color[rgb]{1,0,0}\\sum_{i=1}^{G}\\sum_{t=1}^{|o_{i}|}}\\min\\Big(r_{i,t}(\\theta)\\hat{A}_{i,t},\\ \\text{clip}\\Big(r_{i,t}(\\theta),1-{\\varepsilon_{\\text{low}}},1+{\\varepsilon_{\\text{high}}}\\Big)\\hat{A}_{i,t}\\Big)\\Bigg], \\displaystyle\\text{s.t.} \\displaystyle 0<\\Big|\\{o_{i}\\mid\\texttt{is\\_equivalent}(a,o_{i})\\}\\Big|<G.\n\nIn this setting, longer sequences can have more influence on the overall gradient update compared to shorter sequences. Moreover, from the perspective of individual tokens, if a particular generation pattern can lead to an increase or decrease in reward, it will be equally prompted or suppressed, regardless of the length of the response in which it appears."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0011",
+      "title": "3.4 Hide and Seek: Overlong Reward Shaping",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4",
+      "path": [
+        "3 DAPO",
+        "3.4 Hide and Seek: Overlong Reward Shaping"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_170fb4381a09338bad8b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p1.1",
+          "text": "In RL training, we typically set a maximum length for generation, with overlong samples truncated accordingly. We find that improper reward shaping for truncated samples can introduce reward noise and significantly disrupt the training process.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 244
+        },
+        {
+          "paragraph_id": "p_bc277b5d50731ba3335d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p2.1",
+          "text": "By default, we assign a punitive reward to truncated samples. This approach may introduce noise into the training process, as a sound reasoning process can be penalized solely due to its excessive length. Such penalties can potentially confuse the model regarding the validity of its reasoning process.",
+          "kind": "text",
+          "char_start": 246,
+          "char_end": 548
+        },
+        {
+          "paragraph_id": "p_2b11384803145d172483",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p3.1",
+          "text": "To investigate the impact of this reward noise, we first apply an Overlong Filtering strategy which masks the loss of truncated samples. We find that this approach significantly stabilizes training and enhances performance, as demonstrated in Figure 5.",
+          "kind": "text",
+          "char_start": 550,
+          "char_end": 802
+        },
+        {
+          "paragraph_id": "p_672ef1102764bc2a2dc8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F5",
+          "text": "Figure 5: The accuracy of the actor model on AIME and the entropy of its generation probabilities, both before and after applying Overlong Reward Shaping strategy.",
+          "kind": "caption",
+          "char_start": 804,
+          "char_end": 967
+        },
+        {
+          "paragraph_id": "p_1dd287515f407810856b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T1.3",
+          "text": "Algorithm 1 DAPO: Decoupled Clip and Dynamic sAmpling Policy Optimization\nInput initial policy model $\\pi_{\\theta}$; reawrd model $R$; task prompts $\\mathcal{D}$; hyperparameters $\\varepsilon_{\\mathtt{low}},\\varepsilon_{\\mathtt{high}}$\n1: for step = 1,…,M do\n2: Sample a batch $\\mathcal{D}_{b}$ from $\\mathcal{D}$\n3: Update the old policy model $\\pi_{\\theta_{old}}\\leftarrow\\pi_{\\theta}$\n4: Sample G outputs $\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot|q)$ for each question $q\\in\\mathcal{D}_{b}$\n5: Compute rewards $\\{r_{i}\\}_{i=1}^{G}$ for each sampled output $o_{i}$ by running $R$\n6: Filter out $o_{i}$ and add the remaining to the dynamic sampling buffer (Dynamic Sampling Equation 11)\n7: if buffer size $n_{b}<N$:\n8: continue\n9: For each $o_{i}$ in the buffer, compute $\\hat{A}_{i,t}$ for the t-th token of $o_{i}$ (Equation 9)\n10: for iteration = 1, …, $\\mu$ do\n11: Update the policy model $\\pi_{\\theta}$ by maximizing the DAPO objective (Equation 8)\nOutput $\\pi_{\\theta}$",
+          "kind": "table",
+          "char_start": 969,
+          "char_end": 1959
+        },
+        {
+          "paragraph_id": "p_60922fbf01e0e5677574",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T1",
+          "text": "Table 1:",
+          "kind": "caption",
+          "char_start": 1961,
+          "char_end": 1969
+        },
+        {
+          "paragraph_id": "p_6a23ce74a670b8526c4a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p4.1",
+          "text": "Furthermore, we propose Soft Overlong Punishment (Equation 13), a length-aware penalty mechanism designed to shape the reward for truncated samples. Specifically, when the response length exceeds the predefined maximum value, we define a punishment interval. Within this interval, the longer the response, the greater the punishment it receives. This penalty is added to the original rule-based correctness reward, thereby signaling to the model to avoid excessively long responses.",
+          "kind": "text",
+          "char_start": 1971,
+          "char_end": 2453
+        },
+        {
+          "paragraph_id": "p_ce1b49386c81b0f84668",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E13",
+          "text": "R_{\\text{length}}(y)=\\begin{cases}0,&|y|\\leq L_{\\text{max}}-L_{\\text{cache}}\\\\ \\frac{(L_{\\text{max}}-L_{\\text{cache}})-|y|}{L_{\\text{cache}}},&L_{\\text{max}}-L_{\\text{cache}}<|y|\\leq L_{\\text{max}}\\\\ -1,&L_{\\text{max}}<|y|\\end{cases}",
+          "kind": "equation",
+          "char_start": 2455,
+          "char_end": 2688
+        }
+      ],
+      "text": "In RL training, we typically set a maximum length for generation, with overlong samples truncated accordingly. We find that improper reward shaping for truncated samples can introduce reward noise and significantly disrupt the training process.\n\nBy default, we assign a punitive reward to truncated samples. This approach may introduce noise into the training process, as a sound reasoning process can be penalized solely due to its excessive length. Such penalties can potentially confuse the model regarding the validity of its reasoning process.\n\nTo investigate the impact of this reward noise, we first apply an Overlong Filtering strategy which masks the loss of truncated samples. We find that this approach significantly stabilizes training and enhances performance, as demonstrated in Figure 5.\n\nFigure 5: The accuracy of the actor model on AIME and the entropy of its generation probabilities, both before and after applying Overlong Reward Shaping strategy.\n\nAlgorithm 1 DAPO: Decoupled Clip and Dynamic sAmpling Policy Optimization\nInput initial policy model $\\pi_{\\theta}$; reawrd model $R$; task prompts $\\mathcal{D}$; hyperparameters $\\varepsilon_{\\mathtt{low}},\\varepsilon_{\\mathtt{high}}$\n1: for step = 1,…,M do\n2: Sample a batch $\\mathcal{D}_{b}$ from $\\mathcal{D}$\n3: Update the old policy model $\\pi_{\\theta_{old}}\\leftarrow\\pi_{\\theta}$\n4: Sample G outputs $\\{o_{i}\\}_{i=1}^{G}\\sim\\pi_{\\theta_{\\text{old}}}(\\cdot|q)$ for each question $q\\in\\mathcal{D}_{b}$\n5: Compute rewards $\\{r_{i}\\}_{i=1}^{G}$ for each sampled output $o_{i}$ by running $R$\n6: Filter out $o_{i}$ and add the remaining to the dynamic sampling buffer (Dynamic Sampling Equation 11)\n7: if buffer size $n_{b}<N$:\n8: continue\n9: For each $o_{i}$ in the buffer, compute $\\hat{A}_{i,t}$ for the t-th token of $o_{i}$ (Equation 9)\n10: for iteration = 1, …, $\\mu$ do\n11: Update the policy model $\\pi_{\\theta}$ by maximizing the DAPO objective (Equation 8)\nOutput $\\pi_{\\theta}$\n\nTable 1:\n\nFurthermore, we propose Soft Overlong Punishment (Equation 13), a length-aware penalty mechanism designed to shape the reward for truncated samples. Specifically, when the response length exceeds the predefined maximum value, we define a punishment interval. Within this interval, the longer the response, the greater the punishment it receives. This penalty is added to the original rule-based correctness reward, thereby signaling to the model to avoid excessively long responses.\n\nR_{\\text{length}}(y)=\\begin{cases}0,&|y|\\leq L_{\\text{max}}-L_{\\text{cache}}\\\\ \\frac{(L_{\\text{max}}-L_{\\text{cache}})-|y|}{L_{\\text{cache}}},&L_{\\text{max}}-L_{\\text{cache}}<|y|\\leq L_{\\text{max}}\\\\ -1,&L_{\\text{max}}<|y|\\end{cases}"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0012",
+      "title": "3.5 Dataset Transformation",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS5",
+      "path": [
+        "3 DAPO",
+        "3.5 Dataset Transformation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6a3426441523b55a30e1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS5.p1.1",
+          "text": "Our dataset is sourced from the web and official competition homepages through a combination of web scraping and manual annotation. The answers of math dataset typically come in a variety of formats, such as expression, formula and number, which makes it challenging to design comprehensive rules to parse them. To provide accurate reward signals using rules and minimize errors introduced by formula parsers, inspired by AIME, we select and transform the answers into integers, which are easy to parse. For example, if the original answer is expressed in the form of $\\frac{a+\\sqrt{b}}{c}$, we instruct the LLM to modify the question so that the expected answer becomes $a+b+c$. After selection and transformation, we obtained the DAPO-Math-17K dataset, which consists of 17K prompts, each paired with an integer as the answer.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 828
+        }
+      ],
+      "text": "Our dataset is sourced from the web and official competition homepages through a combination of web scraping and manual annotation. The answers of math dataset typically come in a variety of formats, such as expression, formula and number, which makes it challenging to design comprehensive rules to parse them. To provide accurate reward signals using rules and minimize errors introduced by formula parsers, inspired by AIME, we select and transform the answers into integers, which are easy to parse. For example, if the original answer is expressed in the form of $\\frac{a+\\sqrt{b}}{c}$, we instruct the LLM to modify the question so that the expected answer becomes $a+b+c$. After selection and transformation, we obtained the DAPO-Math-17K dataset, which consists of 17K prompts, each paired with an integer as the answer."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0013",
+      "title": "4 Experiments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Experiments"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0014",
+      "title": "4.1 Training Details",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1",
+      "path": [
+        "4 Experiments",
+        "4.1 Training Details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_331383077d41d3b3a42c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p1.1",
+          "text": "In this work, we focus specifically on mathematical tasks to evaluate our algorithm, which can be readily transferred to other tasks. We adopt the verl framework [20] for training. We use naive GRPO [38] as our baseline algorithm and estimate advantages using group reward normalization.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 287
+        },
+        {
+          "paragraph_id": "p_4734f6563c09fc9d6f5f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p2.1",
+          "text": "For hyper-parameters, we utilize the AdamW [39] optimizer with a constant learning rate of $1\\times 10^{-6}$, incorporating a linear warm-up over 20 rollout steps. For rollout, the prompt batch size is 512 and we sample 16 responses for each prompt. For training, the mini-batch size is set to 512, i.e., 16 gradient updates for each rollout step. For Overlong Reward Shaping, we set the expected maximum length as 16,384 tokens and allocate additional 4,096 tokens as the soft punish cache. Therefore, the maximum number of tokens for generation is set to 20,480 tokens. As for the Clip-Higher mechanism, we set the clipping parameter $\\varepsilon_{\\text{low}}$ to 0.2 and $\\varepsilon_{\\text{high}}$ to 0.28, which effectively balance the trade-off between exploration and exploitation. For evaluation on AIME, we repeat the evaluation set for 32 times and report avg@32 for results stability. The inference hyperparameters of evaluation are set to temperature 1.0 and topp 0.7.",
+          "kind": "text",
+          "char_start": 289,
+          "char_end": 1269
+        },
+        {
+          "paragraph_id": "p_09992ad4808c0c67c14d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F6",
+          "text": "Figure 6: The training progress before and after applying dynamic sampling on a baseline setting.",
+          "kind": "caption",
+          "char_start": 1271,
+          "char_end": 1368
+        }
+      ],
+      "text": "In this work, we focus specifically on mathematical tasks to evaluate our algorithm, which can be readily transferred to other tasks. We adopt the verl framework [20] for training. We use naive GRPO [38] as our baseline algorithm and estimate advantages using group reward normalization.\n\nFor hyper-parameters, we utilize the AdamW [39] optimizer with a constant learning rate of $1\\times 10^{-6}$, incorporating a linear warm-up over 20 rollout steps. For rollout, the prompt batch size is 512 and we sample 16 responses for each prompt. For training, the mini-batch size is set to 512, i.e., 16 gradient updates for each rollout step. For Overlong Reward Shaping, we set the expected maximum length as 16,384 tokens and allocate additional 4,096 tokens as the soft punish cache. Therefore, the maximum number of tokens for generation is set to 20,480 tokens. As for the Clip-Higher mechanism, we set the clipping parameter $\\varepsilon_{\\text{low}}$ to 0.2 and $\\varepsilon_{\\text{high}}$ to 0.28, which effectively balance the trade-off between exploration and exploitation. For evaluation on AIME, we repeat the evaluation set for 32 times and report avg@32 for results stability. The inference hyperparameters of evaluation are set to temperature 1.0 and topp 0.7.\n\nFigure 6: The training progress before and after applying dynamic sampling on a baseline setting."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0015",
+      "title": "4.2 Main Results",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2",
+      "path": [
+        "4 Experiments",
+        "4.2 Main Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_63b2c04c0036218e044e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p1.1",
+          "text": "Experiments on AIME 2024 demonstrate that DAPO has successfully trained the Qwen-32B Base model into a powerful reasoning model, achieving performance superior to DeepSeek’s experiments on Qwen2.5-32B using the R1 approach. In Figure 1, we observe a substantial improvement of performance on AIME 2024, with accuracy increasing from near $0$% to 50%. Notably, this improvement is achieved with only 50% of the training steps required by DeepSeek-R1-Zero-Qwen-32B.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 463
+        },
+        {
+          "paragraph_id": "p_49843c60d7d29a0b3dac",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p2.1",
+          "text": "We analyze the contributions of each training technique in our methodology, as detailed in Table 1. The observed improvements demonstrate the effectiveness of these techniques in RL training, each contributing several accuracy points in AIME 2024. Notably, given the vanilla GRPO setting, only 30% accuracy can be reached by training from a Qwen2.5-32B base model.",
+          "kind": "text",
+          "char_start": 465,
+          "char_end": 829
+        },
+        {
+          "paragraph_id": "p_71d9819b3131e92980c7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p3.1",
+          "text": "For token-level loss, although it brings less performance improvement, we find it enhances training stability and makes the length increase more healthily.",
+          "kind": "text",
+          "char_start": 831,
+          "char_end": 986
+        },
+        {
+          "paragraph_id": "p_4faf159b5201d9decd8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p4.1",
+          "text": "When applying Dynamic Sampling, although more data needs to be sampled due to the filtering out of zero-gradient data, the overall training time is not significantly affected. As shown in Figure 6, although the number of sampling instances increases, the model’s convergence time is even reduced, due to fewer training steps required.",
+          "kind": "text",
+          "char_start": 988,
+          "char_end": 1322
+        },
+        {
+          "paragraph_id": "p_1ab1b298746659fc45fe",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1",
+          "text": "Table 1: Main results of progressive techniques applied to DAPO",
+          "kind": "caption",
+          "char_start": 1324,
+          "char_end": 1387
+        },
+        {
+          "paragraph_id": "p_0527d89b6d5e67a43bd2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1.6",
+          "text": "Model | $\\textbf{AIME24}_{\\text{avg@32}}$\nDeepSeek-R1-Zero-Qwen-32B | 47\nNaive GRPO | 30\n+ Overlong Filtering | 36\n+ Clip-Higher | 38\n+ Soft Overlong Punishment | 41\n+ Token-level Loss | 42\n+ Dynamic Sampling (DAPO) | 50",
+          "kind": "table",
+          "char_start": 1389,
+          "char_end": 1609
+        }
+      ],
+      "text": "Experiments on AIME 2024 demonstrate that DAPO has successfully trained the Qwen-32B Base model into a powerful reasoning model, achieving performance superior to DeepSeek’s experiments on Qwen2.5-32B using the R1 approach. In Figure 1, we observe a substantial improvement of performance on AIME 2024, with accuracy increasing from near $0$% to 50%. Notably, this improvement is achieved with only 50% of the training steps required by DeepSeek-R1-Zero-Qwen-32B.\n\nWe analyze the contributions of each training technique in our methodology, as detailed in Table 1. The observed improvements demonstrate the effectiveness of these techniques in RL training, each contributing several accuracy points in AIME 2024. Notably, given the vanilla GRPO setting, only 30% accuracy can be reached by training from a Qwen2.5-32B base model.\n\nFor token-level loss, although it brings less performance improvement, we find it enhances training stability and makes the length increase more healthily.\n\nWhen applying Dynamic Sampling, although more data needs to be sampled due to the filtering out of zero-gradient data, the overall training time is not significantly affected. As shown in Figure 6, although the number of sampling instances increases, the model’s convergence time is even reduced, due to fewer training steps required.\n\nTable 1: Main results of progressive techniques applied to DAPO\n\nModel | $\\textbf{AIME24}_{\\text{avg@32}}$\nDeepSeek-R1-Zero-Qwen-32B | 47\nNaive GRPO | 30\n+ Overlong Filtering | 36\n+ Clip-Higher | 38\n+ Soft Overlong Punishment | 41\n+ Token-level Loss | 42\n+ Dynamic Sampling (DAPO) | 50"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0016",
+      "title": "4.3 Training Dynamics",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3",
+      "path": [
+        "4 Experiments",
+        "4.3 Training Dynamics"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c3130dc38546056986e8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.p1.1",
+          "text": "Reinforcement learning on large language models is not only a cutting-edge research direction but also an intrinsically complex systems engineering challenge, characterized by the interdependence of its various subsystems. Modifications to any single subsystem can propagate through the system, leading to unforeseen consequences due to the intricate interplay among these components. Even seemingly minor changes in initial conditions, such as variations in data and hyperparameters, can amplify through iterative reinforcement learning processes, yielding substantial deviations in outcomes. This complexity often confronts researchers with a dilemma: even after meticulous analysis and well-founded expectations that a modification will enhance specific aspects of the training process, the actual results frequently diverge from the anticipated trajectory. Therefore, monitoring of key intermediate results during experimentation is essential for swiftly identifying the sources of discrepancies and, ultimately, for refining the system.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1041
+        },
+        {
+          "paragraph_id": "p_4115999ce05b08994f15",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F7",
+          "text": "Figure 7: The metric curves of response length, reward score, generation entropy, and the mean probability of DAPO, which show the dynamics of RL training and serve as essential monitoring indicators to identify potential issues.",
+          "kind": "caption",
+          "char_start": 1043,
+          "char_end": 1272
+        },
+        {
+          "paragraph_id": "p_cea4c4ac0937af29ec28",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i1",
+          "text": "• The Length of Generated Responses is a metric closely related to training stability and performance, as shown in Figure 7(a). The increase in length provides the model with a larger space for exploration, allowing more complex reasoning behaviors to be sampled and gradually reinforced through training. However, it is important to note that length does not always maintain a continuous upward trend during training. In some considerable periods, it can exhibit a trend of stagnation or even decline, which has also been demonstrated in [2]. We typically use length in conjunction with validation accuracy as indicators to assess whether an experiment is deteriorating.",
+          "kind": "list_item",
+          "char_start": 1274,
+          "char_end": 1945
+        },
+        {
+          "paragraph_id": "p_8c2603f518a9ef67f5b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i2",
+          "text": "• The Dynamics of Reward during training has always been one of the crucial monitoring indicators in reinforcement learning, as shown in Figure 7(b). In the majority of our experiments, the trend of reward increase is relatively stable and does not fluctuate or decline significantly due to adjustments in experimental settings. This indicates that, given a reliable reward signal, language models can robustly fit the distribution of training set. However, we find that the final reward on the training set often exhibits little correlation with the accuracy on the validation set, which indicates overfitting to the training set.",
+          "kind": "list_item",
+          "char_start": 1947,
+          "char_end": 2578
+        },
+        {
+          "paragraph_id": "p_9f5c0d90c9ecb6186ecb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i3",
+          "text": "• The Entropy of the Actor Model and Generation Probability are related to the model’s exploration capability and are key metrics that we closely monitor in our experiments. Intuitively, the model’s entropy needs to be maintained within an appropriate range. An excessively low entropy indicates that the probability distribution is overly sharp, leading to a loss of exploration capability. Conversely, an excessively high entropy is often associated with issues of over-exploration such as gibberish and repetitive generation. For the generation probability, the situation is exactly the opposite. As demonstrated in Section 3.1, by applying the Clip-Higher strategy, we effectively addressed the issue of entropy collapse. In subsequent experiments, we find that maintaining a slow upward trend in entropy is conducive to the improvement of model performance, shown in Figure 7(c) and Figure 7(d).",
+          "kind": "list_item",
+          "char_start": 2580,
+          "char_end": 3480
+        }
+      ],
+      "text": "Reinforcement learning on large language models is not only a cutting-edge research direction but also an intrinsically complex systems engineering challenge, characterized by the interdependence of its various subsystems. Modifications to any single subsystem can propagate through the system, leading to unforeseen consequences due to the intricate interplay among these components. Even seemingly minor changes in initial conditions, such as variations in data and hyperparameters, can amplify through iterative reinforcement learning processes, yielding substantial deviations in outcomes. This complexity often confronts researchers with a dilemma: even after meticulous analysis and well-founded expectations that a modification will enhance specific aspects of the training process, the actual results frequently diverge from the anticipated trajectory. Therefore, monitoring of key intermediate results during experimentation is essential for swiftly identifying the sources of discrepancies and, ultimately, for refining the system.\n\nFigure 7: The metric curves of response length, reward score, generation entropy, and the mean probability of DAPO, which show the dynamics of RL training and serve as essential monitoring indicators to identify potential issues.\n\n• The Length of Generated Responses is a metric closely related to training stability and performance, as shown in Figure 7(a). The increase in length provides the model with a larger space for exploration, allowing more complex reasoning behaviors to be sampled and gradually reinforced through training. However, it is important to note that length does not always maintain a continuous upward trend during training. In some considerable periods, it can exhibit a trend of stagnation or even decline, which has also been demonstrated in [2]. We typically use length in conjunction with validation accuracy as indicators to assess whether an experiment is deteriorating.\n\n• The Dynamics of Reward during training has always been one of the crucial monitoring indicators in reinforcement learning, as shown in Figure 7(b). In the majority of our experiments, the trend of reward increase is relatively stable and does not fluctuate or decline significantly due to adjustments in experimental settings. This indicates that, given a reliable reward signal, language models can robustly fit the distribution of training set. However, we find that the final reward on the training set often exhibits little correlation with the accuracy on the validation set, which indicates overfitting to the training set.\n\n• The Entropy of the Actor Model and Generation Probability are related to the model’s exploration capability and are key metrics that we closely monitor in our experiments. Intuitively, the model’s entropy needs to be maintained within an appropriate range. An excessively low entropy indicates that the probability distribution is overly sharp, leading to a loss of exploration capability. Conversely, an excessively high entropy is often associated with issues of over-exploration such as gibberish and repetitive generation. For the generation probability, the situation is exactly the opposite. As demonstrated in Section 3.1, by applying the Clip-Higher strategy, we effectively addressed the issue of entropy collapse. In subsequent experiments, we find that maintaining a slow upward trend in entropy is conducive to the improvement of model performance, shown in Figure 7(c) and Figure 7(d)."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0017",
+      "title": "4.4 Case Study",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS4",
+      "path": [
+        "4 Experiments",
+        "4.4 Case Study"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9d0b0ef3c62014b8d5f3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2.3",
+          "text": "Question:\nGiven that the base $ABC$ of the tetrahedron $S-ABC$ is an equilateral triangle, the projection $H$ of point $A$ on the face $SBC$ is the orthocenter of $\\triangle SBC$, the dihedral angle $H-AB-C$ is $30^{\\circ}$, and $SA=2$, find the volume of the tetrahedron. The answer is in the form $\\frac{k}{m}$, so give the value of $k+m$.\nResponse:\nLet us consider the given problem: We need to determine …\n…\nNext, let $S$ have coordinates $(x_{0},y_{0},z_{0})$. Since $SA=2$, the distance formula gives us $\\sqrt{(x_{0})^{2}+(y_{0})^{2}+(z_{0})^{2}}=2$, so we can write $x_{0}^{2}+y_{0}^{2}+z_{0}^{2}=4$. Now, remember that $H$ is the orthogonal projection of\n…\nHowever, wait a moment, let’s rethink about the dihedral angle involving planes in a more thoughtful geometric way. Consider the plane $\\alpha_{1}=ABC$, which lies entirely on the xy coordinate plane (as $z=0$). Let the plane $\\alpha_{2}=SBC$. The point $A$ projected perpendicularly to plane $\\alpha_{2}$ lands on $H$. The line $l=AB$ …\n…",
+          "kind": "table",
+          "char_start": 0,
+          "char_end": 1005
+        },
+        {
+          "paragraph_id": "p_9587d83f77ae37d75086",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2",
+          "text": "Table 2: Emergence of Reflective Behavior in Reinforcement Learning",
+          "kind": "caption",
+          "char_start": 1007,
+          "char_end": 1074
+        },
+        {
+          "paragraph_id": "p_6a1df3e14ae7125b345f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.p1.1",
+          "text": "During the RL training process, we observe an interesting phenomenon: the reasoning patterns of the actor model evolve dynamically over time. Specifically, the algorithm not only reinforces existing reasoning patterns that facilitate correct problem-solving but also gradually gives rise to entirely new modes of reasoning that were initially absent. This finding reveals the adaptability and exploration capability of RL algorithms and offers new insights into the learning mechanisms of the model.",
+          "kind": "text",
+          "char_start": 1076,
+          "char_end": 1575
+        },
+        {
+          "paragraph_id": "p_f961a12dae83a41e5be0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.p2.1",
+          "text": "For example, in the early stages of model training, there was virtually no occurrence of checking and reflecting on previous reasoning steps. However, as training progresses, the model exhibits distinct behaviors of reflection and backtracking, as shown in Table 2. This observation sheds light on further exploration into interpreting the emergence of reasoning abilities during RL, which we leave for future research.",
+          "kind": "text",
+          "char_start": 1577,
+          "char_end": 1996
+        }
+      ],
+      "text": "Question:\nGiven that the base $ABC$ of the tetrahedron $S-ABC$ is an equilateral triangle, the projection $H$ of point $A$ on the face $SBC$ is the orthocenter of $\\triangle SBC$, the dihedral angle $H-AB-C$ is $30^{\\circ}$, and $SA=2$, find the volume of the tetrahedron. The answer is in the form $\\frac{k}{m}$, so give the value of $k+m$.\nResponse:\nLet us consider the given problem: We need to determine …\n…\nNext, let $S$ have coordinates $(x_{0},y_{0},z_{0})$. Since $SA=2$, the distance formula gives us $\\sqrt{(x_{0})^{2}+(y_{0})^{2}+(z_{0})^{2}}=2$, so we can write $x_{0}^{2}+y_{0}^{2}+z_{0}^{2}=4$. Now, remember that $H$ is the orthogonal projection of\n…\nHowever, wait a moment, let’s rethink about the dihedral angle involving planes in a more thoughtful geometric way. Consider the plane $\\alpha_{1}=ABC$, which lies entirely on the xy coordinate plane (as $z=0$). Let the plane $\\alpha_{2}=SBC$. The point $A$ projected perpendicularly to plane $\\alpha_{2}$ lands on $H$. The line $l=AB$ …\n…\n\nTable 2: Emergence of Reflective Behavior in Reinforcement Learning\n\nDuring the RL training process, we observe an interesting phenomenon: the reasoning patterns of the actor model evolve dynamically over time. Specifically, the algorithm not only reinforces existing reasoning patterns that facilitate correct problem-solving but also gradually gives rise to entirely new modes of reasoning that were initially absent. This finding reveals the adaptability and exploration capability of RL algorithms and offers new insights into the learning mechanisms of the model.\n\nFor example, in the early stages of model training, there was virtually no occurrence of checking and reflecting on previous reasoning steps. However, as training progresses, the model exhibits distinct behaviors of reflection and backtracking, as shown in Table 2. This observation sheds light on further exploration into interpreting the emergence of reasoning abilities during RL, which we leave for future research."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0018",
+      "title": "5 Conclusion",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Conclusion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_aff59ae88d1dea9fff1c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "In this paper, we release a fully open-sourced system for large-scale LLM RL, including algorithm, code infrastructure, and dataset. The system achieves state-of-the-art large-scale LLM RL performance (AIME 50 using Qwen-32B pretrained model). We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and introduce 4 key techniques to make RL powerfully effective and efficient in the long-CoT RL scenario. Additionally, by open-sourcing the training code and dataset, we provide the broader research community and society with practical access to a scalable reinforcement learning solution, enabling all to benefit from these advancements.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 672
+        }
+      ],
+      "text": "In this paper, we release a fully open-sourced system for large-scale LLM RL, including algorithm, code infrastructure, and dataset. The system achieves state-of-the-art large-scale LLM RL performance (AIME 50 using Qwen-32B pretrained model). We propose the Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO) algorithm, and introduce 4 key techniques to make RL powerfully effective and efficient in the long-CoT RL scenario. Additionally, by open-sourcing the training code and dataset, we provide the broader research community and society with practical access to a scalable reinforcement learning solution, enabling all to benefit from these advancements."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0019",
+      "title": "Contributions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx1",
+      "path": [
+        "Contributions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_b7584cb457f759fdbfd7",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p1.1",
+          "text": "Project Lead",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 12
+        },
+        {
+          "paragraph_id": "p_1f2da039535a4a49b0c6",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p2.1",
+          "text": "Qiying Yu1,2,4",
+          "kind": "text",
+          "char_start": 14,
+          "char_end": 28
+        },
+        {
+          "paragraph_id": "p_b80b96f55fcdc7dc7e05",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p3.1",
+          "text": "Algorithm",
+          "kind": "text",
+          "char_start": 30,
+          "char_end": 39
+        },
+        {
+          "paragraph_id": "p_efd502e015feebfbea74",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p4.1",
+          "text": "Qiying Yu1,2,4, Zheng Zhang1, Ruofei Zhu1, Yufeng Yuan1, Xiaochen Zuo1, Yu Yue1",
+          "kind": "text",
+          "char_start": 41,
+          "char_end": 120
+        },
+        {
+          "paragraph_id": "p_6f4655949470e686025f",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p5.1",
+          "text": "Infrastructure∗",
+          "kind": "text",
+          "char_start": 122,
+          "char_end": 137
+        },
+        {
+          "paragraph_id": "p_38707a0694d492d88303",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p6.1",
+          "text": "Weinan Dai1,2,4, Tiantian Fan1, Gaohong Liu1, Juncai Liu1, Lingjun Liu1, Xin Liu1, Haibin Lin1, Zhiqi Lin1, Bole Ma1, Guangming Sheng1,3, Yuxuan Tong1,2,4, Qiying Yu1,2,4, Chi Zhang1, Mofan Zhang1, Ru Zhang1, Wang Zhang1, Hang Zhu1, Jinhua Zhu1",
+          "kind": "text",
+          "char_start": 139,
+          "char_end": 383
+        },
+        {
+          "paragraph_id": "p_eda1991f6ea63b5a5ef3",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p7.1",
+          "text": "∗Last-Name in Alphabetical Order",
+          "kind": "text",
+          "char_start": 385,
+          "char_end": 417
+        },
+        {
+          "paragraph_id": "p_11774136dc06f06df653",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p8.1",
+          "text": "Dataset",
+          "kind": "text",
+          "char_start": 419,
+          "char_end": 426
+        },
+        {
+          "paragraph_id": "p_2204327dcbbc409322a8",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p9.1",
+          "text": "Jiaze Chen1, Jiangjie Chen1,4, Chengyi Wang1, Hongli Yu1,2,4, Yuxuan Song1,2,4, Xiangpeng Wei1, Qiying Yu1,2,4",
+          "kind": "text",
+          "char_start": 428,
+          "char_end": 538
+        },
+        {
+          "paragraph_id": "p_0e7aa85784f45e08ec1c",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p10.1",
+          "text": "Supervision",
+          "kind": "text",
+          "char_start": 540,
+          "char_end": 551
+        },
+        {
+          "paragraph_id": "p_dd19268491bf97c8dba7",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p11.1",
+          "text": "Hao Zhou2,4, Jingjing Liu2,4, Wei-Ying Ma2,4, Ya-Qin Zhang2,4, Lin Yan1,4, Mu Qiao1,4, Yonghui Wu1, Mingxuan Wang1,4",
+          "kind": "text",
+          "char_start": 553,
+          "char_end": 669
+        },
+        {
+          "paragraph_id": "p_36b23f51630df847df88",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p12.1",
+          "text": "Affiliation",
+          "kind": "text",
+          "char_start": 671,
+          "char_end": 682
+        },
+        {
+          "paragraph_id": "p_9b5bcd5633d840f10a27",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p13.1",
+          "text": "1ByteDance Seed",
+          "kind": "text",
+          "char_start": 684,
+          "char_end": 699
+        },
+        {
+          "paragraph_id": "p_fe31ef0ecbe09112cb80",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p14.1",
+          "text": "2Institute for AI Industry Research (AIR), Tsinghua University",
+          "kind": "text",
+          "char_start": 701,
+          "char_end": 763
+        },
+        {
+          "paragraph_id": "p_efaa47f4f124f7848515",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p15.1",
+          "text": "3The University of Hong Kong",
+          "kind": "text",
+          "char_start": 765,
+          "char_end": 793
+        },
+        {
+          "paragraph_id": "p_592824e9a4855e38bd3b",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p16.1",
+          "text": "4SIA-Lab of Tsinghua AIR and ByteDance Seed",
+          "kind": "text",
+          "char_start": 795,
+          "char_end": 838
+        }
+      ],
+      "text": "Project Lead\n\nQiying Yu1,2,4\n\nAlgorithm\n\nQiying Yu1,2,4, Zheng Zhang1, Ruofei Zhu1, Yufeng Yuan1, Xiaochen Zuo1, Yu Yue1\n\nInfrastructure∗\n\nWeinan Dai1,2,4, Tiantian Fan1, Gaohong Liu1, Juncai Liu1, Lingjun Liu1, Xin Liu1, Haibin Lin1, Zhiqi Lin1, Bole Ma1, Guangming Sheng1,3, Yuxuan Tong1,2,4, Qiying Yu1,2,4, Chi Zhang1, Mofan Zhang1, Ru Zhang1, Wang Zhang1, Hang Zhu1, Jinhua Zhu1\n\n∗Last-Name in Alphabetical Order\n\nDataset\n\nJiaze Chen1, Jiangjie Chen1,4, Chengyi Wang1, Hongli Yu1,2,4, Yuxuan Song1,2,4, Xiangpeng Wei1, Qiying Yu1,2,4\n\nSupervision\n\nHao Zhou2,4, Jingjing Liu2,4, Wei-Ying Ma2,4, Ya-Qin Zhang2,4, Lin Yan1,4, Mu Qiao1,4, Yonghui Wu1, Mingxuan Wang1,4\n\nAffiliation\n\n1ByteDance Seed\n\n2Institute for AI Industry Research (AIR), Tsinghua University\n\n3The University of Hong Kong\n\n4SIA-Lab of Tsinghua AIR and ByteDance Seed"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0020",
+      "title": "Acknowledgments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx2",
+      "path": [
+        "Acknowledgments"
+      ],
+      "kind": "acknowledgments",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d72ab8278486dd24efba",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p1.1",
+          "text": "We thank Zhengyin Du, Shengding Hu, Kai Shen, Tianyang Zhan, Zhen Xiao, Renjie Zheng, Li Han, Kaihua Jiang as well as other colleagues at ByteDance for their support for the DAPO project.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 187
+        }
+      ],
+      "text": "We thank Zhengyin Du, Shengding Hu, Kai Shen, Tianyang Zhan, Zhen Xiao, Renjie Zheng, Li Han, Kaihua Jiang as well as other colleagues at ByteDance for their support for the DAPO project."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0021",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c5d2f0e18c8e719bfebf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "[1] OpenAI. Learning to reason with llms, 2024.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 47
+        },
+        {
+          "paragraph_id": "p_1aa7847a076fb299287a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "[2] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948, 2025.",
+          "kind": "list_item",
+          "char_start": 49,
+          "char_end": 301
+        },
+        {
+          "paragraph_id": "p_1f5f9fad517b4cd1537f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "[3] OpenAI. GPT4 technical report. arXiv preprint arXiv:2303.08774, 2023.",
+          "kind": "list_item",
+          "char_start": 303,
+          "char_end": 376
+        },
+        {
+          "paragraph_id": "p_c3fb89a0898a124c9c57",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "[4] Anthropic. Claude 3.5 sonnet, 2024.",
+          "kind": "list_item",
+          "char_start": 378,
+          "char_end": 417
+        },
+        {
+          "paragraph_id": "p_89db0a678709d4eaf098",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "[5] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.",
+          "kind": "list_item",
+          "char_start": 419,
+          "char_end": 693
+        },
+        {
+          "paragraph_id": "p_57e646dc788e009114c7",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "[6] Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts, Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian Gehrmann, et al. Palm: Scaling language modeling with pathways. Journal of Machine Learning Research, 24(240):1–113, 2023.",
+          "kind": "list_item",
+          "char_start": 695,
+          "char_end": 971
+        },
+        {
+          "paragraph_id": "p_3b27f27c487e761d985d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "[7] Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Bochao Wu, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, et al. Deepseek-v3 technical report. arXiv preprint arXiv:2412.19437, 2024.",
+          "kind": "list_item",
+          "char_start": 973,
+          "char_end": 1177
+        },
+        {
+          "paragraph_id": "p_6c9aab1c93c538c0ff08",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "[8] XAI. Grok 3 beta — the age of reasoning agents, 2024.",
+          "kind": "list_item",
+          "char_start": 1179,
+          "char_end": 1236
+        },
+        {
+          "paragraph_id": "p_7002dc5291e2ee4edda9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "[9] Google DeepMind. Gemini 2.0 flash thinking, 2024.",
+          "kind": "list_item",
+          "char_start": 1238,
+          "char_end": 1291
+        },
+        {
+          "paragraph_id": "p_bce48df403fe205cb437",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "[10] Qwen. Qwq-32b: Embracing the power of reinforcement learning, 2024.",
+          "kind": "list_item",
+          "char_start": 1293,
+          "char_end": 1365
+        },
+        {
+          "paragraph_id": "p_12c1d01514df4ef7aab4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "[11] Kimi Team, Angang Du, Bofei Gao, Bowei Xing, Changjiu Jiang, Cheng Chen, Cheng Li, Chenjun Xiao, Chenzhuang Du, Chonghua Liao, et al. Kimi k1. 5: Scaling reinforcement learning with llms. arXiv preprint arXiv:2501.12599, 2025.",
+          "kind": "list_item",
+          "char_start": 1367,
+          "char_end": 1598
+        },
+        {
+          "paragraph_id": "p_8c41dc764f7888fabc45",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "[12] An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et al. Qwen2. 5 technical report. arXiv preprint arXiv:2412.15115, 2024.",
+          "kind": "list_item",
+          "char_start": 1600,
+          "char_end": 1799
+        },
+        {
+          "paragraph_id": "p_f84a0f139181304a38a0",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "[13] Zhipeng Chen, Yingqian Min, Beichen Zhang, Jie Chen, Jinhao Jiang, Daixuan Cheng, Wayne Xin Zhao, Zheng Liu, Xu Miao, Yang Lu, et al. An empirical study on eliciting and improving r1-like reasoning models. arXiv preprint arXiv:2503.04548, 2025.",
+          "kind": "list_item",
+          "char_start": 1801,
+          "char_end": 2050
+        },
+        {
+          "paragraph_id": "p_16b99c5d32b674489af4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "[14] Jingcheng Hu, Yinmin Zhang, Qi Han, Daxin Jiang, and Heung-Yeung Shum Xiangyu Zhang. Open-reasoner-zero: An open source approach to scaling reinforcement learning on the base model. https://github.com/Open-Reasoner-Zero/Open-Reasoner-Zero, 2025.",
+          "kind": "list_item",
+          "char_start": 2052,
+          "char_end": 2302
+        },
+        {
+          "paragraph_id": "p_2090a7bacafc9d3a5d4a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "[15] Jian Hu. Reinforce++: A simple and efficient approach for aligning large language models. arXiv preprint arXiv:2501.03262, 2025.",
+          "kind": "list_item",
+          "char_start": 2304,
+          "char_end": 2437
+        },
+        {
+          "paragraph_id": "p_952e46b890c2eeed4e75",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "[16] Ganqu Cui, Lifan Yuan, Zefan Wang, Hanbin Wang, Wendi Li, Bingxiang He, Yuchen Fan, Tianyu Yu, Qixin Xu, Weize Chen, et al. Process reinforcement through implicit rewards. arXiv preprint arXiv:2502.01456, 2025.",
+          "kind": "list_item",
+          "char_start": 2439,
+          "char_end": 2654
+        },
+        {
+          "paragraph_id": "p_a824f71d24c4a11f7433",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "[17] Jung Hyun Lee, June Yong Yang, Byeongho Heo, Dongyoon Han, and Kang Min Yoo. Token-supervised value models for enhancing mathematical reasoning capabilities of large language models. arXiv preprint arXiv:2407.12863, 2024.",
+          "kind": "list_item",
+          "char_start": 2656,
+          "char_end": 2882
+        },
+        {
+          "paragraph_id": "p_b97d5292986fb76fd9bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "[18] Amirhossein Kazemnejad, Milad Aghajohari, Eva Portelance, Alessandro Sordoni, Siva Reddy, Aaron Courville, and Nicolas Le Roux. Vineppo: Unlocking rl potential for llm reasoning through refined credit assignment. arXiv preprint arXiv:2410.01679, 2024.",
+          "kind": "list_item",
+          "char_start": 2884,
+          "char_end": 3140
+        },
+        {
+          "paragraph_id": "p_8aa9962b431b3a03a75c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "[19] Yufeng Yuan, Yu Yue, Ruofei Zhu, Tiantian Fan, and Lin Yan. What’s behind ppo’s collapse in long-cot? value optimization holds the secret. arXiv preprint arXiv:2503.01491, 2025.",
+          "kind": "list_item",
+          "char_start": 3142,
+          "char_end": 3324
+        },
+        {
+          "paragraph_id": "p_3cb693aa29612868038a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "[20] Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. Hybridflow: A flexible and efficient rlhf framework. arXiv preprint arXiv:2409.19256, 2024.",
+          "kind": "list_item",
+          "char_start": 3326,
+          "char_end": 3537
+        },
+        {
+          "paragraph_id": "p_23a16bc0daffafee4264",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "[21] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347, 2017.",
+          "kind": "list_item",
+          "char_start": 3539,
+          "char_end": 3702
+        },
+        {
+          "paragraph_id": "p_62563d43373c56ba2b03",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "[22] John Schulman, Philipp Moritz, Sergey Levine, Michael Jordan, and Pieter Abbeel. High-dimensional continuous control using generalized advantage estimation, 2018.",
+          "kind": "list_item",
+          "char_start": 3704,
+          "char_end": 3871
+        },
+        {
+          "paragraph_id": "p_38486886ca4efd097d72",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "[23] Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul F Christiano, Jan Leike, and Ryan Lowe. Training language models to follow instructions with human feedback. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems, volume 35, pages 27730–27744. Curran Associates, Inc., 2022.",
+          "kind": "list_item",
+          "char_start": 3873,
+          "char_end": 4428
+        },
+        {
+          "paragraph_id": "p_f117e0813186b3443c14",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "[24] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schulman, and Dan Mané. Concrete problems in ai safety, 2016.",
+          "kind": "list_item",
+          "char_start": 4430,
+          "char_end": 4562
+        },
+        {
+          "paragraph_id": "p_b39b9fd23c91090d7562",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "[25] Tom Everitt, Victoria Krakovna, Laurent Orseau, Marcus Hutter, and Shane Legg. Reinforcement learning with a corrupted reward channel, 2017.",
+          "kind": "list_item",
+          "char_start": 4564,
+          "char_end": 4709
+        },
+        {
+          "paragraph_id": "p_cf59fee921223dac02ba",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "[26] Victoria Krakovna, Jonathan Uesato, Vladimir Mikulik, Matthew Rahtz, Tom Everitt, Ramana Kumar, Zac Kenton, Jan Leike, and Shane Legg. Specification gaming: the flip side of ai ingenuity, 2020.",
+          "kind": "list_item",
+          "char_start": 4711,
+          "char_end": 4909
+        },
+        {
+          "paragraph_id": "p_ba9cbfb11df9cd07a0cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "[27] Tom Everitt, Marcus Hutter, Ramana Kumar, and Victoria Krakovna. Reward tampering problems and solutions in reinforcement learning: A causal influence diagram perspective, 2021.",
+          "kind": "list_item",
+          "char_start": 4911,
+          "char_end": 5093
+        },
+        {
+          "paragraph_id": "p_b479bbb0cedac2ec356a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "[28] Leo Gao, John Schulman, and Jacob Hilton. Scaling laws for reward model overoptimization, 2022.",
+          "kind": "list_item",
+          "char_start": 5095,
+          "char_end": 5195
+        },
+        {
+          "paragraph_id": "p_283f8b59618a636f1496",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib29",
+          "text": "[29] Lilian Weng. Reward hacking in reinforcement learning. lilianweng.github.io, Nov 2024.",
+          "kind": "list_item",
+          "char_start": 5197,
+          "char_end": 5288
+        },
+        {
+          "paragraph_id": "p_b7407baef0ff39a70faf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib30",
+          "text": "[30] Stanislas Polu and Ilya Sutskever. Generative language modeling for automated theorem proving, 2020.",
+          "kind": "list_item",
+          "char_start": 5290,
+          "char_end": 5395
+        },
+        {
+          "paragraph_id": "p_1161c0cec8749ee15578",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib31",
+          "text": "[31] Trieu H Trinh, Yuhuai Wu, Quoc V Le, He He, and Thang Luong. Solving olympiad geometry without human demonstrations. Nature, 625(7995):476–482, 2024.",
+          "kind": "list_item",
+          "char_start": 5397,
+          "char_end": 5551
+        },
+        {
+          "paragraph_id": "p_9e08c15e76b56c719d34",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib32",
+          "text": "[32] Trieu Trinh and Thang Luong. Alphageometry: An olympiad-level ai system for geometry, 2024.",
+          "kind": "list_item",
+          "char_start": 5553,
+          "char_end": 5649
+        },
+        {
+          "paragraph_id": "p_d5718eb9241bf0847d16",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib33",
+          "text": "[33] AlphaProof and AlphaGeometry Teams. Ai achieves silver-medal standard solving international mathematical olympiad problems, 2024.",
+          "kind": "list_item",
+          "char_start": 5651,
+          "char_end": 5785
+        },
+        {
+          "paragraph_id": "p_cea683c174348a0ef3f0",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib34",
+          "text": "[34] Hung Le, Yue Wang, Akhilesh Deepak Gotmare, Silvio Savarese, and Steven Chu Hong Hoi. Coderl: Mastering code generation through pretrained models and deep reinforcement learning. Advances in Neural Information Processing Systems, 35:21314–21328, 2022.",
+          "kind": "list_item",
+          "char_start": 5787,
+          "char_end": 6043
+        },
+        {
+          "paragraph_id": "p_79770c085ff0d737d0c1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib35",
+          "text": "[35] Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, and Shunyu Yao. Reflexion: Language agents with verbal reinforcement learning, 2023.",
+          "kind": "list_item",
+          "char_start": 6045,
+          "char_end": 6216
+        },
+        {
+          "paragraph_id": "p_cb19924e30c4861a467a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib36",
+          "text": "[36] Xinyun Chen, Maxwell Lin, Nathanael Schärli, and Denny Zhou. Teaching large language models to self-debug, 2023.",
+          "kind": "list_item",
+          "char_start": 6218,
+          "char_end": 6335
+        },
+        {
+          "paragraph_id": "p_03b53e908c167bb30681",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib37",
+          "text": "[37] Jonas Gehring, Kunhao Zheng, Jade Copet, Vegard Mella, Quentin Carbonneaux, Taco Cohen, and Gabriel Synnaeve. Rlef: Grounding code llms in execution feedback with reinforcement learning, 2025.",
+          "kind": "list_item",
+          "char_start": 6337,
+          "char_end": 6534
+        },
+        {
+          "paragraph_id": "p_f3154da28c8b06c7ce46",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib38",
+          "text": "[38] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Mingchuan Zhang, YK Li, Y Wu, and Daya Guo. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300, 2024.",
+          "kind": "list_item",
+          "char_start": 6536,
+          "char_end": 6769
+        },
+        {
+          "paragraph_id": "p_ae5102bb8307a5eee043",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib39",
+          "text": "[39] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference on Learning Representations, 2019.",
+          "kind": "list_item",
+          "char_start": 6771,
+          "char_end": 6911
+        }
+      ],
+      "text": "[1] OpenAI. Learning to reason with llms, 2024.\n\n[2] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948, 2025.\n\n[3] OpenAI. GPT4 technical report. arXiv preprint arXiv:2303.08774, 2023.\n\n[4] Anthropic. Claude 3.5 sonnet, 2024.\n\n[5] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.\n\n[6] Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra, Adam Roberts, Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian Gehrmann, et al. Palm: Scaling language modeling with pathways. Journal of Machine Learning Research, 24(240):1–113, 2023.\n\n[7] Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Bochao Wu, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chenyu Zhang, Chong Ruan, et al. Deepseek-v3 technical report. arXiv preprint arXiv:2412.19437, 2024.\n\n[8] XAI. Grok 3 beta — the age of reasoning agents, 2024.\n\n[9] Google DeepMind. Gemini 2.0 flash thinking, 2024.\n\n[10] Qwen. Qwq-32b: Embracing the power of reinforcement learning, 2024.\n\n[11] Kimi Team, Angang Du, Bofei Gao, Bowei Xing, Changjiu Jiang, Cheng Chen, Cheng Li, Chenjun Xiao, Chenzhuang Du, Chonghua Liao, et al. Kimi k1. 5: Scaling reinforcement learning with llms. arXiv preprint arXiv:2501.12599, 2025.\n\n[12] An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et al. Qwen2. 5 technical report. arXiv preprint arXiv:2412.15115, 2024.\n\n[13] Zhipeng Chen, Yingqian Min, Beichen Zhang, Jie Chen, Jinhao Jiang, Daixuan Cheng, Wayne Xin Zhao, Zheng Liu, Xu Miao, Yang Lu, et al. An empirical study on eliciting and improving r1-like reasoning models. arXiv preprint arXiv:2503.04548, 2025.\n\n[14] Jingcheng Hu, Yinmin Zhang, Qi Han, Daxin Jiang, and Heung-Yeung Shum Xiangyu Zhang. Open-reasoner-zero: An open source approach to scaling reinforcement learning on the base model. https://github.com/Open-Reasoner-Zero/Open-Reasoner-Zero, 2025.\n\n[15] Jian Hu. Reinforce++: A simple and efficient approach for aligning large language models. arXiv preprint arXiv:2501.03262, 2025.\n\n[16] Ganqu Cui, Lifan Yuan, Zefan Wang, Hanbin Wang, Wendi Li, Bingxiang He, Yuchen Fan, Tianyu Yu, Qixin Xu, Weize Chen, et al. Process reinforcement through implicit rewards. arXiv preprint arXiv:2502.01456, 2025.\n\n[17] Jung Hyun Lee, June Yong Yang, Byeongho Heo, Dongyoon Han, and Kang Min Yoo. Token-supervised value models for enhancing mathematical reasoning capabilities of large language models. arXiv preprint arXiv:2407.12863, 2024.\n\n[18] Amirhossein Kazemnejad, Milad Aghajohari, Eva Portelance, Alessandro Sordoni, Siva Reddy, Aaron Courville, and Nicolas Le Roux. Vineppo: Unlocking rl potential for llm reasoning through refined credit assignment. arXiv preprint arXiv:2410.01679, 2024.\n\n[19] Yufeng Yuan, Yu Yue, Ruofei Zhu, Tiantian Fan, and Lin Yan. What’s behind ppo’s collapse in long-cot? value optimization holds the secret. arXiv preprint arXiv:2503.01491, 2025.\n\n[20] Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. Hybridflow: A flexible and efficient rlhf framework. arXiv preprint arXiv:2409.19256, 2024.\n\n[21] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347, 2017.\n\n[22] John Schulman, Philipp Moritz, Sergey Levine, Michael Jordan, and Pieter Abbeel. High-dimensional continuous control using generalized advantage estimation, 2018.\n\n[23] Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul F Christiano, Jan Leike, and Ryan Lowe. Training language models to follow instructions with human feedback. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems, volume 35, pages 27730–27744. Curran Associates, Inc., 2022.\n\n[24] Dario Amodei, Chris Olah, Jacob Steinhardt, Paul Christiano, John Schulman, and Dan Mané. Concrete problems in ai safety, 2016.\n\n[25] Tom Everitt, Victoria Krakovna, Laurent Orseau, Marcus Hutter, and Shane Legg. Reinforcement learning with a corrupted reward channel, 2017.\n\n[26] Victoria Krakovna, Jonathan Uesato, Vladimir Mikulik, Matthew Rahtz, Tom Everitt, Ramana Kumar, Zac Kenton, Jan Leike, and Shane Legg. Specification gaming: the flip side of ai ingenuity, 2020.\n\n[27] Tom Everitt, Marcus Hutter, Ramana Kumar, and Victoria Krakovna. Reward tampering problems and solutions in reinforcement learning: A causal influence diagram perspective, 2021.\n\n[28] Leo Gao, John Schulman, and Jacob Hilton. Scaling laws for reward model overoptimization, 2022.\n\n[29] Lilian Weng. Reward hacking in reinforcement learning. lilianweng.github.io, Nov 2024.\n\n[30] Stanislas Polu and Ilya Sutskever. Generative language modeling for automated theorem proving, 2020.\n\n[31] Trieu H Trinh, Yuhuai Wu, Quoc V Le, He He, and Thang Luong. Solving olympiad geometry without human demonstrations. Nature, 625(7995):476–482, 2024.\n\n[32] Trieu Trinh and Thang Luong. Alphageometry: An olympiad-level ai system for geometry, 2024.\n\n[33] AlphaProof and AlphaGeometry Teams. Ai achieves silver-medal standard solving international mathematical olympiad problems, 2024.\n\n[34] Hung Le, Yue Wang, Akhilesh Deepak Gotmare, Silvio Savarese, and Steven Chu Hong Hoi. Coderl: Mastering code generation through pretrained models and deep reinforcement learning. Advances in Neural Information Processing Systems, 35:21314–21328, 2022.\n\n[35] Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik Narasimhan, and Shunyu Yao. Reflexion: Language agents with verbal reinforcement learning, 2023.\n\n[36] Xinyun Chen, Maxwell Lin, Nathanael Schärli, and Denny Zhou. Teaching large language models to self-debug, 2023.\n\n[37] Jonas Gehring, Kunhao Zheng, Jade Copet, Vegard Mella, Quentin Carbonneaux, Taco Cohen, and Gabriel Synnaeve. Rlef: Grounding code llms in execution feedback with reinforcement learning, 2025.\n\n[38] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Mingchuan Zhang, YK Li, Y Wu, and Daya Guo. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300, 2024.\n\n[39] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference on Learning Representations, 2019."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0022",
+      "title": "Appendix A Dataset Transformation",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A Dataset Transformation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_8543fb9aa1cf837f0392",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.1",
+          "text": "Here is an example of data transformation, where we demonstrate the original problem, the transformed problem, and the model outputs during the transformation process (the original is in markdown text, which has been rendered for readability).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 243
+        },
+        {
+          "paragraph_id": "p_1f47db8a56854ffca213",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p2.1",
+          "text": "To ensure the model can complete this task with high accuracy, our goal is to have it perform comprehensive reasoning while avoiding hallucinations. We achieve this by providing a clear thinking framework that encourages thorough reasoning. Specifically, we employ Chain of Thought (CoT) reasoning along with four well-defined steps: extract the answer format, rewrite the problem statement, solve the modified problem and provide an integer as the final answer. For each step, we provide few-shot solutions or detailed guidelines to guide the model’s reasoning.",
+          "kind": "text",
+          "char_start": 245,
+          "char_end": 807
+        },
+        {
+          "paragraph_id": "p_1539c834a32fe9930f2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p3.1",
+          "text": "Through this approach, we have observed that in most cases, the LLM can generate reformulations with both format and quality that are satisfactory.",
+          "kind": "text",
+          "char_start": 809,
+          "char_end": 956
+        },
+        {
+          "paragraph_id": "p_1b6cebcd860b8f960956",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p4.2",
+          "text": "colback=seedblue!10!white, colframe=seedblue, width=arc=5mm",
+          "kind": "text",
+          "char_start": 958,
+          "char_end": 1017
+        }
+      ],
+      "text": "Here is an example of data transformation, where we demonstrate the original problem, the transformed problem, and the model outputs during the transformation process (the original is in markdown text, which has been rendered for readability).\n\nTo ensure the model can complete this task with high accuracy, our goal is to have it perform comprehensive reasoning while avoiding hallucinations. We achieve this by providing a clear thinking framework that encourages thorough reasoning. Specifically, we employ Chain of Thought (CoT) reasoning along with four well-defined steps: extract the answer format, rewrite the problem statement, solve the modified problem and provide an integer as the final answer. For each step, we provide few-shot solutions or detailed guidelines to guide the model’s reasoning.\n\nThrough this approach, we have observed that in most cases, the LLM can generate reformulations with both format and quality that are satisfactory.\n\ncolback=seedblue!10!white, colframe=seedblue, width=arc=5mm"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0023",
+      "title": "Original Problem",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx1",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Original Problem"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ce496b598aa6ddd7238f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx1.p1.1",
+          "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x.$ Answer: $11-2\\sqrt{6}$",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 139
+        }
+      ],
+      "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x.$ Answer: $11-2\\sqrt{6}$"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0024",
+      "title": "Transformed Problem",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx2",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Transformed Problem"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2a4cd0533bc26e05c6f5",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx2.p1.1",
+          "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x$. The original answer is in the form $k-m\\sqrt{n}$, where $k$, $m$, and $n$ are integers. Please find the value of $k+m+n$. Answer: $19$",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 251
+        }
+      ],
+      "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x$. The original answer is in the form $k-m\\sqrt{n}$, where $k$, $m$, and $n$ are integers. Please find the value of $k+m+n$. Answer: $19$"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0025",
+      "title": "Model’s output (Markdown Text)",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0026",
+      "title": "Transformation Thought Process",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3.SSSx1",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)",
+        "Transformation Thought Process"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ec06c1a7fbb01a07b464",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx3.SSSx1.p1.1",
+          "text": "The original answer to the problem is an algebraic expression $11-2\\sqrt{6}.$ We need to transform this into an integer form. First, note that the answer consists of an integer part and a square root term. According to the given rule, we replace the integer and square root components with undetermined coefficients. The original problem uses $x$ and $y$ as variables, so we choose other letters as undetermined coefficients. We express the answer in the form $k-m\\sqrt{n}$ and require the student to find $k+m+n$.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 514
+        }
+      ],
+      "text": "The original answer to the problem is an algebraic expression $11-2\\sqrt{6}.$ We need to transform this into an integer form. First, note that the answer consists of an integer part and a square root term. According to the given rule, we replace the integer and square root components with undetermined coefficients. The original problem uses $x$ and $y$ as variables, so we choose other letters as undetermined coefficients. We express the answer in the form $k-m\\sqrt{n}$ and require the student to find $k+m+n$."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0027",
+      "title": "Answer Format",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3.SSSx2",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)",
+        "Answer Format"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_b784b90d7b3594266631",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx3.SSSx2.p1.1",
+          "text": "$k-m\\sqrt{n}$",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 13
+        }
+      ],
+      "text": "$k-m\\sqrt{n}$"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0028",
+      "title": "Transformed Problem",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3.SSSx3",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)",
+        "Transformed Problem"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_a56182ee6f7b7f872fbf",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx3.SSSx3.p1.1",
+          "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x$. The original answer is in the form $k-m\\sqrt{n}$, where $k$, $m$, and $n$ are integers. Please find the value of $k+m+n$.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 238
+        }
+      ],
+      "text": "Let $x$ and $y$ be real numbers such that $x^{2}+y^{2}-22x-16y+113=0.$ Determine the smallest possible value of $x$. The original answer is in the form $k-m\\sqrt{n}$, where $k$, $m$, and $n$ are integers. Please find the value of $k+m+n$."
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0029",
+      "title": "Answer Calculation for the Transformed Problem",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3.SSSx4",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)",
+        "Answer Calculation for the Transformed Problem"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_a00a401de417ae66e2c9",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i1",
+          "text": "• The original answer is: $11-2\\sqrt{6}$.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 41
+        },
+        {
+          "paragraph_id": "p_8bb161b4fb9ee9265e78",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i2",
+          "text": "• The required format is: $k-m\\sqrt{n}$.",
+          "kind": "list_item",
+          "char_start": 43,
+          "char_end": 83
+        },
+        {
+          "paragraph_id": "p_bf16eb345632389cd328",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i3",
+          "text": "• Matching the coefficients: $k=11$, $m=2$, $n=6$.",
+          "kind": "list_item",
+          "char_start": 85,
+          "char_end": 135
+        },
+        {
+          "paragraph_id": "p_d825c3e0aa1909bc2308",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i4",
+          "text": "• The final result is: $k+m+n=11+2+6=19.$",
+          "kind": "list_item",
+          "char_start": 137,
+          "char_end": 178
+        }
+      ],
+      "text": "• The original answer is: $11-2\\sqrt{6}$.\n\n• The required format is: $k-m\\sqrt{n}$.\n\n• Matching the coefficients: $k=11$, $m=2$, $n=6$.\n\n• The final result is: $k+m+n=11+2+6=19.$"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0030",
+      "title": "Final Answer",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1.SSx3.SSSx5",
+      "path": [
+        "Appendix A Dataset Transformation",
+        "Model’s output (Markdown Text)",
+        "Final Answer"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d381a68e3bb578699404",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SSx3.SSSx5.p1.1",
+          "text": "$19$",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 4
+        }
+      ],
+      "text": "$19$"
+    },
+    {
+      "section_id": "arxiv_2503.14476_v2_s0031",
+      "title": "Appendix B Supplementary Case",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2",
+      "path": [
+        "Appendix B Supplementary Case"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_fe86052beab8403cb384",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.T3.3",
+          "text": "Question:\nAmong the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.\nResponse:\nStep by Step Solution:\n1. Let’s define the following variables:\nLet $A$ be the set of residents who own a diamond ring.\nLet $B$ be the set of residents who own a set of golf clubs.\nLet $C$ be the set of residents who own a garden spade.\nLet $D$ be the set of residents who own a bag of candy hearts. Since all 900 residents own a bag of candy hearts, $|D|=900$.\nLet $a_{i}$ denote the number of residents who own exactly $i$ out of the 4 items.\nLet’s use the principle of inclusion-exclusion for the union of 4 sets $A,B,C,D$.\n…\n$a_{4}=\\frac{-219}{-4}=\\frac{219}{4}=54.75$.\nSince $a_{4}$, the number of people owning all four items, must be a whole number, our current approach needs to be reconsidered in terms of the combinatorial counting of people owning different combinations of the items. Instead of directly using the inclusion-exclusion principle, we can use a different approach involving the number of people owning combinations of the items $A$, $B$, $C$, and $D$.\nLet $x_{i}$ be the number of people owning exactly $i$ item among $A$, $B$, $C$ (excluding the item $D$ which everyone owns).\nThen the total number of people owning exactly $k$ items among the $A$, $B$, $C$, and $D$ can be broken down:\n…",
+          "kind": "table",
+          "char_start": 0,
+          "char_end": 1636
+        },
+        {
+          "paragraph_id": "p_5541717305fee2946993",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.T3",
+          "text": "Table 3: A case of reflective behavior emergence.",
+          "kind": "caption",
+          "char_start": 1638,
+          "char_end": 1687
+        }
+      ],
+      "text": "Question:\nAmong the 900 residents of Aimeville, there are 195 who own a diamond ring, 367 who own a set of golf clubs, and 562 who own a garden spade. In addition, each of the 900 residents owns a bag of candy hearts. There are 437 residents who own exactly two of these things, and 234 residents who own exactly three of these things. Find the number of residents of Aimeville who own all four of these things.\nResponse:\nStep by Step Solution:\n1. Let’s define the following variables:\nLet $A$ be the set of residents who own a diamond ring.\nLet $B$ be the set of residents who own a set of golf clubs.\nLet $C$ be the set of residents who own a garden spade.\nLet $D$ be the set of residents who own a bag of candy hearts. Since all 900 residents own a bag of candy hearts, $|D|=900$.\nLet $a_{i}$ denote the number of residents who own exactly $i$ out of the 4 items.\nLet’s use the principle of inclusion-exclusion for the union of 4 sets $A,B,C,D$.\n…\n$a_{4}=\\frac{-219}{-4}=\\frac{219}{4}=54.75$.\nSince $a_{4}$, the number of people owning all four items, must be a whole number, our current approach needs to be reconsidered in terms of the combinatorial counting of people owning different combinations of the items. Instead of directly using the inclusion-exclusion principle, we can use a different approach involving the number of people owning combinations of the items $A$, $B$, $C$, and $D$.\nLet $x_{i}$ be the number of people owning exactly $i$ item among $A$, $B$, $C$ (excluding the item $D$ which everyone owns).\nThen the total number of people owning exactly $k$ items among the $A$, $B$, $C$, and $D$ can be broken down:\n…\n\nTable 3: A case of reflective behavior emergence."
+    }
+  ]
+}

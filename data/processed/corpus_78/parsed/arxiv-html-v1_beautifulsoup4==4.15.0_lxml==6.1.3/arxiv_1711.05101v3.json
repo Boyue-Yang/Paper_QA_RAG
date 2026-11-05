@@ -1,0 +1,1577 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_1711.05101",
+  "version": "v3",
+  "title": "Decoupled Weight Decay Regularization",
+  "source_format": "html",
+  "source_sha256": "8661307e3ab76c5978ccc3703be7f7374840904a7bf8ed4a6a46f16d3219f9f2",
+  "source_url": "https://arxiv.org/html/1711.05101v3",
+  "source_path": "data/corpus_78/html/arxiv_1711.05101v3.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_1711.05101_v3_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_72ab585bca274eafb85f",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "L2 regularization and weight decay regularization are equivalent for standard stochastic gradient descent (when rescaled by the learning rate), but as we demonstrate this is not the case for adaptive gradient algorithms, such as Adam. While common implementations of these algorithms employ L2 regularization (often calling it “weight decay” in what may be misleading due to the inequivalence we expose), we propose a simple modification to recover the original formulation of weight decay regularization by decoupling the weight decay from the optimization steps taken w.r.t. the loss function. We provide empirical evidence that our proposed modification (i) decouples the optimal choice of weight decay factor from the setting of the learning rate for both standard SGD and Adam and (ii) substantially improves Adam’s generalization performance, allowing it to compete with SGD with momentum on image classification datasets (on which it was previously typically outperformed by the latter). Our proposed decoupled weight decay has already been adopted by many researchers, and the community has implemented it in TensorFlow and PyTorch; the complete source code for our experiments is available at https://github.com/loshchil/AdamW-and-SGDW",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1244
+        }
+      ],
+      "text": "L2 regularization and weight decay regularization are equivalent for standard stochastic gradient descent (when rescaled by the learning rate), but as we demonstrate this is not the case for adaptive gradient algorithms, such as Adam. While common implementations of these algorithms employ L2 regularization (often calling it “weight decay” in what may be misleading due to the inequivalence we expose), we propose a simple modification to recover the original formulation of weight decay regularization by decoupling the weight decay from the optimization steps taken w.r.t. the loss function. We provide empirical evidence that our proposed modification (i) decouples the optimal choice of weight decay factor from the setting of the learning rate for both standard SGD and Adam and (ii) substantially improves Adam’s generalization performance, allowing it to compete with SGD with momentum on image classification datasets (on which it was previously typically outperformed by the latter). Our proposed decoupled weight decay has already been adopted by many researchers, and the community has implemented it in TensorFlow and PyTorch; the complete source code for our experiments is available at https://github.com/loshchil/AdamW-and-SGDW"
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_3434c608f999739d5e10",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Adaptive gradient methods, such as AdaGrad (Duchi et al., 2011), RMSProp (Tieleman & Hinton, 2012), Adam (Kingma & Ba, 2014) and most recently AMSGrad (Reddi et al., 2018) have become a default method of choice for training feed-forward and recurrent neural networks (Xu et al., 2015; Radford et al., 2015). Nevertheless, state-of-the-art results for popular image classification datasets, such as CIFAR-10 and CIFAR-100 Krizhevsky (2009), are still obtained by applying SGD with momentum (Gastaldi, 2017; Cubuk et al., 2018). Furthermore, Wilson et al. (2017) suggested that adaptive gradient methods do not generalize as well as SGD with momentum when tested on a diverse set of deep learning tasks, such as image classification, character-level language modeling and constituency parsing. Different hypotheses about the origins of this worse generalization have been investigated, such as the presence of sharp local minima (Keskar et al., 2016; Dinh et al., 2017) and inherent problems of adaptive gradient methods (Wilson et al., 2017). In this paper, we investigate whether it is better to use L2 regularization or weight decay regularization to train deep neural networks with SGD and Adam. We show that a major factor of the poor generalization of the most popular adaptive gradient method, Adam, is due to the fact that L2 regularization is not nearly as effective for it as for SGD. Specifically, our analysis of Adam leads to the following observations:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1464
+        },
+        {
+          "paragraph_id": "p_e86c2fdc82ab11a6e8bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1",
+          "text": "L2 regularization and weight decay are not identical. The two techniques can be made equivalent for SGD by a reparameterization of the weight decay factor based on the learning rate; however, as is often overlooked, this is not the case for Adam. In particular, when combined with adaptive gradients, L2 regularization leads to weights with large historic parameter and/or gradient amplitudes being regularized less than they would be when using weight decay.",
+          "kind": "list_item",
+          "char_start": 1466,
+          "char_end": 1925
+        },
+        {
+          "paragraph_id": "p_2c973fd4082d437d04aa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1",
+          "text": "L2 regularization is not effective in Adam. One possible explanation why Adam and other adaptive gradient methods might be outperformed by SGD with momentum is that common deep learning libraries only implement L2 regularization, not the original weight decay. Therefore, on tasks/datasets where the use of L2 regularization is beneficial for SGD (e.g., on many popular image classification datasets), Adam leads to worse results than SGD with momentum (for which L2 regularization behaves as expected).",
+          "kind": "list_item",
+          "char_start": 1927,
+          "char_end": 2430
+        },
+        {
+          "paragraph_id": "p_dca51fba497e14e4b544",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1",
+          "text": "Weight decay is equally effective in both SGD and Adam. For SGD, it is equivalent to L2 regularization, while for Adam it is not.",
+          "kind": "list_item",
+          "char_start": 2432,
+          "char_end": 2561
+        },
+        {
+          "paragraph_id": "p_44562aef2effcc364961",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1",
+          "text": "Optimal weight decay depends on the total number of batch passes/weight updates. Our empirical analysis of SGD and Adam suggests that the larger the runtime/number of batch passes to be performed, the smaller the optimal weight decay.",
+          "kind": "list_item",
+          "char_start": 2563,
+          "char_end": 2797
+        },
+        {
+          "paragraph_id": "p_45cfca911b2bc4134fb0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1",
+          "text": "Adam can substantially benefit from a scheduled learning rate multiplier. The fact that Adam is an adaptive gradient algorithm and as such adapts the learning rate for each parameter does not rule out the possibility to substantially improve its performance by using a global learning rate multiplier, scheduled, e.g., by cosine annealing.",
+          "kind": "list_item",
+          "char_start": 2799,
+          "char_end": 3138
+        },
+        {
+          "paragraph_id": "p_8175e9929c062460aac2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "The main contribution of this paper is to improve regularization in Adam by decoupling the weight decay from the gradient-based update. In a comprehensive analysis, we show that Adam generalizes substantially better with decoupled weight decay than with L2 regularization, achieving 15% relative improvement in test error (see Figures 2 and 3); this holds true for various image recognition datasets (CIFAR-10 and ImageNet32x32), training budgets (ranging from 100 to 1800 epochs), and learning rate schedules (fixed, drop-step, and cosine annealing; see Figure 1). We also demonstrate that our decoupled weight decay renders the optimal settings of the learning rate and the weight decay factor much more independent, thereby easing hyperparameter optimization (see Figure 2).",
+          "kind": "text",
+          "char_start": 3140,
+          "char_end": 3917
+        },
+        {
+          "paragraph_id": "p_d77062ca26385e2559eb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "The main motivation of this paper is to improve Adam to make it competitive w.r.t. SGD with momentum even for those problems where it did not use to be competitive. We hope that as a result, practitioners do not need to switch between Adam and SGD anymore, which in turn should reduce the common issue of selecting dataset/task-specific training algorithms and their hyperparameters.",
+          "kind": "text",
+          "char_start": 3919,
+          "char_end": 4302
+        }
+      ],
+      "text": "Adaptive gradient methods, such as AdaGrad (Duchi et al., 2011), RMSProp (Tieleman & Hinton, 2012), Adam (Kingma & Ba, 2014) and most recently AMSGrad (Reddi et al., 2018) have become a default method of choice for training feed-forward and recurrent neural networks (Xu et al., 2015; Radford et al., 2015). Nevertheless, state-of-the-art results for popular image classification datasets, such as CIFAR-10 and CIFAR-100 Krizhevsky (2009), are still obtained by applying SGD with momentum (Gastaldi, 2017; Cubuk et al., 2018). Furthermore, Wilson et al. (2017) suggested that adaptive gradient methods do not generalize as well as SGD with momentum when tested on a diverse set of deep learning tasks, such as image classification, character-level language modeling and constituency parsing. Different hypotheses about the origins of this worse generalization have been investigated, such as the presence of sharp local minima (Keskar et al., 2016; Dinh et al., 2017) and inherent problems of adaptive gradient methods (Wilson et al., 2017). In this paper, we investigate whether it is better to use L2 regularization or weight decay regularization to train deep neural networks with SGD and Adam. We show that a major factor of the poor generalization of the most popular adaptive gradient method, Adam, is due to the fact that L2 regularization is not nearly as effective for it as for SGD. Specifically, our analysis of Adam leads to the following observations:\n\nL2 regularization and weight decay are not identical. The two techniques can be made equivalent for SGD by a reparameterization of the weight decay factor based on the learning rate; however, as is often overlooked, this is not the case for Adam. In particular, when combined with adaptive gradients, L2 regularization leads to weights with large historic parameter and/or gradient amplitudes being regularized less than they would be when using weight decay.\n\nL2 regularization is not effective in Adam. One possible explanation why Adam and other adaptive gradient methods might be outperformed by SGD with momentum is that common deep learning libraries only implement L2 regularization, not the original weight decay. Therefore, on tasks/datasets where the use of L2 regularization is beneficial for SGD (e.g., on many popular image classification datasets), Adam leads to worse results than SGD with momentum (for which L2 regularization behaves as expected).\n\nWeight decay is equally effective in both SGD and Adam. For SGD, it is equivalent to L2 regularization, while for Adam it is not.\n\nOptimal weight decay depends on the total number of batch passes/weight updates. Our empirical analysis of SGD and Adam suggests that the larger the runtime/number of batch passes to be performed, the smaller the optimal weight decay.\n\nAdam can substantially benefit from a scheduled learning rate multiplier. The fact that Adam is an adaptive gradient algorithm and as such adapts the learning rate for each parameter does not rule out the possibility to substantially improve its performance by using a global learning rate multiplier, scheduled, e.g., by cosine annealing.\n\nThe main contribution of this paper is to improve regularization in Adam by decoupling the weight decay from the gradient-based update. In a comprehensive analysis, we show that Adam generalizes substantially better with decoupled weight decay than with L2 regularization, achieving 15% relative improvement in test error (see Figures 2 and 3); this holds true for various image recognition datasets (CIFAR-10 and ImageNet32x32), training budgets (ranging from 100 to 1800 epochs), and learning rate schedules (fixed, drop-step, and cosine annealing; see Figure 1). We also demonstrate that our decoupled weight decay renders the optimal settings of the learning rate and the weight decay factor much more independent, thereby easing hyperparameter optimization (see Figure 2).\n\nThe main motivation of this paper is to improve Adam to make it competitive w.r.t. SGD with momentum even for those problems where it did not use to be competitive. We hope that as a result, practitioners do not need to switch between Adam and SGD anymore, which in turn should reduce the common issue of selecting dataset/task-specific training algorithms and their hyperparameters."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0002",
+      "title": "2 Decoupling the Weight Decay from the Gradient-based Update",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Decoupling the Weight Decay from the Gradient-based Update"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d82ba9b2521ad23a6437",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.1",
+          "text": "In the weight decay described by Hanson & Pratt (1988), the weights $\\bm{\\theta}$ decay exponentially as",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 104
+        },
+        {
+          "paragraph_id": "p_2c65ac0224dca8f54662",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx1",
+          "text": "\\displaystyle\\bm{\\theta}_{t+1}=(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t}),",
+          "kind": "equation",
+          "char_start": 106,
+          "char_end": 200
+        },
+        {
+          "paragraph_id": "p_ffd96fb835d5c76ecbd4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.2",
+          "text": "where $\\lambda$ defines the rate of the weight decay per step and $\\nabla f_{t}(\\bm{\\theta}_{t})$ is the $t$-th batch gradient to be multiplied by a learning rate $\\alpha$. For standard SGD, it is equivalent to standard L2 regularization:",
+          "kind": "text",
+          "char_start": 202,
+          "char_end": 440
+        },
+        {
+          "paragraph_id": "p_c5e1c6aa1b1537046293",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop1",
+          "text": "Proposition 1 (Weight decay = L2 reg for standard SGD).",
+          "kind": "heading",
+          "char_start": 442,
+          "char_end": 497
+        },
+        {
+          "paragraph_id": "p_f4e8fa4f06391004e2ba",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop1.p1.1",
+          "text": "Standard SGD with base learning rate $\\alpha$ executes the same steps on batch loss functions $f_{t}(\\bm{\\theta})$ with weight decay $\\lambda$ (defined in Equation 1) as it executes without weight decay on $f_{t}^{\\text{reg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$, with $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$.",
+          "kind": "text",
+          "char_start": 499,
+          "char_end": 875
+        },
+        {
+          "paragraph_id": "p_851b41dd12766fabce49",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p2.1",
+          "text": "The proofs of this well-known fact, as well as our other propositions, are given in Appendix A.",
+          "kind": "text",
+          "char_start": 877,
+          "char_end": 972
+        },
+        {
+          "paragraph_id": "p_b4cfbc908a393c61eb96",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p3.1",
+          "text": "Due to this equivalence, L2 regularization is very frequently referred to as weight decay, including in popular deep learning libraries. However, as we will demonstrate later in this section, this equivalence does not hold for adaptive gradient methods. One fact that is often overlooked already for the simple case of SGD is that in order for the equivalence to hold, the L2 regularizer $\\lambda^{\\prime}$ has to be set to $\\frac{\\lambda}{\\alpha}$, i.e., if there is an overall best weight decay value $\\lambda$, the best value of $\\lambda^{\\prime}$ is tightly coupled with the learning rate $\\alpha$. In order to decouple the effects of these two hyperparameters, we advocate to decouple the weight decay step as proposed by Hanson & Pratt (1988) (Equation 1).",
+          "kind": "text",
+          "char_start": 974,
+          "char_end": 1736
+        },
+        {
+          "paragraph_id": "p_b0b5d12f63636b8dd449",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg1",
+          "text": "Algorithm 1 SGD with L2 regularization and SGD with decoupled weight decay (SGDW), both with momentum",
+          "kind": "caption",
+          "char_start": 1738,
+          "char_end": 1839
+        },
+        {
+          "paragraph_id": "p_aa8254eb5232a4c26458",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg1.8",
+          "text": "1: given initial learning rate $\\alpha\\in{\\rm I\\hskip-2.15277ptR}$, momentum factor $\\beta_{1}\\in{\\rm I\\hskip-2.15277ptR}$, weight decay/L2 regularization factor $\\lambda\\in{\\rm I\\hskip-2.15277ptR}$\n2: initialize time step $t\\leftarrow 0$, parameter vector $\\bm{\\theta}_{t=0}\\in{\\rm I\\hskip-2.15277ptR}^{n}$, first moment vector $\\textit{{m}}_{t=0}\\leftarrow\\textit{{0}}$, schedule multiplier $\\eta_{t=0}\\in{\\rm I\\hskip-2.15277ptR}$\n3: repeat\n4: $t\\leftarrow t+1$\n5: $\\nabla f_{t}(\\bm{\\theta}_{t-1})\\leftarrow\\text{SelectBatch}(\\bm{\\theta}_{t-1})$ $\\triangleright$ select batch and return the corresponding gradient\n6: $\\textit{{g}}_{t}\\leftarrow\\nabla f_{t}(\\bm{\\theta}_{t-1})$ $\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$\n7: $\\eta_{t}\\leftarrow\\text{SetScheduleMultiplier}(t)$ $\\triangleright$ can be fixed, decay, be used for warm restarts\n8: $\\textit{{m}}_{t}\\leftarrow\\beta_{1}\\textit{{m}}_{t-1}+\\eta_{t}\\alpha\\textit{{g}}_{t}$\n9: $\\bm{\\theta}_{t}\\leftarrow\\bm{\\theta}_{t-1}-\\textit{{m}}_{t}$ $\\displaystyle-\\eta_{t}\\lambda\\bm{\\theta}_{t-1}$\n10: until stopping criterion is met\n11: return optimized parameters $\\bm{\\theta}_{t}$",
+          "kind": "listing",
+          "char_start": 1841,
+          "char_end": 2969
+        },
+        {
+          "paragraph_id": "p_d7de386988a4ad945bc4",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg2",
+          "text": "Algorithm 2 Adam with L2 regularization and Adam with decoupled weight decay (AdamW)",
+          "kind": "caption",
+          "char_start": 2971,
+          "char_end": 3055
+        },
+        {
+          "paragraph_id": "p_6b649f77559ad7b8b88e",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg2.8",
+          "text": "1: given $\\alpha=0.001,\\beta_{1}=0.9,\\beta_{2}=0.999,\\epsilon=10^{-8},\\lambda\\in{\\rm I\\hskip-2.15277ptR}$\n2: initialize time step $t\\leftarrow 0$, parameter vector $\\bm{\\theta}_{t=0}\\in{\\rm I\\hskip-2.15277ptR}^{n}$, first moment vector $\\textit{{m}}_{t=0}\\leftarrow\\textit{{0}}$, second moment vector $\\textit{{v}}_{t=0}\\leftarrow\\textit{{0}}$, schedule multiplier $\\eta_{t=0}\\in{\\rm I\\hskip-2.15277ptR}$\n3: repeat\n4: $t\\leftarrow t+1$\n5: $\\nabla f_{t}(\\bm{\\theta}_{t-1})\\leftarrow\\text{SelectBatch}(\\bm{\\theta}_{t-1})$ $\\triangleright$ select batch and return the corresponding gradient\n6: $\\textit{{g}}_{t}\\leftarrow\\nabla f_{t}(\\bm{\\theta}_{t-1})$ $\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$\n7: $\\textit{{m}}_{t}\\leftarrow\\beta_{1}\\textit{{m}}_{t-1}+(1-\\beta_{1})\\textit{{g}}_{t}$ $\\triangleright$ here and below all operations are element-wise\n8: $\\textit{{v}}_{t}\\leftarrow\\beta_{2}\\textit{{v}}_{t-1}+(1-\\beta_{2})\\textit{{g}}^{2}_{t}$\n9: $\\hat{\\textit{{m}}}_{t}\\leftarrow\\textit{{m}}_{t}/(1-\\beta_{1}^{t})$ $\\triangleright$ $\\beta_{1}$ is taken to the power of $t$\n10: $\\hat{\\textit{{{v}}}}_{t}\\leftarrow\\textit{{v}}_{t}/(1-\\beta_{2}^{t})$ $\\triangleright$ $\\beta_{2}$ is taken to the power of $t$\n11: $\\eta_{t}\\leftarrow\\text{SetScheduleMultiplier}(t)$ $\\triangleright$ can be fixed, decay, or also be used for warm restarts\n12: $\\bm{\\theta}_{t}\\leftarrow\\bm{\\theta}_{t-1}-\\eta_{t}\\left(\\alpha\\hat{\\textit{{m}}}_{t}/(\\sqrt{\\hat{\\textit{{v}}}_{t}}+\\epsilon)\\hbox{\\pagecolor{SpringGreen}$\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$}\\right)$\n13: until stopping criterion is met\n14: return optimized parameters $\\bm{\\theta}_{t}$",
+          "kind": "listing",
+          "char_start": 3057,
+          "char_end": 4681
+        },
+        {
+          "paragraph_id": "p_f3ba6b7bcbf62e2d28b6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p4.1",
+          "text": "Looking first at the case of SGD, we propose to decay the weights simultaneously with the update of $\\bm{\\theta}_{t}$ based on gradient information in Line 9 of Algorithm 1. This yields our proposed variant of SGD with momentum using decoupled weight decay (SGDW). This simple modification explicitly decouples $\\lambda$ and $\\alpha$ (although some problem-dependent implicit coupling may of course remain as for any two hyperparameters). In order to account for a possible scheduling of both $\\alpha$ and $\\lambda$, we introduce a scaling factor $\\eta_{t}$ delivered by a user-defined procedure $SetScheduleMultiplier(t)$.",
+          "kind": "text",
+          "char_start": 4683,
+          "char_end": 5306
+        },
+        {
+          "paragraph_id": "p_d8fe94a96e7e00e99790",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p5.1",
+          "text": "Now, let’s turn to adaptive gradient algorithms like the popular optimizer Adam Kingma & Ba (2014), which scale gradients by their historic magnitudes. Intuitively, when Adam is run on a loss function $f$ plus L2 regularization, weights that tend to have large gradients in $f$ do not get regularized as much as they would with decoupled weight decay, since the gradient of the regularizer gets scaled along with the gradient of $f$. This leads to an inequivalence of L2 and decoupled weight decay regularization for adaptive gradient algorithms:",
+          "kind": "text",
+          "char_start": 5308,
+          "char_end": 5854
+        },
+        {
+          "paragraph_id": "p_bc0dfd0cfad87d670a61",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop2",
+          "text": "Proposition 2 (Weight decay $\\neq$ L2 reg for adaptive gradients).",
+          "kind": "heading",
+          "char_start": 5856,
+          "char_end": 5922
+        },
+        {
+          "paragraph_id": "p_02813f983b3e9f72c29e",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop2.p1.1",
+          "text": "Let $O$ denote an optimizer that has iterates $\\bm{\\theta}_{t+1}\\leftarrow\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t})$ when run on batch loss function $f_{t}(\\bm{\\theta})$ without weight decay, and $\\bm{\\theta}_{t+1}\\leftarrow(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t})$ when run on $f_{t}(\\bm{\\theta})$ with weight decay, respectively, with $\\mathbf{M}_{t}\\neq k\\mathbf{I}$ (where $k\\in\\mathbb{R}$). Then, for $O$ there exists no L2 coefficient $\\lambda^{\\prime}$ such that running $O$ on batch loss $f^{\\text{reg}}_{t}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ without weight decay is equivalent to running $O$ on $f_{t}(\\bm{\\theta})$ with decay $\\lambda\\in\\mathbb{R}^{+}$.",
+          "kind": "text",
+          "char_start": 5924,
+          "char_end": 6714
+        },
+        {
+          "paragraph_id": "p_ee3e66d6a800948459a5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p6.1",
+          "text": "We decouple weight decay and loss-based gradient updates in Adam as shown in line 12 of Algorithm 2; this gives rise to our variant of Adam with decoupled weight decay (AdamW).",
+          "kind": "text",
+          "char_start": 6716,
+          "char_end": 6892
+        },
+        {
+          "paragraph_id": "p_cf44f2dbabcf5538e42d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p7.1",
+          "text": "Having shown that L2 regularization and weight decay regularization differ for adaptive gradient algorithms raises the question of how they differ and how to interpret their effects. Their equivalence for standard SGD remains very helpful for intuition: both mechanisms push weights closer to zero, at the same rate. However, for adaptive gradient algorithms they differ: with L2 regularization, the sums of the gradient of the loss function and the gradient of the regularizer (i.e., the L2 norm of the weights) are adapted, whereas with decoupled weight decay, only the gradients of the loss function are adapted (with the weight decay step separated from the adaptive gradient mechanism). With L2 regularization both types of gradients are normalized by their typical (summed) magnitudes, and therefore weights $x$ with large typical gradient magnitude $s$ are regularized by a smaller relative amount than other weights. In contrast, decoupled weight decay regularizes all weights with the same rate $\\lambda$, effectively regularizing weights $x$ with large $s$ more than standard L2 regularization does. We demonstrate this formally for a simple special case of adaptive gradient algorithm with a fixed preconditioner:",
+          "kind": "text",
+          "char_start": 6894,
+          "char_end": 8118
+        },
+        {
+          "paragraph_id": "p_1bb03976a3a04f277ffb",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop3",
+          "text": "Proposition 3 (Weight decay = scale-adjusted $L_{2}$ reg for adaptive gradient algorithm with fixed preconditioner).",
+          "kind": "heading",
+          "char_start": 8120,
+          "char_end": 8236
+        },
+        {
+          "paragraph_id": "p_f7d984b8e063b17bc4dd",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop3.p1.1",
+          "text": "Let $O$ denote an algorithm with the same characteristics as in Proposition 2, and using a fixed preconditioner matrix $\\textbf{M}_{t}=\\text{diag}(\\textit{{s}})^{-1}$ (with $s_{i}>0$ for all $i$). Then, $O$ with base learning rate $\\alpha$ executes the same steps on batch loss functions $f_{t}(\\bm{\\theta})$ with weight decay $\\lambda$ as it executes without weight decay on the scale-adjusted regularized batch loss",
+          "kind": "text",
+          "char_start": 8238,
+          "char_end": 8655
+        },
+        {
+          "paragraph_id": "p_8a57214a0e54303a3512",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E2",
+          "text": "f_{t}^{\\text{sreg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2\\alpha}\\left\\lVert\\bm{\\theta}\\odot{}\\sqrt{\\textit{{s}}}\\right\\rVert_{2}^{2},\\vskip-2.84544pt",
+          "kind": "equation",
+          "char_start": 8657,
+          "char_end": 8826
+        },
+        {
+          "paragraph_id": "p_6458e432796e18acd284",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmprop3.p1.2",
+          "text": "where $\\odot$ and $\\sqrt{\\cdot}$ denote element-wise multiplication and square root, respectively, and $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$.",
+          "kind": "text",
+          "char_start": 8828,
+          "char_end": 8973
+        },
+        {
+          "paragraph_id": "p_a9838d80d6231edc4228",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p8.1",
+          "text": "We note that this proposition does not directly apply to practical adaptive gradient algorithms, since these change the preconditioner matrix at every step. Nevertheless, it can still provide intuition about the equivalent loss function being optimized in each step: parameters $\\theta_{i}$ with a large inverse preconditioner $s_{i}$ (which in practice would be caused by historically large gradients in dimension $i$) are regularized relatively more than they would be with L2 regularization; specifically, the regularization is proportional to $\\sqrt{s_{i}}$.",
+          "kind": "text",
+          "char_start": 8975,
+          "char_end": 9537
+        }
+      ],
+      "text": "In the weight decay described by Hanson & Pratt (1988), the weights $\\bm{\\theta}$ decay exponentially as\n\n\\displaystyle\\bm{\\theta}_{t+1}=(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t}),\n\nwhere $\\lambda$ defines the rate of the weight decay per step and $\\nabla f_{t}(\\bm{\\theta}_{t})$ is the $t$-th batch gradient to be multiplied by a learning rate $\\alpha$. For standard SGD, it is equivalent to standard L2 regularization:\n\nProposition 1 (Weight decay = L2 reg for standard SGD).\n\nStandard SGD with base learning rate $\\alpha$ executes the same steps on batch loss functions $f_{t}(\\bm{\\theta})$ with weight decay $\\lambda$ (defined in Equation 1) as it executes without weight decay on $f_{t}^{\\text{reg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$, with $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$.\n\nThe proofs of this well-known fact, as well as our other propositions, are given in Appendix A.\n\nDue to this equivalence, L2 regularization is very frequently referred to as weight decay, including in popular deep learning libraries. However, as we will demonstrate later in this section, this equivalence does not hold for adaptive gradient methods. One fact that is often overlooked already for the simple case of SGD is that in order for the equivalence to hold, the L2 regularizer $\\lambda^{\\prime}$ has to be set to $\\frac{\\lambda}{\\alpha}$, i.e., if there is an overall best weight decay value $\\lambda$, the best value of $\\lambda^{\\prime}$ is tightly coupled with the learning rate $\\alpha$. In order to decouple the effects of these two hyperparameters, we advocate to decouple the weight decay step as proposed by Hanson & Pratt (1988) (Equation 1).\n\nAlgorithm 1 SGD with L2 regularization and SGD with decoupled weight decay (SGDW), both with momentum\n\n1: given initial learning rate $\\alpha\\in{\\rm I\\hskip-2.15277ptR}$, momentum factor $\\beta_{1}\\in{\\rm I\\hskip-2.15277ptR}$, weight decay/L2 regularization factor $\\lambda\\in{\\rm I\\hskip-2.15277ptR}$\n2: initialize time step $t\\leftarrow 0$, parameter vector $\\bm{\\theta}_{t=0}\\in{\\rm I\\hskip-2.15277ptR}^{n}$, first moment vector $\\textit{{m}}_{t=0}\\leftarrow\\textit{{0}}$, schedule multiplier $\\eta_{t=0}\\in{\\rm I\\hskip-2.15277ptR}$\n3: repeat\n4: $t\\leftarrow t+1$\n5: $\\nabla f_{t}(\\bm{\\theta}_{t-1})\\leftarrow\\text{SelectBatch}(\\bm{\\theta}_{t-1})$ $\\triangleright$ select batch and return the corresponding gradient\n6: $\\textit{{g}}_{t}\\leftarrow\\nabla f_{t}(\\bm{\\theta}_{t-1})$ $\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$\n7: $\\eta_{t}\\leftarrow\\text{SetScheduleMultiplier}(t)$ $\\triangleright$ can be fixed, decay, be used for warm restarts\n8: $\\textit{{m}}_{t}\\leftarrow\\beta_{1}\\textit{{m}}_{t-1}+\\eta_{t}\\alpha\\textit{{g}}_{t}$\n9: $\\bm{\\theta}_{t}\\leftarrow\\bm{\\theta}_{t-1}-\\textit{{m}}_{t}$ $\\displaystyle-\\eta_{t}\\lambda\\bm{\\theta}_{t-1}$\n10: until stopping criterion is met\n11: return optimized parameters $\\bm{\\theta}_{t}$\n\nAlgorithm 2 Adam with L2 regularization and Adam with decoupled weight decay (AdamW)\n\n1: given $\\alpha=0.001,\\beta_{1}=0.9,\\beta_{2}=0.999,\\epsilon=10^{-8},\\lambda\\in{\\rm I\\hskip-2.15277ptR}$\n2: initialize time step $t\\leftarrow 0$, parameter vector $\\bm{\\theta}_{t=0}\\in{\\rm I\\hskip-2.15277ptR}^{n}$, first moment vector $\\textit{{m}}_{t=0}\\leftarrow\\textit{{0}}$, second moment vector $\\textit{{v}}_{t=0}\\leftarrow\\textit{{0}}$, schedule multiplier $\\eta_{t=0}\\in{\\rm I\\hskip-2.15277ptR}$\n3: repeat\n4: $t\\leftarrow t+1$\n5: $\\nabla f_{t}(\\bm{\\theta}_{t-1})\\leftarrow\\text{SelectBatch}(\\bm{\\theta}_{t-1})$ $\\triangleright$ select batch and return the corresponding gradient\n6: $\\textit{{g}}_{t}\\leftarrow\\nabla f_{t}(\\bm{\\theta}_{t-1})$ $\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$\n7: $\\textit{{m}}_{t}\\leftarrow\\beta_{1}\\textit{{m}}_{t-1}+(1-\\beta_{1})\\textit{{g}}_{t}$ $\\triangleright$ here and below all operations are element-wise\n8: $\\textit{{v}}_{t}\\leftarrow\\beta_{2}\\textit{{v}}_{t-1}+(1-\\beta_{2})\\textit{{g}}^{2}_{t}$\n9: $\\hat{\\textit{{m}}}_{t}\\leftarrow\\textit{{m}}_{t}/(1-\\beta_{1}^{t})$ $\\triangleright$ $\\beta_{1}$ is taken to the power of $t$\n10: $\\hat{\\textit{{{v}}}}_{t}\\leftarrow\\textit{{v}}_{t}/(1-\\beta_{2}^{t})$ $\\triangleright$ $\\beta_{2}$ is taken to the power of $t$\n11: $\\eta_{t}\\leftarrow\\text{SetScheduleMultiplier}(t)$ $\\triangleright$ can be fixed, decay, or also be used for warm restarts\n12: $\\bm{\\theta}_{t}\\leftarrow\\bm{\\theta}_{t-1}-\\eta_{t}\\left(\\alpha\\hat{\\textit{{m}}}_{t}/(\\sqrt{\\hat{\\textit{{v}}}_{t}}+\\epsilon)\\hbox{\\pagecolor{SpringGreen}$\\displaystyle+\\lambda\\bm{\\theta}_{t-1}$}\\right)$\n13: until stopping criterion is met\n14: return optimized parameters $\\bm{\\theta}_{t}$\n\nLooking first at the case of SGD, we propose to decay the weights simultaneously with the update of $\\bm{\\theta}_{t}$ based on gradient information in Line 9 of Algorithm 1. This yields our proposed variant of SGD with momentum using decoupled weight decay (SGDW). This simple modification explicitly decouples $\\lambda$ and $\\alpha$ (although some problem-dependent implicit coupling may of course remain as for any two hyperparameters). In order to account for a possible scheduling of both $\\alpha$ and $\\lambda$, we introduce a scaling factor $\\eta_{t}$ delivered by a user-defined procedure $SetScheduleMultiplier(t)$.\n\nNow, let’s turn to adaptive gradient algorithms like the popular optimizer Adam Kingma & Ba (2014), which scale gradients by their historic magnitudes. Intuitively, when Adam is run on a loss function $f$ plus L2 regularization, weights that tend to have large gradients in $f$ do not get regularized as much as they would with decoupled weight decay, since the gradient of the regularizer gets scaled along with the gradient of $f$. This leads to an inequivalence of L2 and decoupled weight decay regularization for adaptive gradient algorithms:\n\nProposition 2 (Weight decay $\\neq$ L2 reg for adaptive gradients).\n\nLet $O$ denote an optimizer that has iterates $\\bm{\\theta}_{t+1}\\leftarrow\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t})$ when run on batch loss function $f_{t}(\\bm{\\theta})$ without weight decay, and $\\bm{\\theta}_{t+1}\\leftarrow(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t})$ when run on $f_{t}(\\bm{\\theta})$ with weight decay, respectively, with $\\mathbf{M}_{t}\\neq k\\mathbf{I}$ (where $k\\in\\mathbb{R}$). Then, for $O$ there exists no L2 coefficient $\\lambda^{\\prime}$ such that running $O$ on batch loss $f^{\\text{reg}}_{t}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ without weight decay is equivalent to running $O$ on $f_{t}(\\bm{\\theta})$ with decay $\\lambda\\in\\mathbb{R}^{+}$.\n\nWe decouple weight decay and loss-based gradient updates in Adam as shown in line 12 of Algorithm 2; this gives rise to our variant of Adam with decoupled weight decay (AdamW).\n\nHaving shown that L2 regularization and weight decay regularization differ for adaptive gradient algorithms raises the question of how they differ and how to interpret their effects. Their equivalence for standard SGD remains very helpful for intuition: both mechanisms push weights closer to zero, at the same rate. However, for adaptive gradient algorithms they differ: with L2 regularization, the sums of the gradient of the loss function and the gradient of the regularizer (i.e., the L2 norm of the weights) are adapted, whereas with decoupled weight decay, only the gradients of the loss function are adapted (with the weight decay step separated from the adaptive gradient mechanism). With L2 regularization both types of gradients are normalized by their typical (summed) magnitudes, and therefore weights $x$ with large typical gradient magnitude $s$ are regularized by a smaller relative amount than other weights. In contrast, decoupled weight decay regularizes all weights with the same rate $\\lambda$, effectively regularizing weights $x$ with large $s$ more than standard L2 regularization does. We demonstrate this formally for a simple special case of adaptive gradient algorithm with a fixed preconditioner:\n\nProposition 3 (Weight decay = scale-adjusted $L_{2}$ reg for adaptive gradient algorithm with fixed preconditioner).\n\nLet $O$ denote an algorithm with the same characteristics as in Proposition 2, and using a fixed preconditioner matrix $\\textbf{M}_{t}=\\text{diag}(\\textit{{s}})^{-1}$ (with $s_{i}>0$ for all $i$). Then, $O$ with base learning rate $\\alpha$ executes the same steps on batch loss functions $f_{t}(\\bm{\\theta})$ with weight decay $\\lambda$ as it executes without weight decay on the scale-adjusted regularized batch loss\n\nf_{t}^{\\text{sreg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2\\alpha}\\left\\lVert\\bm{\\theta}\\odot{}\\sqrt{\\textit{{s}}}\\right\\rVert_{2}^{2},\\vskip-2.84544pt\n\nwhere $\\odot$ and $\\sqrt{\\cdot}$ denote element-wise multiplication and square root, respectively, and $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$.\n\nWe note that this proposition does not directly apply to practical adaptive gradient algorithms, since these change the preconditioner matrix at every step. Nevertheless, it can still provide intuition about the equivalent loss function being optimized in each step: parameters $\\theta_{i}$ with a large inverse preconditioner $s_{i}$ (which in practice would be caused by historically large gradients in dimension $i$) are regularized relatively more than they would be with L2 regularization; specifically, the regularization is proportional to $\\sqrt{s_{i}}$."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0003",
+      "title": "3 Justification of Decoupled Weight Decay via a View of Adaptive Gradient Methods as Bayesian Filtering",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Justification of Decoupled Weight Decay via a View of Adaptive Gradient Methods as Bayesian Filtering"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_47a0e2e63dfdfc4b1279",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "We now discuss a justification of decoupled weight decay in the framework of Bayesian filtering for a unified theory of adaptive gradient algorithms due to Aitchison (2018). After we posted a preliminary version of our current paper on arXiv, Aitchison noted that his theory “gives us a theoretical framework in which we can understand the superiority of this weight decay over $L_{2}$ regularization, because it is weight decay, rather than $L_{2}$ regularization that emerges through the straightforward application of Bayesian filtering.”(Aitchison, 2018). While full credit for this theory goes to Aitchison, we summarize it here to shed some light on why weight decay may be favored over $L_{2}$ regularization.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 716
+        },
+        {
+          "paragraph_id": "p_82c3a8c33ffc7981a282",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.1",
+          "text": "Aitchison (2018) views stochastic optimization of $n$ parameters $\\theta_{1},\\dots,\\theta_{n}$ as a Bayesian filtering problem with the goal of inferring a distribution over the optimal values of each of the parameters $\\theta_{i}$ given the current values of the other parameters $\\bm{\\theta}_{-i}(t)$ at time step $t$. When the other parameters do not change this is an optimization problem, but when they do change it becomes one of “tracking” the optimizer using Bayesian filtering as follows. One is given a probability distribution $P(\\bm{\\theta}_{t}\\mid\\bm{y_{1:t}})$ of the optimizer at time step $t$ that takes into account the data $\\bm{y_{1:t}}$ from the first $t$ mini batches, a state transition prior $P(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})$ reflecting a (small) data-independent change in this distribution from one step to the next, and a likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$ derived from the mini batch at step $t+1$. The posterior distribution $P(\\bm{\\theta}_{t+1}\\mid\\bm{y_{1:t+1}})$ of the optimizer at time step $t+1$ can then be computed (as usual in Bayesian filtering) by marginalizing over $\\bm{\\theta}_{t}$ to obtain the one-step ahead predictions $P(\\bm{\\theta}_{t+1}\\mid\\bm{y_{1:t}})$ and then applying Bayes’ rule to incorporate the likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$. Aitchison (2018) assumes a Gaussian state transition distribution $P(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})$ and an approximate conjugate likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$, leading to the following closed-form update of the filtering distribution’s mean:",
+          "kind": "text",
+          "char_start": 718,
+          "char_end": 2314
+        },
+        {
+          "paragraph_id": "p_9496c11632007f9149c3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E3",
+          "text": "\\bm{\\mu}_{post}=\\bm{\\mu}_{prior}+\\bm{\\Sigma}_{post}\\times\\bm{g},",
+          "kind": "equation",
+          "char_start": 2316,
+          "char_end": 2380
+        },
+        {
+          "paragraph_id": "p_a865deb171135678b9c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.2",
+          "text": "where $\\bm{g}$ is the gradient of the log likelihood of the mini batch at time $t$. This result implies a preconditioner of the gradients that is given by the posterior uncertainty $\\bm{\\Sigma}_{post}$ of the filtering distribution: updates are larger for parameters we are more uncertain about and smaller for parameters we are more certain about. Aitchison (2018) goes on to show that popular adaptive gradient methods, such as Adam and RMSprop, as well as Kronecker-factorized methods are special cases of this framework.",
+          "kind": "text",
+          "char_start": 2382,
+          "char_end": 2906
+        },
+        {
+          "paragraph_id": "p_d049c60b0de4f6f47ab6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.1",
+          "text": "Decoupled weight decay very naturally fits into this unified framework as part of the state-transition distribution: Aitchison (2018) assumes a slow change of the optimizer according to the following Gaussian:",
+          "kind": "text",
+          "char_start": 2908,
+          "char_end": 3117
+        },
+        {
+          "paragraph_id": "p_415525f5af5dcec68944",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E4",
+          "text": "P(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})=\\mathcal{N}((\\bm{I}-\\bm{A})\\bm{\\theta}_{t},\\bm{Q}),",
+          "kind": "equation",
+          "char_start": 3119,
+          "char_end": 3210
+        },
+        {
+          "paragraph_id": "p_8f5c11c7e9b909f39ef5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.1",
+          "text": "where $\\bm{Q}$ is the covariance of Gaussian perturbations of the weights, and $\\bm{A}$ is a regularizer to avoid values growing unboundedly over time. When instantiated as $\\bm{A}=\\lambda\\times\\bm{I}$, this regularizer $\\bm{A}$ plays exactly the role of decoupled weight decay as described in Equation 1, since this leads to multiplying the current mean estimate $\\bm{\\theta}_{t}$ by $(1-\\lambda)$ at each step. Notably, this regularization is also directly applied to the prior and does not depend on the uncertainty in each of the parameters (which would be required for $L_{2}$ regularization).",
+          "kind": "text",
+          "char_start": 3212,
+          "char_end": 3810
+        },
+        {
+          "paragraph_id": "p_827829361f947e638147",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F1",
+          "text": "Figure 1: Adam performs better with decoupled weight decay (bottom row, AdamW) than with $L_{2}$ regularization (top row, Adam). We show the final test error of a 26 2x64d ResNet on CIFAR-10 after 100 epochs of training with fixed learning rate (left column), step-drop learning rate (with drops at epoch indexes 30, 60 and 80, middle column) and cosine annealing (right column). AdamW leads to a more separable hyperparameter search space, especially when a learning rate schedule, such as step-drop and cosine annealing is applied. Cosine annealing yields clearly superior results.",
+          "kind": "caption",
+          "char_start": 3812,
+          "char_end": 4395
+        }
+      ],
+      "text": "We now discuss a justification of decoupled weight decay in the framework of Bayesian filtering for a unified theory of adaptive gradient algorithms due to Aitchison (2018). After we posted a preliminary version of our current paper on arXiv, Aitchison noted that his theory “gives us a theoretical framework in which we can understand the superiority of this weight decay over $L_{2}$ regularization, because it is weight decay, rather than $L_{2}$ regularization that emerges through the straightforward application of Bayesian filtering.”(Aitchison, 2018). While full credit for this theory goes to Aitchison, we summarize it here to shed some light on why weight decay may be favored over $L_{2}$ regularization.\n\nAitchison (2018) views stochastic optimization of $n$ parameters $\\theta_{1},\\dots,\\theta_{n}$ as a Bayesian filtering problem with the goal of inferring a distribution over the optimal values of each of the parameters $\\theta_{i}$ given the current values of the other parameters $\\bm{\\theta}_{-i}(t)$ at time step $t$. When the other parameters do not change this is an optimization problem, but when they do change it becomes one of “tracking” the optimizer using Bayesian filtering as follows. One is given a probability distribution $P(\\bm{\\theta}_{t}\\mid\\bm{y_{1:t}})$ of the optimizer at time step $t$ that takes into account the data $\\bm{y_{1:t}}$ from the first $t$ mini batches, a state transition prior $P(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})$ reflecting a (small) data-independent change in this distribution from one step to the next, and a likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$ derived from the mini batch at step $t+1$. The posterior distribution $P(\\bm{\\theta}_{t+1}\\mid\\bm{y_{1:t+1}})$ of the optimizer at time step $t+1$ can then be computed (as usual in Bayesian filtering) by marginalizing over $\\bm{\\theta}_{t}$ to obtain the one-step ahead predictions $P(\\bm{\\theta}_{t+1}\\mid\\bm{y_{1:t}})$ and then applying Bayes’ rule to incorporate the likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$. Aitchison (2018) assumes a Gaussian state transition distribution $P(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})$ and an approximate conjugate likelihood $P(\\bm{y}_{t+1}\\mid\\bm{\\theta}_{t+1})$, leading to the following closed-form update of the filtering distribution’s mean:\n\n\\bm{\\mu}_{post}=\\bm{\\mu}_{prior}+\\bm{\\Sigma}_{post}\\times\\bm{g},\n\nwhere $\\bm{g}$ is the gradient of the log likelihood of the mini batch at time $t$. This result implies a preconditioner of the gradients that is given by the posterior uncertainty $\\bm{\\Sigma}_{post}$ of the filtering distribution: updates are larger for parameters we are more uncertain about and smaller for parameters we are more certain about. Aitchison (2018) goes on to show that popular adaptive gradient methods, such as Adam and RMSprop, as well as Kronecker-factorized methods are special cases of this framework.\n\nDecoupled weight decay very naturally fits into this unified framework as part of the state-transition distribution: Aitchison (2018) assumes a slow change of the optimizer according to the following Gaussian:\n\nP(\\bm{\\theta}_{t+1}\\mid\\bm{\\theta}_{t})=\\mathcal{N}((\\bm{I}-\\bm{A})\\bm{\\theta}_{t},\\bm{Q}),\n\nwhere $\\bm{Q}$ is the covariance of Gaussian perturbations of the weights, and $\\bm{A}$ is a regularizer to avoid values growing unboundedly over time. When instantiated as $\\bm{A}=\\lambda\\times\\bm{I}$, this regularizer $\\bm{A}$ plays exactly the role of decoupled weight decay as described in Equation 1, since this leads to multiplying the current mean estimate $\\bm{\\theta}_{t}$ by $(1-\\lambda)$ at each step. Notably, this regularization is also directly applied to the prior and does not depend on the uncertainty in each of the parameters (which would be required for $L_{2}$ regularization).\n\nFigure 1: Adam performs better with decoupled weight decay (bottom row, AdamW) than with $L_{2}$ regularization (top row, Adam). We show the final test error of a 26 2x64d ResNet on CIFAR-10 after 100 epochs of training with fixed learning rate (left column), step-drop learning rate (with drops at epoch indexes 30, 60 and 80, middle column) and cosine annealing (right column). AdamW leads to a more separable hyperparameter search space, especially when a learning rate schedule, such as step-drop and cosine annealing is applied. Cosine annealing yields clearly superior results."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0004",
+      "title": "4 Experimental Validation",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Experimental Validation"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2fb0bc5493de0d526146",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "We now evaluate the performance of decoupled weight decay under various training budgets and learning rate schedules. Our experimental setup follows that of Gastaldi (2017), who proposed, in addition to L2 regularization, to apply the new Shake-Shake regularization to a 3-branch residual DNN that allowed to achieve new state-of-the-art results of 2.86% on the CIFAR-10 dataset (Krizhevsky, 2009). We used the same model/source code based on fb.resnet.torch . We always used a batch size of 128 and applied the regular data augmentation procedure for the CIFAR datasets. The base networks are a 26 2x64d ResNet (i.e. the network has a depth of 26, 2 residual branches and the first residual block has a width of 64) and a 26 2x96d ResNet with 11.6M and 25.6M parameters, respectively. For a detailed description of the network and the Shake-Shake method, we refer the interested reader to Gastaldi (2017). We also perform experiments on the ImageNet32x32 dataset (Chrabaszcz et al., 2017), a downsampled version of the original ImageNet dataset with 1.2 million 32$\\times$32 pixels images.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1090
+        },
+        {
+          "paragraph_id": "p_d1ce08f44b4d4824a28e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "Footnote: 1 1 https://github.com/xgastaldi/shake-shake",
+          "kind": "footnote",
+          "char_start": 1092,
+          "char_end": 1146
+        }
+      ],
+      "text": "We now evaluate the performance of decoupled weight decay under various training budgets and learning rate schedules. Our experimental setup follows that of Gastaldi (2017), who proposed, in addition to L2 regularization, to apply the new Shake-Shake regularization to a 3-branch residual DNN that allowed to achieve new state-of-the-art results of 2.86% on the CIFAR-10 dataset (Krizhevsky, 2009). We used the same model/source code based on fb.resnet.torch . We always used a batch size of 128 and applied the regular data augmentation procedure for the CIFAR datasets. The base networks are a 26 2x64d ResNet (i.e. the network has a depth of 26, 2 residual branches and the first residual block has a width of 64) and a 26 2x96d ResNet with 11.6M and 25.6M parameters, respectively. For a detailed description of the network and the Shake-Shake method, we refer the interested reader to Gastaldi (2017). We also perform experiments on the ImageNet32x32 dataset (Chrabaszcz et al., 2017), a downsampled version of the original ImageNet dataset with 1.2 million 32$\\times$32 pixels images.\n\nFootnote: 1 1 https://github.com/xgastaldi/shake-shake"
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0005",
+      "title": "4.1 Evaluating Decoupled Weight Decay With Different Learning Rate Schedules",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1",
+      "path": [
+        "4 Experimental Validation",
+        "4.1 Evaluating Decoupled Weight Decay With Different Learning Rate Schedules"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_7334837ed4fc4f0f032f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p1.1",
+          "text": "In our first experiment, we compare Adam with $L_{2}$ regularization to Adam with decoupled weight decay (AdamW), using three different learning rate schedules: a fixed learning rate, a drop-step schedule, and a cosine annealing schedule (Loshchilov & Hutter, 2016). Since Adam already adapts its parameterwise learning rates it is not as common to use a learning rate multiplier schedule with it as it is with SGD, but as our results show such schedules can substantially improve Adam’s performance, and we advocate not to overlook their use for adaptive gradient algorithms.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 576
+        },
+        {
+          "paragraph_id": "p_4109576ef2e56a9d72d0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p2.1",
+          "text": "For each learning rate schedule and weight decay variant, we trained a 2x64d ResNet for 100 epochs, using different settings of the initial learning rate $\\alpha$ and the weight decay factor $\\lambda$. Figure 1 shows that decoupled weight decay outperforms $L_{2}$ regularization for all learning rate schedules, with larger differences for better learning rate schedules. We also note that decoupled weight decay leads to a more separable hyperparameter search space, especially when a learning rate schedule, such as step-drop and cosine annealing is applied. The figure also shows that cosine annealing clearly outperforms the other learning rate schedules; we thus used cosine annealing for the remainder of the experiments.",
+          "kind": "text",
+          "char_start": 578,
+          "char_end": 1306
+        },
+        {
+          "paragraph_id": "p_62e42bd0e42a0d966b68",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F2",
+          "text": "Figure 2: The Top-1 test error of a 26 2x64d ResNet on CIFAR-10 measured after 100 epochs. The proposed SGDW and AdamW (right column) have a more separable hyperparameter space.",
+          "kind": "caption",
+          "char_start": 1308,
+          "char_end": 1485
+        },
+        {
+          "paragraph_id": "p_2ac050bc6c94329a1274",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F3",
+          "text": "Figure 3: Learning curves (top row) and generalization results (bottom row) obtained by a 26 2x96d ResNet trained with Adam and AdamW on CIFAR-10. See text for details. SuppFigure 4 in the Appendix shows the same qualitative results for ImageNet32x32.",
+          "kind": "caption",
+          "char_start": 1487,
+          "char_end": 1738
+        }
+      ],
+      "text": "In our first experiment, we compare Adam with $L_{2}$ regularization to Adam with decoupled weight decay (AdamW), using three different learning rate schedules: a fixed learning rate, a drop-step schedule, and a cosine annealing schedule (Loshchilov & Hutter, 2016). Since Adam already adapts its parameterwise learning rates it is not as common to use a learning rate multiplier schedule with it as it is with SGD, but as our results show such schedules can substantially improve Adam’s performance, and we advocate not to overlook their use for adaptive gradient algorithms.\n\nFor each learning rate schedule and weight decay variant, we trained a 2x64d ResNet for 100 epochs, using different settings of the initial learning rate $\\alpha$ and the weight decay factor $\\lambda$. Figure 1 shows that decoupled weight decay outperforms $L_{2}$ regularization for all learning rate schedules, with larger differences for better learning rate schedules. We also note that decoupled weight decay leads to a more separable hyperparameter search space, especially when a learning rate schedule, such as step-drop and cosine annealing is applied. The figure also shows that cosine annealing clearly outperforms the other learning rate schedules; we thus used cosine annealing for the remainder of the experiments.\n\nFigure 2: The Top-1 test error of a 26 2x64d ResNet on CIFAR-10 measured after 100 epochs. The proposed SGDW and AdamW (right column) have a more separable hyperparameter space.\n\nFigure 3: Learning curves (top row) and generalization results (bottom row) obtained by a 26 2x96d ResNet trained with Adam and AdamW on CIFAR-10. See text for details. SuppFigure 4 in the Appendix shows the same qualitative results for ImageNet32x32."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0006",
+      "title": "4.2 Decoupling the Weight Decay and Initial Learning Rate Parameters",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2",
+      "path": [
+        "4 Experimental Validation",
+        "4.2 Decoupling the Weight Decay and Initial Learning Rate Parameters"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_1e625c92d9e2796178bd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p1.1",
+          "text": "In order to verify our hypothesis about the coupling of $\\alpha$ and $\\lambda$, in Figure 2 we compare the performance of L2 regularization vs. decoupled weight decay in SGD (SGD vs. SGDW, top row) and in Adam (Adam vs. AdamW, bottom row). In SGD (Figure 2, top left), L2 regularization is not decoupled from the learning rate (the common way as described in Algorithm 1), and the figure clearly shows that the basin of best hyperparameter settings (depicted by color and top-10 hyperparameter settings by black circles) is not aligned with the x-axis or y-axis but lies on the diagonal. This suggests that the two hyperparameters are interdependent and need to be changed simultaneously, while only changing one of them might substantially worsen results. Consider, e.g., the setting at the top left black circle ($\\alpha=1/2$, $\\lambda=1/8*0.001$); only changing either $\\alpha$ or $\\lambda$ by itself would worsen results, while changing both of them could still yield clear improvements. We note that this coupling of initial learning rate and L2 regularization factor might have contributed to SGD’s reputation of being very sensitive to its hyperparameter settings.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1171
+        },
+        {
+          "paragraph_id": "p_541e414f83120550fc2f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p2.1",
+          "text": "In contrast, the results for SGD with decoupled weight decay (SGDW) in Figure 2 (top right) show that weight decay and initial learning rate are decoupled. The proposed approach renders the two hyperparameters more separable: even if the learning rate is not well tuned yet (e.g., consider the value of 1/1024 in Figure 2, top right), leaving it fixed and only optimizing the weight decay factor would yield a good value (of 1/4*0.001). This is not the case for SGD with L2 regularization (see Figure 2, top left).",
+          "kind": "text",
+          "char_start": 1173,
+          "char_end": 1687
+        },
+        {
+          "paragraph_id": "p_eebb1d53dc62062279cd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p3.1",
+          "text": "The results for Adam with L2 regularization are given in Figure 2 (bottom left). Adam’s best hyperparameter settings performed clearly worse than SGD’s best ones (compare Figure 2, top left). While both methods used L2 regularization, Adam did not benefit from it at all: its best results obtained for non-zero L2 regularization factors were comparable to the best ones obtained without the L2 regularization, i.e., when $\\lambda=0$. Similarly to the original SGD, the shape of the hyperparameter landscape suggests that the two hyperparameters are coupled.",
+          "kind": "text",
+          "char_start": 1689,
+          "char_end": 2246
+        },
+        {
+          "paragraph_id": "p_7e4ea741014d8710a514",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p4.1",
+          "text": "In contrast, the results for our new variant of Adam with decoupled weight decay (AdamW) in Figure 2 (bottom right) show that AdamW largely decouples weight decay and learning rate. The results for the best hyperparameter settings were substantially better than the best ones of Adam with L2 regularization and rivaled those of SGD and SGDW.",
+          "kind": "text",
+          "char_start": 2248,
+          "char_end": 2589
+        },
+        {
+          "paragraph_id": "p_1fabe937345fa57c4672",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p5.1",
+          "text": "In summary, the results in Figure 2 support our hypothesis that the weight decay and learning rate hyperparameters can be decoupled, and that this in turn simplifies the problem of hyperparameter tuning in SGD and improves Adam’s performance to be competitive w.r.t. SGD with momentum.",
+          "kind": "text",
+          "char_start": 2591,
+          "char_end": 2876
+        }
+      ],
+      "text": "In order to verify our hypothesis about the coupling of $\\alpha$ and $\\lambda$, in Figure 2 we compare the performance of L2 regularization vs. decoupled weight decay in SGD (SGD vs. SGDW, top row) and in Adam (Adam vs. AdamW, bottom row). In SGD (Figure 2, top left), L2 regularization is not decoupled from the learning rate (the common way as described in Algorithm 1), and the figure clearly shows that the basin of best hyperparameter settings (depicted by color and top-10 hyperparameter settings by black circles) is not aligned with the x-axis or y-axis but lies on the diagonal. This suggests that the two hyperparameters are interdependent and need to be changed simultaneously, while only changing one of them might substantially worsen results. Consider, e.g., the setting at the top left black circle ($\\alpha=1/2$, $\\lambda=1/8*0.001$); only changing either $\\alpha$ or $\\lambda$ by itself would worsen results, while changing both of them could still yield clear improvements. We note that this coupling of initial learning rate and L2 regularization factor might have contributed to SGD’s reputation of being very sensitive to its hyperparameter settings.\n\nIn contrast, the results for SGD with decoupled weight decay (SGDW) in Figure 2 (top right) show that weight decay and initial learning rate are decoupled. The proposed approach renders the two hyperparameters more separable: even if the learning rate is not well tuned yet (e.g., consider the value of 1/1024 in Figure 2, top right), leaving it fixed and only optimizing the weight decay factor would yield a good value (of 1/4*0.001). This is not the case for SGD with L2 regularization (see Figure 2, top left).\n\nThe results for Adam with L2 regularization are given in Figure 2 (bottom left). Adam’s best hyperparameter settings performed clearly worse than SGD’s best ones (compare Figure 2, top left). While both methods used L2 regularization, Adam did not benefit from it at all: its best results obtained for non-zero L2 regularization factors were comparable to the best ones obtained without the L2 regularization, i.e., when $\\lambda=0$. Similarly to the original SGD, the shape of the hyperparameter landscape suggests that the two hyperparameters are coupled.\n\nIn contrast, the results for our new variant of Adam with decoupled weight decay (AdamW) in Figure 2 (bottom right) show that AdamW largely decouples weight decay and learning rate. The results for the best hyperparameter settings were substantially better than the best ones of Adam with L2 regularization and rivaled those of SGD and SGDW.\n\nIn summary, the results in Figure 2 support our hypothesis that the weight decay and learning rate hyperparameters can be decoupled, and that this in turn simplifies the problem of hyperparameter tuning in SGD and improves Adam’s performance to be competitive w.r.t. SGD with momentum."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0007",
+      "title": "4.3 Better Generalization of AdamW",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS3",
+      "path": [
+        "4 Experimental Validation",
+        "4.3 Better Generalization of AdamW"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_edbaa9f7b84b61e05ec3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.p1.1",
+          "text": "While the previous experiment suggested that the basin of optimal hyperparameters of AdamW is broader and deeper than the one of Adam, we next investigated the results for much longer runs of 1800 epochs to compare the generalization capabilities of AdamW and Adam.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 265
+        },
+        {
+          "paragraph_id": "p_48fe558fa6eedfb5404c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS3.p2.1",
+          "text": "We fixed the initial learning rate to 0.001 which represents both the default learning rate for Adam and the one which showed reasonably good results in our experiments. Figure 3 shows the results for 12 settings of the L2 regularization of Adam and 7 settings of the normalized weight decay of AdamW (the normalized weight decay represents a rescaling formally defined in Appendix B.1; it amounts to a multiplicative factor which depends on the number of batch passes). Interestingly, while the dynamics of the learning curves of Adam and AdamW often coincided for the first half of the training run, AdamW often led to lower training loss and test errors (see Figure 3 top left and top right, respectively). Importantly, the use of L2 weight decay in Adam did not yield as good results as decoupled weight decay in AdamW (see also Figure 3, bottom left). Next, we investigated whether AdamW’s better results were only due to better convergence or due to better generalization. The results in Figure 3 (bottom right) for the best settings of Adam and AdamW suggest that AdamW did not only yield better training loss but also yielded better generalization performance for similar training loss values. The results on ImageNet32x32 (see SuppFigure 4 in the Appendix) yield the same conclusion of substantially improved generalization performance.",
+          "kind": "text",
+          "char_start": 267,
+          "char_end": 1612
+        },
+        {
+          "paragraph_id": "p_5f2761d3278a05810cc8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F4",
+          "text": "Figure 4: Top-1 test error on CIFAR-10 (left) and Top-5 test error on ImageNet32x32 (right). For a better resolution and with training loss curves, see SuppFigure 5 and SuppFigure 6 in the supplementary material.",
+          "kind": "caption",
+          "char_start": 1614,
+          "char_end": 1826
+        }
+      ],
+      "text": "While the previous experiment suggested that the basin of optimal hyperparameters of AdamW is broader and deeper than the one of Adam, we next investigated the results for much longer runs of 1800 epochs to compare the generalization capabilities of AdamW and Adam.\n\nWe fixed the initial learning rate to 0.001 which represents both the default learning rate for Adam and the one which showed reasonably good results in our experiments. Figure 3 shows the results for 12 settings of the L2 regularization of Adam and 7 settings of the normalized weight decay of AdamW (the normalized weight decay represents a rescaling formally defined in Appendix B.1; it amounts to a multiplicative factor which depends on the number of batch passes). Interestingly, while the dynamics of the learning curves of Adam and AdamW often coincided for the first half of the training run, AdamW often led to lower training loss and test errors (see Figure 3 top left and top right, respectively). Importantly, the use of L2 weight decay in Adam did not yield as good results as decoupled weight decay in AdamW (see also Figure 3, bottom left). Next, we investigated whether AdamW’s better results were only due to better convergence or due to better generalization. The results in Figure 3 (bottom right) for the best settings of Adam and AdamW suggest that AdamW did not only yield better training loss but also yielded better generalization performance for similar training loss values. The results on ImageNet32x32 (see SuppFigure 4 in the Appendix) yield the same conclusion of substantially improved generalization performance.\n\nFigure 4: Top-1 test error on CIFAR-10 (left) and Top-5 test error on ImageNet32x32 (right). For a better resolution and with training loss curves, see SuppFigure 5 and SuppFigure 6 in the supplementary material."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0008",
+      "title": "4.4 AdamWR with Warm Restarts for Better Anytime Performance",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS4",
+      "path": [
+        "4 Experimental Validation",
+        "4.4 AdamWR with Warm Restarts for Better Anytime Performance"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f765c3e95c5cafcbc435",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.p1.1",
+          "text": "In order to improve the anytime performance of SGDW and AdamW we extended them with the warm restarts we introduced in Loshchilov & Hutter (2016), to obtain SGDWR and AdamWR, respectively (see Section B.2 in the Appendix). As Figure 4 shows, AdamWR greatly sped up AdamW on CIFAR-10 and ImageNet32x32, up to a factor of 10 (see the results at the first restart). For the default learning rate of 0.001, AdamW achieved 15% relative improvement in test error compared to Adam both on CIFAR-10 (also see SuppFigure 5) and ImageNet32x32 (also see SuppFigure 6).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 557
+        },
+        {
+          "paragraph_id": "p_5ec18c3a07689d30b19c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS4.p2.1",
+          "text": "AdamWR achieved the same improved results but with a much better anytime performance. These improvements closed most of the gap between Adam and SGDWR on CIFAR-10 and yielded comparable performance on ImageNet32x32.",
+          "kind": "text",
+          "char_start": 559,
+          "char_end": 774
+        }
+      ],
+      "text": "In order to improve the anytime performance of SGDW and AdamW we extended them with the warm restarts we introduced in Loshchilov & Hutter (2016), to obtain SGDWR and AdamWR, respectively (see Section B.2 in the Appendix). As Figure 4 shows, AdamWR greatly sped up AdamW on CIFAR-10 and ImageNet32x32, up to a factor of 10 (see the results at the first restart). For the default learning rate of 0.001, AdamW achieved 15% relative improvement in test error compared to Adam both on CIFAR-10 (also see SuppFigure 5) and ImageNet32x32 (also see SuppFigure 6).\n\nAdamWR achieved the same improved results but with a much better anytime performance. These improvements closed most of the gap between Adam and SGDWR on CIFAR-10 and yielded comparable performance on ImageNet32x32."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0009",
+      "title": "4.5 Use of AdamW on other datasets and architectures",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS5",
+      "path": [
+        "4 Experimental Validation",
+        "4.5 Use of AdamW on other datasets and architectures"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2356974f305215ee32d0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS5.p1.1",
+          "text": "Several other research groups have already successfully applied AdamW in citable works. For example, Wang et al. (2018) used AdamW to train a novel architecture for face detection on the standard WIDER FACE dataset (Yang et al., 2016), obtaining almost 10x faster predictions than the previous state of the art algorithms while achieving comparable performance. Völker et al. (2018) employed AdamW with cosine annealing to train convolutional neural networks to classify and characterize error-related brain signals measured from intracranial electroencephalography (EEG) recordings. While their paper does not provide a comparison to Adam, they kindly provided us with a direct comparison of the two on their best-performing problem-specific network architecture Deep4Net and a variant of ResNet. AdamW with the same hyperparameter setting as Adam yielded higher test set accuracy on Deep4Net (73.68% versus 71.37%) and statistically significantly higher test set accuracy on ResNet (72.04% versus 61.34%). Radford et al. (2018) employed AdamW to train Transformer (Vaswani et al., 2017) architectures to obtain new state-of-the-art results on a wide range of benchmarks for natural language understanding. Zhang et al. (2018) compared L2 regularization vs. weight decay for SGD, Adam and the Kronecker-Factored Approximate Curvature (K-FAC) optimizer (Martens & Grosse, 2015) on the CIFAR datasets with ResNet and VGG architectures, reporting that decoupled weight decay consistently outperformed L2 regularization in cases where they differ.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1544
+        }
+      ],
+      "text": "Several other research groups have already successfully applied AdamW in citable works. For example, Wang et al. (2018) used AdamW to train a novel architecture for face detection on the standard WIDER FACE dataset (Yang et al., 2016), obtaining almost 10x faster predictions than the previous state of the art algorithms while achieving comparable performance. Völker et al. (2018) employed AdamW with cosine annealing to train convolutional neural networks to classify and characterize error-related brain signals measured from intracranial electroencephalography (EEG) recordings. While their paper does not provide a comparison to Adam, they kindly provided us with a direct comparison of the two on their best-performing problem-specific network architecture Deep4Net and a variant of ResNet. AdamW with the same hyperparameter setting as Adam yielded higher test set accuracy on Deep4Net (73.68% versus 71.37%) and statistically significantly higher test set accuracy on ResNet (72.04% versus 61.34%). Radford et al. (2018) employed AdamW to train Transformer (Vaswani et al., 2017) architectures to obtain new state-of-the-art results on a wide range of benchmarks for natural language understanding. Zhang et al. (2018) compared L2 regularization vs. weight decay for SGD, Adam and the Kronecker-Factored Approximate Curvature (K-FAC) optimizer (Martens & Grosse, 2015) on the CIFAR datasets with ResNet and VGG architectures, reporting that decoupled weight decay consistently outperformed L2 regularization in cases where they differ."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0010",
+      "title": "5 Conclusion and Future Work",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Conclusion and Future Work"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5de494031ecbe3c9d8d2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "Following suggestions that adaptive gradient methods such as Adam might lead to worse generalization than SGD with momentum (Wilson et al., 2017), we identified and exposed the inequivalence of L2 regularization and weight decay for Adam. We empirically showed that our version of Adam with decoupled weight decay yields substantially better generalization performance than the common implementation of Adam with L2 regularization. We also proposed to use warm restarts for Adam to improve its anytime performance.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 514
+        },
+        {
+          "paragraph_id": "p_560763c3e2c262ba3de2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p2.1",
+          "text": "Our results obtained on image classification datasets must be verified on a wider range of tasks, especially ones where the use of regularization is expected to be important. It would be interesting to integrate our findings on weight decay into other methods which attempt to improve Adam, e.g, normalized direction-preserving Adam (Zhang et al., 2017). While we focused our experimental analysis on Adam, we believe that similar results also hold for other adaptive gradient methods, such as AdaGrad (Duchi et al., 2011) and AMSGrad (Reddi et al., 2018).",
+          "kind": "text",
+          "char_start": 516,
+          "char_end": 1072
+        }
+      ],
+      "text": "Following suggestions that adaptive gradient methods such as Adam might lead to worse generalization than SGD with momentum (Wilson et al., 2017), we identified and exposed the inequivalence of L2 regularization and weight decay for Adam. We empirically showed that our version of Adam with decoupled weight decay yields substantially better generalization performance than the common implementation of Adam with L2 regularization. We also proposed to use warm restarts for Adam to improve its anytime performance.\n\nOur results obtained on image classification datasets must be verified on a wider range of tasks, especially ones where the use of regularization is expected to be important. It would be interesting to integrate our findings on weight decay into other methods which attempt to improve Adam, e.g, normalized direction-preserving Adam (Zhang et al., 2017). While we focused our experimental analysis on Adam, we believe that similar results also hold for other adaptive gradient methods, such as AdaGrad (Duchi et al., 2011) and AMSGrad (Reddi et al., 2018)."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0011",
+      "title": "6 Acknowledgments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S6",
+      "path": [
+        "6 Acknowledgments"
+      ],
+      "kind": "acknowledgments",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_3e903a4c3c506fdf2f85",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p1.1",
+          "text": "We thank Patryk Chrabaszcz for help with running experiments with ImageNet32x32; Matthias Feurer and Robin Schirrmeister for providing valuable feedback on this paper in several iterations; and Martin Völker, Robin Schirrmeister, and Tonio Ball for providing us with a comparison of AdamW and Adam on their EEG data. We also thank the following members of the deep learning community for implementing decoupled weight decay in various deep learning libraries:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 459
+        },
+        {
+          "paragraph_id": "p_1e2e863b52e573841fa7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i1",
+          "text": "• Jingwei Zhang, Lei Tai, Robin Schirrmeister, and Kashif Rasul for their implementations in PyTorch (see https://github.com/pytorch/pytorch/pull/4429)",
+          "kind": "list_item",
+          "char_start": 461,
+          "char_end": 612
+        },
+        {
+          "paragraph_id": "p_4e3971291dd288fb0131",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i2",
+          "text": "• Phil Jund for his implementation in TensorFlow described at https://www.tensorflow.org/api_docs/python/tf/contrib/opt/DecoupledWeightDecayExtension",
+          "kind": "list_item",
+          "char_start": 614,
+          "char_end": 763
+        },
+        {
+          "paragraph_id": "p_9ef632f9d68a03e86487",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i3",
+          "text": "• Sylvain Gugger, Anand Saha, Jeremy Howard and other members of fast.ai for their implementation available at https://github.com/sgugger/Adam-experiments",
+          "kind": "list_item",
+          "char_start": 765,
+          "char_end": 919
+        },
+        {
+          "paragraph_id": "p_d0046d1bbc8c22236408",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i4",
+          "text": "• Guillaume Lambard for his implementation in Keras available at https://github.com/GLambard/AdamW_Keras",
+          "kind": "list_item",
+          "char_start": 921,
+          "char_end": 1025
+        },
+        {
+          "paragraph_id": "p_e91f3270b03d2b37dcbc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.I1.i5",
+          "text": "• Yagami Lin for his implementation in Caffe available at https://github.com/Yagami123/Caffe-AdamW-AdamWR",
+          "kind": "list_item",
+          "char_start": 1027,
+          "char_end": 1132
+        },
+        {
+          "paragraph_id": "p_3678646040fb358cb091",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p2.1",
+          "text": "This work was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme under grant no. 716721, by the German Research Foundation (DFG) under the BrainLinksBrainTools Cluster of Excellence (grant number EXC 1086) and through grant no. INST 37/935-1 FUGG, and by the German state of Baden-Württemberg through bwHPC.",
+          "kind": "text",
+          "char_start": 1134,
+          "char_end": 1513
+        }
+      ],
+      "text": "We thank Patryk Chrabaszcz for help with running experiments with ImageNet32x32; Matthias Feurer and Robin Schirrmeister for providing valuable feedback on this paper in several iterations; and Martin Völker, Robin Schirrmeister, and Tonio Ball for providing us with a comparison of AdamW and Adam on their EEG data. We also thank the following members of the deep learning community for implementing decoupled weight decay in various deep learning libraries:\n\n• Jingwei Zhang, Lei Tai, Robin Schirrmeister, and Kashif Rasul for their implementations in PyTorch (see https://github.com/pytorch/pytorch/pull/4429)\n\n• Phil Jund for his implementation in TensorFlow described at https://www.tensorflow.org/api_docs/python/tf/contrib/opt/DecoupledWeightDecayExtension\n\n• Sylvain Gugger, Anand Saha, Jeremy Howard and other members of fast.ai for their implementation available at https://github.com/sgugger/Adam-experiments\n\n• Guillaume Lambard for his implementation in Keras available at https://github.com/GLambard/AdamW_Keras\n\n• Yagami Lin for his implementation in Caffe available at https://github.com/Yagami123/Caffe-AdamW-AdamWR\n\nThis work was supported by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme under grant no. 716721, by the German Research Foundation (DFG) under the BrainLinksBrainTools Cluster of Excellence (grant number EXC 1086) and through grant no. INST 37/935-1 FUGG, and by the German state of Baden-Württemberg through bwHPC."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0012",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e336c225671d2efa5c75",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "Aitchison (2018) Laurence Aitchison. A unified theory of adaptive stochastic gradient descent as Bayesian filtering. arXiv:1507.02030, 2018.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 140
+        },
+        {
+          "paragraph_id": "p_e6b0aeb54dbc690a1d4f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "Chrabaszcz et al. (2017) Patryk Chrabaszcz, Ilya Loshchilov, and Frank Hutter. A downsampled variant of ImageNet as an alternative to the CIFAR datasets. arXiv:1707.08819, 2017.",
+          "kind": "list_item",
+          "char_start": 142,
+          "char_end": 319
+        },
+        {
+          "paragraph_id": "p_1fa77fc539647d1ca6a9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "Cubuk et al. (2018) Ekin D Cubuk, Barret Zoph, Dandelion Mane, Vijay Vasudevan, and Quoc V Le. Autoaugment: Learning augmentation policies from data. arXiv preprint arXiv:1805.09501, 2018.",
+          "kind": "list_item",
+          "char_start": 321,
+          "char_end": 509
+        },
+        {
+          "paragraph_id": "p_59979032a6f83b0e1368",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "Dinh et al. (2017) Laurent Dinh, Razvan Pascanu, Samy Bengio, and Yoshua Bengio. Sharp minima can generalize for deep nets. arXiv:1703.04933, 2017.",
+          "kind": "list_item",
+          "char_start": 511,
+          "char_end": 658
+        },
+        {
+          "paragraph_id": "p_2a7ebf4b34a946ef5937",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "Duchi et al. (2011) John Duchi, Elad Hazan, and Yoram Singer. Adaptive subgradient methods for online learning and stochastic optimization. The Journal of Machine Learning Research, 12:2121–2159, 2011.",
+          "kind": "list_item",
+          "char_start": 660,
+          "char_end": 861
+        },
+        {
+          "paragraph_id": "p_31e85190a74b3cf98195",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "Gastaldi (2017) Xavier Gastaldi. Shake-Shake regularization. arXiv preprint arXiv:1705.07485, 2017.",
+          "kind": "list_item",
+          "char_start": 863,
+          "char_end": 962
+        },
+        {
+          "paragraph_id": "p_100345503af049242a8b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "Hanson & Pratt (1988) Stephen José Hanson and Lorien Y Pratt. Comparing biases for minimal network construction with back-propagation. In Proceedings of the 1st International Conference on Neural Information Processing Systems, pp. 177–185, 1988.",
+          "kind": "list_item",
+          "char_start": 964,
+          "char_end": 1210
+        },
+        {
+          "paragraph_id": "p_725578586e027a8a27ec",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "Huang et al. (2017) Gao Huang, Yixuan Li, Geoff Pleiss, Zhuang Liu, John E Hopcroft, and Kilian Q Weinberger. Snapshot ensembles: Train 1, get m for free. arXiv:1704.00109, 2017.",
+          "kind": "list_item",
+          "char_start": 1212,
+          "char_end": 1390
+        },
+        {
+          "paragraph_id": "p_9a90ed51947f74ab89e6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "Keskar et al. (2016) Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, and Ping Tak Peter Tang. On large-batch training for deep learning: Generalization gap and sharp minima. arXiv:1609.04836, 2016.",
+          "kind": "list_item",
+          "char_start": 1392,
+          "char_end": 1620
+        },
+        {
+          "paragraph_id": "p_f168e5c2d566fe5b4c1b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "Kingma & Ba (2014) Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv:1412.6980, 2014.",
+          "kind": "list_item",
+          "char_start": 1622,
+          "char_end": 1737
+        },
+        {
+          "paragraph_id": "p_3d0b65c029555c87eb22",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "Krizhevsky (2009) Alex Krizhevsky. Learning multiple layers of features from tiny images. 2009.",
+          "kind": "list_item",
+          "char_start": 1739,
+          "char_end": 1834
+        },
+        {
+          "paragraph_id": "p_807d3dda593031b5f134",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "Li et al. (2017) Hao Li, Zheng Xu, Gavin Taylor, and Tom Goldstein. Visualizing the loss landscape of neural nets. arXiv preprint arXiv:1712.09913, 2017.",
+          "kind": "list_item",
+          "char_start": 1836,
+          "char_end": 1989
+        },
+        {
+          "paragraph_id": "p_61c2cfbca9a5707ed85e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "Loshchilov & Hutter (2016) Ilya Loshchilov and Frank Hutter. SGDR: stochastic gradient descent with warm restarts. arXiv:1608.03983, 2016.",
+          "kind": "list_item",
+          "char_start": 1991,
+          "char_end": 2129
+        },
+        {
+          "paragraph_id": "p_956daa42c070fe39fbe8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "Martens & Grosse (2015) James Martens and Roger Grosse. Optimizing neural networks with kronecker-factored approximate curvature. In International conference on machine learning, pp. 2408–2417, 2015.",
+          "kind": "list_item",
+          "char_start": 2131,
+          "char_end": 2330
+        },
+        {
+          "paragraph_id": "p_d37a9829889609ea9cb6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "Radford et al. (2015) Alec Radford, Luke Metz, and Soumith Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv:1511.06434, 2015.",
+          "kind": "list_item",
+          "char_start": 2332,
+          "char_end": 2518
+        },
+        {
+          "paragraph_id": "p_8e5def647b61f1848902",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "Radford et al. (2018) Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. Improving language understanding by generative pre-training. URL https://s3-us-west-2. amazonaws. com/openai-assets/research-covers/language-unsupervised/language_ understanding_paper. pdf, 2018.",
+          "kind": "list_item",
+          "char_start": 2520,
+          "char_end": 2805
+        },
+        {
+          "paragraph_id": "p_e38f3961a279ec7fb6eb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "Reddi et al. (2018) Sashank J. Reddi, Satyen Kale, and Sanjiv Kumar. On the convergence of adam and beyond. International Conference on Learning Representations, 2018.",
+          "kind": "list_item",
+          "char_start": 2807,
+          "char_end": 2974
+        },
+        {
+          "paragraph_id": "p_efde1e070313b6f2c28c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "Smith (2016) Leslie N Smith. Cyclical learning rates for training neural networks. arXiv:1506.01186v3, 2016.",
+          "kind": "list_item",
+          "char_start": 2976,
+          "char_end": 3084
+        },
+        {
+          "paragraph_id": "p_2411d04b2d428ff4297e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "Tieleman & Hinton (2012) Tijmen Tieleman and Geoffrey Hinton. Lecture 6.5-rmsprop: Divide the gradient by a running average of its recent magnitude. COURSERA: Neural networks for machine learning, 4(2):26–31, 2012.",
+          "kind": "list_item",
+          "char_start": 3086,
+          "char_end": 3300
+        },
+        {
+          "paragraph_id": "p_4067a92f4d8a65476862",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "Vaswani et al. (2017) Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems, pp. 5998–6008, 2017.",
+          "kind": "list_item",
+          "char_start": 3302,
+          "char_end": 3550
+        },
+        {
+          "paragraph_id": "p_4e917bc43b7bd9b611a9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "Völker et al. (2018) Martin Völker, Jiří Hammer, Robin T Schirrmeister, Joos Behncke, Lukas DJ Fiederer, Andreas Schulze-Bonhage, Petr Marusič, Wolfram Burgard, and Tonio Ball. Intracranial error detection via deep learning. arXiv preprint arXiv:1805.01667, 2018.",
+          "kind": "list_item",
+          "char_start": 3552,
+          "char_end": 3815
+        },
+        {
+          "paragraph_id": "p_51381afef1ac359976ff",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "Wang et al. (2018) Jianfeng Wang, Ye Yuan, Gang Yu, and Sun Jian. Sface: An efficient network for face detection in large scale variations. arXiv preprint arXiv:1804.06559, 2018.",
+          "kind": "list_item",
+          "char_start": 3817,
+          "char_end": 3995
+        },
+        {
+          "paragraph_id": "p_2f15d02c0453a614e914",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "Wilson et al. (2017) Ashia C Wilson, Rebecca Roelofs, Mitchell Stern, Nathan Srebro, and Benjamin Recht. The marginal value of adaptive gradient methods in machine learning. arXiv:1705.08292, 2017.",
+          "kind": "list_item",
+          "char_start": 3997,
+          "char_end": 4194
+        },
+        {
+          "paragraph_id": "p_0fd6f866913540c97349",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "Xu et al. (2015) Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan Salakhudinov, Rich Zemel, and Yoshua Bengio. Show, attend and tell: Neural image caption generation with visual attention. In International Conference on Machine Learning, pp. 2048–2057, 2015.",
+          "kind": "list_item",
+          "char_start": 4196,
+          "char_end": 4477
+        },
+        {
+          "paragraph_id": "p_5e08f72166d03550870a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "Yang et al. (2016) Shuo Yang, Ping Luo, Chen-Change Loy, and Xiaoou Tang. Wider face: A face detection benchmark. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp. 5525–5533, 2016.",
+          "kind": "list_item",
+          "char_start": 4479,
+          "char_end": 4695
+        },
+        {
+          "paragraph_id": "p_a7bce1c1bcd39dd1ee03",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "Zhang et al. (2018) Guodong Zhang, Chaoqi Wang, Bowen Xu, and Roger Grosse. Three mechanisms of weight decay regularization. arXiv preprint arXiv:1810.12281, 2018.",
+          "kind": "list_item",
+          "char_start": 4697,
+          "char_end": 4860
+        },
+        {
+          "paragraph_id": "p_919134a7a4945611c984",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "Zhang et al. (2017) Zijun Zhang, Lin Ma, Zongpeng Li, and Chuan Wu. Normalized direction-preserving adam. arXiv:1709.04546, 2017.",
+          "kind": "list_item",
+          "char_start": 4862,
+          "char_end": 4991
+        },
+        {
+          "paragraph_id": "p_568fffaff2aa10bcf732",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "Zoph et al. (2017) Barret Zoph, Vijay Vasudevan, Jonathon Shlens, and Quoc V. Le. Learning transferable architectures for scalable image recognition. In arXiv:1707.07012 [cs.CV], 2017.",
+          "kind": "list_item",
+          "char_start": 4993,
+          "char_end": 5177
+        }
+      ],
+      "text": "Aitchison (2018) Laurence Aitchison. A unified theory of adaptive stochastic gradient descent as Bayesian filtering. arXiv:1507.02030, 2018.\n\nChrabaszcz et al. (2017) Patryk Chrabaszcz, Ilya Loshchilov, and Frank Hutter. A downsampled variant of ImageNet as an alternative to the CIFAR datasets. arXiv:1707.08819, 2017.\n\nCubuk et al. (2018) Ekin D Cubuk, Barret Zoph, Dandelion Mane, Vijay Vasudevan, and Quoc V Le. Autoaugment: Learning augmentation policies from data. arXiv preprint arXiv:1805.09501, 2018.\n\nDinh et al. (2017) Laurent Dinh, Razvan Pascanu, Samy Bengio, and Yoshua Bengio. Sharp minima can generalize for deep nets. arXiv:1703.04933, 2017.\n\nDuchi et al. (2011) John Duchi, Elad Hazan, and Yoram Singer. Adaptive subgradient methods for online learning and stochastic optimization. The Journal of Machine Learning Research, 12:2121–2159, 2011.\n\nGastaldi (2017) Xavier Gastaldi. Shake-Shake regularization. arXiv preprint arXiv:1705.07485, 2017.\n\nHanson & Pratt (1988) Stephen José Hanson and Lorien Y Pratt. Comparing biases for minimal network construction with back-propagation. In Proceedings of the 1st International Conference on Neural Information Processing Systems, pp. 177–185, 1988.\n\nHuang et al. (2017) Gao Huang, Yixuan Li, Geoff Pleiss, Zhuang Liu, John E Hopcroft, and Kilian Q Weinberger. Snapshot ensembles: Train 1, get m for free. arXiv:1704.00109, 2017.\n\nKeskar et al. (2016) Nitish Shirish Keskar, Dheevatsa Mudigere, Jorge Nocedal, Mikhail Smelyanskiy, and Ping Tak Peter Tang. On large-batch training for deep learning: Generalization gap and sharp minima. arXiv:1609.04836, 2016.\n\nKingma & Ba (2014) Diederik Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv:1412.6980, 2014.\n\nKrizhevsky (2009) Alex Krizhevsky. Learning multiple layers of features from tiny images. 2009.\n\nLi et al. (2017) Hao Li, Zheng Xu, Gavin Taylor, and Tom Goldstein. Visualizing the loss landscape of neural nets. arXiv preprint arXiv:1712.09913, 2017.\n\nLoshchilov & Hutter (2016) Ilya Loshchilov and Frank Hutter. SGDR: stochastic gradient descent with warm restarts. arXiv:1608.03983, 2016.\n\nMartens & Grosse (2015) James Martens and Roger Grosse. Optimizing neural networks with kronecker-factored approximate curvature. In International conference on machine learning, pp. 2408–2417, 2015.\n\nRadford et al. (2015) Alec Radford, Luke Metz, and Soumith Chintala. Unsupervised representation learning with deep convolutional generative adversarial networks. arXiv:1511.06434, 2015.\n\nRadford et al. (2018) Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. Improving language understanding by generative pre-training. URL https://s3-us-west-2. amazonaws. com/openai-assets/research-covers/language-unsupervised/language_ understanding_paper. pdf, 2018.\n\nReddi et al. (2018) Sashank J. Reddi, Satyen Kale, and Sanjiv Kumar. On the convergence of adam and beyond. International Conference on Learning Representations, 2018.\n\nSmith (2016) Leslie N Smith. Cyclical learning rates for training neural networks. arXiv:1506.01186v3, 2016.\n\nTieleman & Hinton (2012) Tijmen Tieleman and Geoffrey Hinton. Lecture 6.5-rmsprop: Divide the gradient by a running average of its recent magnitude. COURSERA: Neural networks for machine learning, 4(2):26–31, 2012.\n\nVaswani et al. (2017) Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems, pp. 5998–6008, 2017.\n\nVölker et al. (2018) Martin Völker, Jiří Hammer, Robin T Schirrmeister, Joos Behncke, Lukas DJ Fiederer, Andreas Schulze-Bonhage, Petr Marusič, Wolfram Burgard, and Tonio Ball. Intracranial error detection via deep learning. arXiv preprint arXiv:1805.01667, 2018.\n\nWang et al. (2018) Jianfeng Wang, Ye Yuan, Gang Yu, and Sun Jian. Sface: An efficient network for face detection in large scale variations. arXiv preprint arXiv:1804.06559, 2018.\n\nWilson et al. (2017) Ashia C Wilson, Rebecca Roelofs, Mitchell Stern, Nathan Srebro, and Benjamin Recht. The marginal value of adaptive gradient methods in machine learning. arXiv:1705.08292, 2017.\n\nXu et al. (2015) Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan Salakhudinov, Rich Zemel, and Yoshua Bengio. Show, attend and tell: Neural image caption generation with visual attention. In International Conference on Machine Learning, pp. 2048–2057, 2015.\n\nYang et al. (2016) Shuo Yang, Ping Luo, Chen-Change Loy, and Xiaoou Tang. Wider face: A face detection benchmark. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp. 5525–5533, 2016.\n\nZhang et al. (2018) Guodong Zhang, Chaoqi Wang, Bowen Xu, and Roger Grosse. Three mechanisms of weight decay regularization. arXiv preprint arXiv:1810.12281, 2018.\n\nZhang et al. (2017) Zijun Zhang, Lin Ma, Zongpeng Li, and Chuan Wu. Normalized direction-preserving adam. arXiv:1709.04546, 2017.\n\nZoph et al. (2017) Barret Zoph, Vijay Vasudevan, Jonathon Shlens, and Quoc V. Le. Learning transferable architectures for scalable image recognition. In arXiv:1707.07012 [cs.CV], 2017."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0013",
+      "title": "Appendix A Formal Analysis of Weight Decay vs L2 Regularization",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A Formal Analysis of Weight Decay vs L2 Regularization"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f20884ca8150819a4f8d",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.1",
+          "text": "Proof of Proposition 1 The proof for this well-known fact is straight-forward. SGD without weight decay has the following iterates on $f_{t}^{\\text{reg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 256
+        },
+        {
+          "paragraph_id": "p_c4dc582196cb4db82442",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.E5",
+          "text": "\\bm{\\theta}_{t+1}\\leftarrow\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}^{\\text{reg}}(\\bm{\\theta}_{t})=\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t}.",
+          "kind": "equation",
+          "char_start": 258,
+          "char_end": 440
+        },
+        {
+          "paragraph_id": "p_5ad946f7167cab9006ed",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.2",
+          "text": "SGD with weight decay has the following iterates on $f_{t}(\\bm{\\theta})$:",
+          "kind": "text",
+          "char_start": 442,
+          "char_end": 515
+        },
+        {
+          "paragraph_id": "p_a38a6591f872a0121fd3",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.E6",
+          "text": "\\bm{\\theta}_{t+1}\\leftarrow(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t}).",
+          "kind": "equation",
+          "char_start": 517,
+          "char_end": 607
+        },
+        {
+          "paragraph_id": "p_8fccd21188987ee30674",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.3",
+          "text": "These iterates are identical since $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$. ∎",
+          "kind": "text",
+          "char_start": 609,
+          "char_end": 688
+        },
+        {
+          "paragraph_id": "p_34f6a88426f16c757518",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p2.1",
+          "text": "Proof of Proposition 2 Similarly to the proof of Proposition 1, the iterates of $O$ without weight decay on $f^{\\text{reg}}_{t}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{1}{2}\\lambda^{\\prime}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ and $O$ with weight decay $\\lambda$ on $f_{t}$ are, respectively:",
+          "kind": "text",
+          "char_start": 690,
+          "char_end": 986
+        },
+        {
+          "paragraph_id": "p_1c9232a7fd7b922b9624",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.EGx2",
+          "text": "\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle\\bm{\\theta}_{t}-\\alpha\\lambda^{\\prime}\\mathbf{M}_{t}\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t}). \\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t}).",
+          "kind": "equation",
+          "char_start": 988,
+          "char_end": 1320
+        },
+        {
+          "paragraph_id": "p_74afac8447116b1a69e9",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p2.2",
+          "text": "The equality of these iterates for all $\\bm{\\theta}_{t}$ would imply $\\lambda\\bm{\\theta}_{t}=\\alpha\\lambda^{\\prime}\\mathbf{M}_{t}\\bm{\\theta}_{t}$. This can only hold for all $\\bm{\\theta}_{t}$ if $\\mathbf{M}_{t}=k\\mathbf{I}$, with $k\\in\\mathbb{R}$, which is not the case for $O$. Therefore, no L2 regularizer $\\lambda^{\\prime}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ exists that makes the iterates equivalent. ∎",
+          "kind": "text",
+          "char_start": 1322,
+          "char_end": 1735
+        },
+        {
+          "paragraph_id": "p_3d0ac6429ea5c1145307",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p3.1",
+          "text": "Proof of Proposition 3 $O$ without weight decay has the following iterates on $f_{t}^{\\text{sreg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\odot{}\\sqrt{\\textit{{s}}}\\right\\rVert_{2}^{2}$:",
+          "kind": "text",
+          "char_start": 1737,
+          "char_end": 1964
+        },
+        {
+          "paragraph_id": "p_4718065f8be691980d3c",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.EGx3",
+          "text": "\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}^{\\text{sreg}}(\\bm{\\theta}_{t})/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})/\\textit{{s}}-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t}\\odot\\textit{{s}}/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})/\\textit{{s}}-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t},",
+          "kind": "equation",
+          "char_start": 1966,
+          "char_end": 2405
+        },
+        {
+          "paragraph_id": "p_3d7ab0aa1efe564eb72b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p3.2",
+          "text": "where the division by s is element-wise. $O$ with weight decay has the following iterates on $f_{t}(\\bm{\\theta})$:",
+          "kind": "text",
+          "char_start": 2407,
+          "char_end": 2521
+        },
+        {
+          "paragraph_id": "p_4f8dd0398a1b0617d49c",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.EGx4",
+          "text": "\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f(\\bm{\\theta}_{t})/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f(\\bm{\\theta}_{t})/\\textit{{s}}-\\lambda\\bm{\\theta}_{t},",
+          "kind": "equation",
+          "char_start": 2523,
+          "char_end": 2775
+        },
+        {
+          "paragraph_id": "p_1e2f941638456c57531a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p3.3",
+          "text": "These iterates are identical since $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$. ∎",
+          "kind": "text",
+          "char_start": 2777,
+          "char_end": 2856
+        }
+      ],
+      "text": "Proof of Proposition 1 The proof for this well-known fact is straight-forward. SGD without weight decay has the following iterates on $f_{t}^{\\text{reg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$:\n\n\\bm{\\theta}_{t+1}\\leftarrow\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}^{\\text{reg}}(\\bm{\\theta}_{t})=\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t}.\n\nSGD with weight decay has the following iterates on $f_{t}(\\bm{\\theta})$:\n\n\\bm{\\theta}_{t+1}\\leftarrow(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t}).\n\nThese iterates are identical since $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$. ∎\n\nProof of Proposition 2 Similarly to the proof of Proposition 1, the iterates of $O$ without weight decay on $f^{\\text{reg}}_{t}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{1}{2}\\lambda^{\\prime}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ and $O$ with weight decay $\\lambda$ on $f_{t}$ are, respectively:\n\n\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle\\bm{\\theta}_{t}-\\alpha\\lambda^{\\prime}\\mathbf{M}_{t}\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t}). \\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\mathbf{M}_{t}\\nabla f_{t}(\\bm{\\theta}_{t}).\n\nThe equality of these iterates for all $\\bm{\\theta}_{t}$ would imply $\\lambda\\bm{\\theta}_{t}=\\alpha\\lambda^{\\prime}\\mathbf{M}_{t}\\bm{\\theta}_{t}$. This can only hold for all $\\bm{\\theta}_{t}$ if $\\mathbf{M}_{t}=k\\mathbf{I}$, with $k\\in\\mathbb{R}$, which is not the case for $O$. Therefore, no L2 regularizer $\\lambda^{\\prime}\\left\\lVert\\bm{\\theta}\\right\\rVert_{2}^{2}$ exists that makes the iterates equivalent. ∎\n\nProof of Proposition 3 $O$ without weight decay has the following iterates on $f_{t}^{\\text{sreg}}(\\bm{\\theta})=f_{t}(\\bm{\\theta})+\\frac{\\lambda^{\\prime}}{2}\\left\\lVert\\bm{\\theta}\\odot{}\\sqrt{\\textit{{s}}}\\right\\rVert_{2}^{2}$:\n\n\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}^{\\text{sreg}}(\\bm{\\theta}_{t})/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})/\\textit{{s}}-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t}\\odot\\textit{{s}}/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f_{t}(\\bm{\\theta}_{t})/\\textit{{s}}-\\alpha\\lambda^{\\prime}\\bm{\\theta}_{t},\n\nwhere the division by s is element-wise. $O$ with weight decay has the following iterates on $f_{t}(\\bm{\\theta})$:\n\n\\displaystyle\\bm{\\theta}_{t+1} \\displaystyle\\leftarrow \\displaystyle(1-\\lambda)\\bm{\\theta}_{t}-\\alpha\\nabla f(\\bm{\\theta}_{t})/\\textit{{s}} \\displaystyle= \\displaystyle\\bm{\\theta}_{t}-\\alpha\\nabla f(\\bm{\\theta}_{t})/\\textit{{s}}-\\lambda\\bm{\\theta}_{t},\n\nThese iterates are identical since $\\lambda^{\\prime}=\\frac{\\lambda}{\\alpha}$. ∎"
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0014",
+      "title": "Appendix B Additional Practical Improvements of Adam",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2",
+      "path": [
+        "Appendix B Additional Practical Improvements of Adam"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_38d56955a98d5b10ee86",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.p1.1",
+          "text": "Having discussed decoupled weight decay for improving Adam’s generalization, in this section we introduce two additional components to improve Adam’s performance in practice.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 174
+        }
+      ],
+      "text": "Having discussed decoupled weight decay for improving Adam’s generalization, in this section we introduce two additional components to improve Adam’s performance in practice."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0015",
+      "title": "B.1 Normalized Weight Decay",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SS1",
+      "path": [
+        "Appendix B Additional Practical Improvements of Adam",
+        "B.1 Normalized Weight Decay"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6a5acb2fcefe5734da8d",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS1.p1.1",
+          "text": "Our preliminary experiments showed that different weight decay factors are optimal for different computational budgets (defined in terms of the number of batch passes). Relatedly, Li et al. (2017) demonstrated that a smaller batch size (for the same total number of epochs) leads to the shrinking effect of weight decay being more pronounced. Here, we propose to reduce this dependence by normalizing the values of weight decay. Specifically, we replace the hyperparameter $\\lambda$ by a new (more robust) normalized weight decay hyperparameter $\\lambda_{norm}$, and use this to set $\\lambda$ as $\\lambda=\\lambda_{norm}\\sqrt{\\frac{b}{BT}}$, where $b$ is the batch size, $B$ is the total number of training points and $T$ is the total number of epochs. Thus, $\\lambda_{norm}$ can be interpreted as the weight decay used if only one batch pass is allowed. We emphasize that our choice of normalization is merely one possibility informed by few experiments; a more lasting conclusion we draw is that using some normalization can substantially improve results.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1056
+        },
+        {
+          "paragraph_id": "p_664cb33876a2a4b374c2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS1.p1.1",
+          "text": "Footnote: 2 2 In the context of our AdamWR variant discussed in Section B.2, $T$ is the total number of epochs in the current restart.",
+          "kind": "footnote",
+          "char_start": 1058,
+          "char_end": 1192
+        }
+      ],
+      "text": "Our preliminary experiments showed that different weight decay factors are optimal for different computational budgets (defined in terms of the number of batch passes). Relatedly, Li et al. (2017) demonstrated that a smaller batch size (for the same total number of epochs) leads to the shrinking effect of weight decay being more pronounced. Here, we propose to reduce this dependence by normalizing the values of weight decay. Specifically, we replace the hyperparameter $\\lambda$ by a new (more robust) normalized weight decay hyperparameter $\\lambda_{norm}$, and use this to set $\\lambda$ as $\\lambda=\\lambda_{norm}\\sqrt{\\frac{b}{BT}}$, where $b$ is the batch size, $B$ is the total number of training points and $T$ is the total number of epochs. Thus, $\\lambda_{norm}$ can be interpreted as the weight decay used if only one batch pass is allowed. We emphasize that our choice of normalization is merely one possibility informed by few experiments; a more lasting conclusion we draw is that using some normalization can substantially improve results.\n\nFootnote: 2 2 In the context of our AdamWR variant discussed in Section B.2, $T$ is the total number of epochs in the current restart."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0016",
+      "title": "B.2 Adam with Cosine Annealing and Warm Restarts",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SS2",
+      "path": [
+        "Appendix B Additional Practical Improvements of Adam",
+        "B.2 Adam with Cosine Annealing and Warm Restarts"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0f3da545d36e6ecb6624",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS2.p1.1",
+          "text": "We now apply cosine annealing and warm restarts to Adam, following our recent work (Loshchilov & Hutter, 2016). There, we proposed Stochastic Gradient Descent with Warm Restarts (SGDR) to improve the anytime performance of SGD by quickly cooling down the learning rate according to a cosine schedule and periodically increasing it. SGDR has been successfully adopted to lead to new state-of-the-art results for popular image classification benchmarks (Huang et al., 2017; Gastaldi, 2017; Zoph et al., 2017), and we therefore already tried extending it to Adam shortly after proposing it. However, while our initial version of Adam with warm restarts had better anytime performance than Adam, it was not competitive with SGD with warm restarts, precisely because L2 regularization was not working as well as in SGD. Now, having fixed this issue by means of the original weight decay regularization (Section 2) and also having introduced normalized weight decay (Section B.1), our original work on cosine annealing and warm restarts directly carries over to Adam.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1061
+        },
+        {
+          "paragraph_id": "p_b15df592b6bdaac5ba4b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS2.p2.1",
+          "text": "In the interest of keeping the presentation self-contained, we briefly describe how SGDR schedules the change of the effective learning rate in order to accelerate the training of DNNs. Here, we decouple the initial learning rate $\\alpha$ and its multiplier $\\eta_{t}$ used to obtain the actual learning rate at iteration $t$ (see, e.g., line 8 in Algorithm 1). In SGDR, we simulate a new warm-started run/restart of SGD once $T_{i}$ epochs are performed, where $i$ is the index of the run. Importantly, the restarts are not performed from scratch but emulated by increasing $\\eta_{t}$ while the old value of $\\bm{\\theta}_{t}$ is used as an initial solution. The amount by which $\\eta_{t}$ is increased controls to which extent the previously acquired information (e.g., momentum) is used. Within the $i$-th run, the value of $\\eta_{t}$ decays according to a cosine annealing (Loshchilov & Hutter, 2016) learning rate for each batch as follows:",
+          "kind": "text",
+          "char_start": 1063,
+          "char_end": 2007
+        },
+        {
+          "paragraph_id": "p_f8741e5cfb8e2b182113",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx5",
+          "text": "\\displaystyle\\eta_{t}=\\eta^{(i)}_{min}+0.5(\\eta^{(i)}_{max}-\\eta^{(i)}_{min})(1+\\cos(\\pi T_{cur}/{T_{i}})),",
+          "kind": "equation",
+          "char_start": 2009,
+          "char_end": 2116
+        },
+        {
+          "paragraph_id": "p_1c33b3ed95ad3d33fe03",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS2.p2.2",
+          "text": "where $\\eta^{(i)}_{min}$ and $\\eta^{(i)}_{max}$ are ranges for the multiplier and $T_{cur}$ accounts for how many epochs have been performed since the last restart. $T_{cur}$ is updated at each batch iteration $t$ and is thus not constrained to integer values. Adjusting (e.g., decreasing) $\\eta^{(i)}_{min}$ and $\\eta^{(i)}_{max}$ at every $i$-th restart (see also Smith (2016)) could potentially improve performance, but we do not consider that option here because it would involve additional hyperparameters. For $\\eta^{(i)}_{max}=1$ and $\\eta^{(i)}_{min}=0$, one can simplify Eq. (14) to",
+          "kind": "text",
+          "char_start": 2118,
+          "char_end": 2709
+        },
+        {
+          "paragraph_id": "p_a5acbfdb9ef0a6c23cf2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx6",
+          "text": "\\displaystyle\\eta_{t}=0.5+0.5\\cos(\\pi T_{cur}/{T_{i}}).",
+          "kind": "equation",
+          "char_start": 2711,
+          "char_end": 2766
+        },
+        {
+          "paragraph_id": "p_79feb5a40044dbcc1761",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS2.p2.3",
+          "text": "In order to achieve good anytime performance, one can start with an initially small $T_{i}$ (e.g., from 1% to 10% of the expected total budget) and multiply it by a factor of $T_{mult}$ (e.g., $T_{mult}=2$) at every restart. The $(i+1)$-th restart is triggered when $T_{cur}=T_{i}$ by setting $T_{cur}$ to 0. An example setting of the schedule multiplier is given in C.",
+          "kind": "text",
+          "char_start": 2768,
+          "char_end": 3137
+        },
+        {
+          "paragraph_id": "p_c8360b301b4adc263691",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS2.p3.1",
+          "text": "Our proposed AdamWR algorithm represents AdamW (see Algorithm 2) with $\\eta_{t}$ following Eq. (15) and $\\lambda$ computed at each iteration using normalized weight decay described in Section B.1. We note that normalized weight decay allowed us to use a constant parameter setting across short and long runs performed within AdamWR and SGDWR (SGDW with warm restarts).",
+          "kind": "text",
+          "char_start": 3139,
+          "char_end": 3507
+        }
+      ],
+      "text": "We now apply cosine annealing and warm restarts to Adam, following our recent work (Loshchilov & Hutter, 2016). There, we proposed Stochastic Gradient Descent with Warm Restarts (SGDR) to improve the anytime performance of SGD by quickly cooling down the learning rate according to a cosine schedule and periodically increasing it. SGDR has been successfully adopted to lead to new state-of-the-art results for popular image classification benchmarks (Huang et al., 2017; Gastaldi, 2017; Zoph et al., 2017), and we therefore already tried extending it to Adam shortly after proposing it. However, while our initial version of Adam with warm restarts had better anytime performance than Adam, it was not competitive with SGD with warm restarts, precisely because L2 regularization was not working as well as in SGD. Now, having fixed this issue by means of the original weight decay regularization (Section 2) and also having introduced normalized weight decay (Section B.1), our original work on cosine annealing and warm restarts directly carries over to Adam.\n\nIn the interest of keeping the presentation self-contained, we briefly describe how SGDR schedules the change of the effective learning rate in order to accelerate the training of DNNs. Here, we decouple the initial learning rate $\\alpha$ and its multiplier $\\eta_{t}$ used to obtain the actual learning rate at iteration $t$ (see, e.g., line 8 in Algorithm 1). In SGDR, we simulate a new warm-started run/restart of SGD once $T_{i}$ epochs are performed, where $i$ is the index of the run. Importantly, the restarts are not performed from scratch but emulated by increasing $\\eta_{t}$ while the old value of $\\bm{\\theta}_{t}$ is used as an initial solution. The amount by which $\\eta_{t}$ is increased controls to which extent the previously acquired information (e.g., momentum) is used. Within the $i$-th run, the value of $\\eta_{t}$ decays according to a cosine annealing (Loshchilov & Hutter, 2016) learning rate for each batch as follows:\n\n\\displaystyle\\eta_{t}=\\eta^{(i)}_{min}+0.5(\\eta^{(i)}_{max}-\\eta^{(i)}_{min})(1+\\cos(\\pi T_{cur}/{T_{i}})),\n\nwhere $\\eta^{(i)}_{min}$ and $\\eta^{(i)}_{max}$ are ranges for the multiplier and $T_{cur}$ accounts for how many epochs have been performed since the last restart. $T_{cur}$ is updated at each batch iteration $t$ and is thus not constrained to integer values. Adjusting (e.g., decreasing) $\\eta^{(i)}_{min}$ and $\\eta^{(i)}_{max}$ at every $i$-th restart (see also Smith (2016)) could potentially improve performance, but we do not consider that option here because it would involve additional hyperparameters. For $\\eta^{(i)}_{max}=1$ and $\\eta^{(i)}_{min}=0$, one can simplify Eq. (14) to\n\n\\displaystyle\\eta_{t}=0.5+0.5\\cos(\\pi T_{cur}/{T_{i}}).\n\nIn order to achieve good anytime performance, one can start with an initially small $T_{i}$ (e.g., from 1% to 10% of the expected total budget) and multiply it by a factor of $T_{mult}$ (e.g., $T_{mult}=2$) at every restart. The $(i+1)$-th restart is triggered when $T_{cur}=T_{i}$ by setting $T_{cur}$ to 0. An example setting of the schedule multiplier is given in C.\n\nOur proposed AdamWR algorithm represents AdamW (see Algorithm 2) with $\\eta_{t}$ following Eq. (15) and $\\lambda$ computed at each iteration using normalized weight decay described in Section B.1. We note that normalized weight decay allowed us to use a constant parameter setting across short and long runs performed within AdamWR and SGDWR (SGDW with warm restarts)."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0017",
+      "title": "Appendix C An Example Setting of the Schedule Multiplier",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A3",
+      "path": [
+        "Appendix C An Example Setting of the Schedule Multiplier"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_84189a0c15c91285545b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.p1.1",
+          "text": "An example schedule of the schedule multiplier $\\eta_{t}$ is given in SuppFigure 1 for $T_{i=0}=100$ and $T_{mult}=2$. After the initial 100 epochs the learning rate will reach 0 because $\\eta_{t=100}=0$. Then, since $T_{cur}=T_{i=0}$, we restart by resetting $T_{cur}=0$, causing the multiplier $\\eta_{t}$ to be reset to 1 due to Eq. (15). This multiplier will then decrease again from 1 to 0, but now over the course of 200 epochs because $T_{i=1}=T_{i=0}T_{mult}=200$. Solutions obtained right before the restarts, when $\\eta_{t}=0$ (e.g., at epoch indexes 100, 300, 700 and 1500 as shown in SuppFigure 1) are recommended by the optimizer as the solutions, with more recent solutions prioritized.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 699
+        },
+        {
+          "paragraph_id": "p_04aea4f7473cf4a676b7",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.F1",
+          "text": "SuppFigure 1: An example schedule of the learning rate multiplier as a function of epoch index. The first run is scheduled to converge at epoch $T_{i=0}=100$, then the budget for the next run is doubled as $T_{i=1}=T_{i=0}T_{mult}=200$, etc.",
+          "kind": "caption",
+          "char_start": 701,
+          "char_end": 942
+        }
+      ],
+      "text": "An example schedule of the schedule multiplier $\\eta_{t}$ is given in SuppFigure 1 for $T_{i=0}=100$ and $T_{mult}=2$. After the initial 100 epochs the learning rate will reach 0 because $\\eta_{t=100}=0$. Then, since $T_{cur}=T_{i=0}$, we restart by resetting $T_{cur}=0$, causing the multiplier $\\eta_{t}$ to be reset to 1 due to Eq. (15). This multiplier will then decrease again from 1 to 0, but now over the course of 200 epochs because $T_{i=1}=T_{i=0}T_{mult}=200$. Solutions obtained right before the restarts, when $\\eta_{t}=0$ (e.g., at epoch indexes 100, 300, 700 and 1500 as shown in SuppFigure 1) are recommended by the optimizer as the solutions, with more recent solutions prioritized.\n\nSuppFigure 1: An example schedule of the learning rate multiplier as a function of epoch index. The first run is scheduled to converge at epoch $T_{i=0}=100$, then the budget for the next run is doubled as $T_{i=1}=T_{i=0}T_{mult}=200$, etc."
+    },
+    {
+      "section_id": "arxiv_1711.05101_v3_s0018",
+      "title": "Appendix D Additional Results",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A4",
+      "path": [
+        "Appendix D Additional Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_a20601a24d591f7439ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.p1.1",
+          "text": "We investigated whether the use of much longer runs (1800 epochs) of “standard Adam” (Adam with L2 regularization and a fixed learning rate) makes the use of cosine annealing unnecessary. SuppFigure 2 shows the results of standard Adam for a 4 by 4 logarithmic grid of hyperparameter settings (the coarseness of the grid is due to the high computational expense of runs for 1800 epochs). Even after taking the low resolution of the grid into account, the results appear to be at best comparable to the ones obtained with AdamW with 18 times less epochs and a smaller network (see SuppFigure 3, top row, middle). These results are not very surprising given Figure 1 in the main paper (which demonstrates both the improvements possible by using some learning rate schedule, such as cosine annealing, and the effectiveness of decoupled weight decay).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 847
+        },
+        {
+          "paragraph_id": "p_59ffd2f2cd347ba3506e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.p2.1",
+          "text": "Our experimental results with Adam and SGD suggest that the total runtime in terms of the number of epochs affect the basin of optimal hyperparameters (see SuppFigure 3). More specifically, the greater the total number of epochs the smaller the values of the weight decay should be. SuppFigure 4 shows that our remedy for this problem, the normalized weight decay defined in Eq. (15), simplifies hyperparameter selection because the optimal values observed for short runs are similar to the ones for much longer runs. We used our initial experiments on CIFAR-10 to suggest the square root normalization we proposed in Eq. (15) and double-checked that this is not a coincidence on the ImageNet32x32 dataset (Chrabaszcz et al., 2017), a downsampled version of the original ImageNet dataset with 1.2 million 32$\\times$32 pixels images, where an epoch is 24 times longer than on CIFAR-10. This experiment also supported the square root scaling: the best values of the normalized weight decay observed on CIFAR-10 represented nearly optimal values for ImageNet32x32 (see SuppFigure 3). In contrast, had we used the same raw weight decay values $\\lambda$ for ImageNet32x32 as for CIFAR-10 and for the same number of epochs, without the proposed normalization, $\\lambda$ would have been roughly 5 times too large for ImageNet32x32, leading to much worse performance. The optimal normalized weight decay values were also very similar (e.g., $\\lambda_{norm}=0.025$ and $\\lambda_{norm}=0.05$) across SGDW and AdamW. These results clearly show that normalizing weight decay can substantially improve performance; while square root scaling performed very well in our experiments we emphasize that these experiments were not very comprehensive and that even better scaling rules are likely to exist.",
+          "kind": "text",
+          "char_start": 849,
+          "char_end": 2635
+        },
+        {
+          "paragraph_id": "p_ad2a80864b4cb03a70e9",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.p3.1",
+          "text": "SuppFigure 4 is the equivalent of Figure 3 in the main paper, but for ImageNet32x32 instead of for CIFAR-10. The qualitative results are identical: weight decay leads to better training loss (cross-entropy) than L2 regularization, and to an even greater improvement of test error.",
+          "kind": "text",
+          "char_start": 2637,
+          "char_end": 2917
+        },
+        {
+          "paragraph_id": "p_1c25b519ff3db9c20c8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.p4.1",
+          "text": "SuppFigure 5 and SuppFigure 6 are the equivalents of Figure 4 in the main paper but supplemented with training loss curves in its bottom row. The results show that Adam and its variants with decoupled weight decay converge faster (in terms of training loss) on CIFAR-10 than the corresponding SGD variants (the difference for ImageNet32x32 is small). As is discussed in the main paper, when the same values of training loss are considered, AdamW demonstrates better values of test error than Adam. Interestingly, SuppFigure 5 and SuppFigure 6 show that the restart variants AdamWR and SGDWR also demonstrate better generalization than AdamW and SGDW, respectively.",
+          "kind": "text",
+          "char_start": 2919,
+          "char_end": 3583
+        },
+        {
+          "paragraph_id": "p_ac60b8927e70f055d7bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F2",
+          "text": "SuppFigure 2: Performance of “standard Adam”: Adam with L2 regularization and a fixed learning rate. We show the final test error of a 26 2x96d ResNet on CIFAR-10 after 1800 epochs of the original Adam for different settings of learning rate and weight decay used for L2 regularization.",
+          "kind": "caption",
+          "char_start": 3585,
+          "char_end": 3871
+        },
+        {
+          "paragraph_id": "p_7ada8a2f4a495b6dcf12",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F3",
+          "text": "SuppFigure 3: Effect of normalized weight decay. We show the final test Top-1 error on CIFAR-10 (first two rows for AdamW without and with normalized weight decay) and Top-5 error on ImageNet32x32 (last two rows for AdamW and SGDW, both with normalized weight decay) of a 26 2x64d ResNet after different numbers of epochs (see columns). While the optimal settings of the raw weight decay change significantly for different runtime budgets (see the first row), the values of the normalized weight decay remain very similar for different budgets (see the second row) and different datasets (here, CIFAR-10 and ImageNet32x32), and even across AdamW and SGDW.",
+          "kind": "caption",
+          "char_start": 3873,
+          "char_end": 4528
+        },
+        {
+          "paragraph_id": "p_a08a7d75d958aff1bc06",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F4",
+          "text": "SuppFigure 4: Learning curves (top row) and generalization results (Top-5 errors in bottom row) obtained by a 26 2x96d ResNet trained with Adam and AdamW on ImageNet32x32.",
+          "kind": "caption",
+          "char_start": 4530,
+          "char_end": 4701
+        },
+        {
+          "paragraph_id": "p_0c32d742886b972497a1",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F5",
+          "text": "SuppFigure 5: Test error curves (top row) and training loss curves (bottom row) for CIFAR-10.",
+          "kind": "caption",
+          "char_start": 4703,
+          "char_end": 4796
+        },
+        {
+          "paragraph_id": "p_adbd7354ee26db05da18",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F6",
+          "text": "SuppFigure 6: Test error curves (top row) and training loss curves (bottom row) for ImageNet32x32.",
+          "kind": "caption",
+          "char_start": 4798,
+          "char_end": 4896
+        }
+      ],
+      "text": "We investigated whether the use of much longer runs (1800 epochs) of “standard Adam” (Adam with L2 regularization and a fixed learning rate) makes the use of cosine annealing unnecessary. SuppFigure 2 shows the results of standard Adam for a 4 by 4 logarithmic grid of hyperparameter settings (the coarseness of the grid is due to the high computational expense of runs for 1800 epochs). Even after taking the low resolution of the grid into account, the results appear to be at best comparable to the ones obtained with AdamW with 18 times less epochs and a smaller network (see SuppFigure 3, top row, middle). These results are not very surprising given Figure 1 in the main paper (which demonstrates both the improvements possible by using some learning rate schedule, such as cosine annealing, and the effectiveness of decoupled weight decay).\n\nOur experimental results with Adam and SGD suggest that the total runtime in terms of the number of epochs affect the basin of optimal hyperparameters (see SuppFigure 3). More specifically, the greater the total number of epochs the smaller the values of the weight decay should be. SuppFigure 4 shows that our remedy for this problem, the normalized weight decay defined in Eq. (15), simplifies hyperparameter selection because the optimal values observed for short runs are similar to the ones for much longer runs. We used our initial experiments on CIFAR-10 to suggest the square root normalization we proposed in Eq. (15) and double-checked that this is not a coincidence on the ImageNet32x32 dataset (Chrabaszcz et al., 2017), a downsampled version of the original ImageNet dataset with 1.2 million 32$\\times$32 pixels images, where an epoch is 24 times longer than on CIFAR-10. This experiment also supported the square root scaling: the best values of the normalized weight decay observed on CIFAR-10 represented nearly optimal values for ImageNet32x32 (see SuppFigure 3). In contrast, had we used the same raw weight decay values $\\lambda$ for ImageNet32x32 as for CIFAR-10 and for the same number of epochs, without the proposed normalization, $\\lambda$ would have been roughly 5 times too large for ImageNet32x32, leading to much worse performance. The optimal normalized weight decay values were also very similar (e.g., $\\lambda_{norm}=0.025$ and $\\lambda_{norm}=0.05$) across SGDW and AdamW. These results clearly show that normalizing weight decay can substantially improve performance; while square root scaling performed very well in our experiments we emphasize that these experiments were not very comprehensive and that even better scaling rules are likely to exist.\n\nSuppFigure 4 is the equivalent of Figure 3 in the main paper, but for ImageNet32x32 instead of for CIFAR-10. The qualitative results are identical: weight decay leads to better training loss (cross-entropy) than L2 regularization, and to an even greater improvement of test error.\n\nSuppFigure 5 and SuppFigure 6 are the equivalents of Figure 4 in the main paper but supplemented with training loss curves in its bottom row. The results show that Adam and its variants with decoupled weight decay converge faster (in terms of training loss) on CIFAR-10 than the corresponding SGD variants (the difference for ImageNet32x32 is small). As is discussed in the main paper, when the same values of training loss are considered, AdamW demonstrates better values of test error than Adam. Interestingly, SuppFigure 5 and SuppFigure 6 show that the restart variants AdamWR and SGDWR also demonstrate better generalization than AdamW and SGDW, respectively.\n\nSuppFigure 2: Performance of “standard Adam”: Adam with L2 regularization and a fixed learning rate. We show the final test error of a 26 2x96d ResNet on CIFAR-10 after 1800 epochs of the original Adam for different settings of learning rate and weight decay used for L2 regularization.\n\nSuppFigure 3: Effect of normalized weight decay. We show the final test Top-1 error on CIFAR-10 (first two rows for AdamW without and with normalized weight decay) and Top-5 error on ImageNet32x32 (last two rows for AdamW and SGDW, both with normalized weight decay) of a 26 2x64d ResNet after different numbers of epochs (see columns). While the optimal settings of the raw weight decay change significantly for different runtime budgets (see the first row), the values of the normalized weight decay remain very similar for different budgets (see the second row) and different datasets (here, CIFAR-10 and ImageNet32x32), and even across AdamW and SGDW.\n\nSuppFigure 4: Learning curves (top row) and generalization results (Top-5 errors in bottom row) obtained by a 26 2x96d ResNet trained with Adam and AdamW on ImageNet32x32.\n\nSuppFigure 5: Test error curves (top row) and training loss curves (bottom row) for CIFAR-10.\n\nSuppFigure 6: Test error curves (top row) and training loss curves (bottom row) for ImageNet32x32."
+    }
+  ]
+}

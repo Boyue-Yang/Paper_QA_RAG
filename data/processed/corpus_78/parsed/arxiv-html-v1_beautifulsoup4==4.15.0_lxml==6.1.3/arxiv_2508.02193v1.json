@@ -1,0 +1,1346 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2508.02193",
+  "version": "v1",
+  "title": "Seed Diffusion: A Large-Scale Diffusion Language Model with High-Speed Inference",
+  "source_format": "html",
+  "source_sha256": "ed05cb8886c03e395e3d8b042b23cab4b80c3b9c74f1985a7a3965600be07dbb",
+  "source_url": "https://arxiv.org/html/2508.02193v1",
+  "source_path": "data/corpus_78/html/arxiv_2508.02193v1.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2508.02193_v1_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_40b53b03d5f21a936f58",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "We present Seed Diffusion Preview, a large-scale language model based on discrete-state diffusion, offering remarkably fast inference speed. Thanks to non-sequential, parallel generation, discrete diffusion models provide a notable speedup to mitigate the inherent latency of token-by-token decoding, as demonstrated recently (e.g., Mercury Coder [1], Gemini Diffusion [2]). Seed Diffusion Preview achieves an inference speed of 2,146 token/s over H20 GPUs while maintaining competitive performance across a sweep of standard code evaluation benchmarks, significantly faster than contemporary Mercury and Gemini, establishing new state of the art on the speed-quality Pareto frontier for code models. Demo is available at https://studio.seed.ai/exp/seed_diffusion/.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 765
+        }
+      ],
+      "text": "We present Seed Diffusion Preview, a large-scale language model based on discrete-state diffusion, offering remarkably fast inference speed. Thanks to non-sequential, parallel generation, discrete diffusion models provide a notable speedup to mitigate the inherent latency of token-by-token decoding, as demonstrated recently (e.g., Mercury Coder [1], Gemini Diffusion [2]). Seed Diffusion Preview achieves an inference speed of 2,146 token/s over H20 GPUs while maintaining competitive performance across a sweep of standard code evaluation benchmarks, significantly faster than contemporary Mercury and Gemini, establishing new state of the art on the speed-quality Pareto frontier for code models. Demo is available at https://studio.seed.ai/exp/seed_diffusion/."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_62b559606339da5c166a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Diffusion models (3, 4, 5) learn to reverse a process that incrementally corrupts data with noise, effectively decomposing a complex distribution into a hierarchy of simplified representations. This coarse-to-fine generative approach has proven remarkably successful across a wide range of applications, including image and video synthesis [6] as well as solving complex challenges in natural sciences (7).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 406
+        },
+        {
+          "paragraph_id": "p_bec86fcf4fd25a7502a6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "However, translating this success to the discrete domain of natural language presents critical challenges. The primary difficulty stems from the fact that standard diffusion process is naturally defined over continuous state spaces, thus not directly applicable to discrete domains such as natural language. To bridge this gap, many efforts have focused on novel adaptations, ranging from projecting discrete tokens into a continuous latent space (e.g., embeddings or a simplex) where diffusion can be applied (8, 9, 10), to constructing the diffusion process directly over discrete-state space by defining explicit state transition matrices (11, 12, 13, 14). Recent discrete-state approaches have demonstrated scalability and effectiveness with advanced architectures and training recipes [15].",
+          "kind": "text",
+          "char_start": 408,
+          "char_end": 1203
+        },
+        {
+          "paragraph_id": "p_89ec2d35f6604ff9d55b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "Despite impressive progress, real-world deployment of discrete diffusion models for language is still hampered by two key challenges:",
+          "kind": "text",
+          "char_start": 1205,
+          "char_end": 1338
+        },
+        {
+          "paragraph_id": "p_6c4c72e11cb63bcb3d79",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i1",
+          "text": "• Inductive bias on token–order modeling. The usage of discrete diffusion for modeling and generating tokens in arbitrary orders is theoretically powerful and appealing [13, 14]; however, natural language is overwhelmingly processed in a sequential order. A purely random-order learning signal can in consequence be inefficient, or even detrimental for language modeling, dampening model performance.",
+          "kind": "list_item",
+          "char_start": 1340,
+          "char_end": 1740
+        },
+        {
+          "paragraph_id": "p_cd4d8d72211559437996",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i2",
+          "text": "• Inference inefficiency. Although diffusion models are non-autoregressive, their iterative step-sensitive denoising procedure introduces severe latency, which undermines their major advantage over traditional autoregressive models, acting as a cumbersome bottleneck in practice.",
+          "kind": "list_item",
+          "char_start": 1742,
+          "char_end": 2021
+        },
+        {
+          "paragraph_id": "p_33cfd5c398c932a710db",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "In this work, we introduce Seed Diffusion Preview, a code-focused language model designed to achieve an elegant balance between speed and quality. Tackling these challenges directly, our model achieves a remarkable speed of 2146 tokens/second on H20 GPUs while maintaining competitive performance against similarly-sized standard language models across a diverse set of code evaluation benchmarks, establishing new state of the art on the speed-quality Pareto frontier.",
+          "kind": "text",
+          "char_start": 2023,
+          "char_end": 2492
+        }
+      ],
+      "text": "Diffusion models (3, 4, 5) learn to reverse a process that incrementally corrupts data with noise, effectively decomposing a complex distribution into a hierarchy of simplified representations. This coarse-to-fine generative approach has proven remarkably successful across a wide range of applications, including image and video synthesis [6] as well as solving complex challenges in natural sciences (7).\n\nHowever, translating this success to the discrete domain of natural language presents critical challenges. The primary difficulty stems from the fact that standard diffusion process is naturally defined over continuous state spaces, thus not directly applicable to discrete domains such as natural language. To bridge this gap, many efforts have focused on novel adaptations, ranging from projecting discrete tokens into a continuous latent space (e.g., embeddings or a simplex) where diffusion can be applied (8, 9, 10), to constructing the diffusion process directly over discrete-state space by defining explicit state transition matrices (11, 12, 13, 14). Recent discrete-state approaches have demonstrated scalability and effectiveness with advanced architectures and training recipes [15].\n\nDespite impressive progress, real-world deployment of discrete diffusion models for language is still hampered by two key challenges:\n\n• Inductive bias on token–order modeling. The usage of discrete diffusion for modeling and generating tokens in arbitrary orders is theoretically powerful and appealing [13, 14]; however, natural language is overwhelmingly processed in a sequential order. A purely random-order learning signal can in consequence be inefficient, or even detrimental for language modeling, dampening model performance.\n\n• Inference inefficiency. Although diffusion models are non-autoregressive, their iterative step-sensitive denoising procedure introduces severe latency, which undermines their major advantage over traditional autoregressive models, acting as a cumbersome bottleneck in practice.\n\nIn this work, we introduce Seed Diffusion Preview, a code-focused language model designed to achieve an elegant balance between speed and quality. Tackling these challenges directly, our model achieves a remarkable speed of 2146 tokens/second on H20 GPUs while maintaining competitive performance against similarly-sized standard language models across a diverse set of code evaluation benchmarks, establishing new state of the art on the speed-quality Pareto frontier."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0002",
+      "title": "2 Related Work",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Related Work"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2b9a5aec50ea06a3779d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.1",
+          "text": "Non-autoregressive (NAR) models have long been considered an alternative to sequential decoding, valued for their potential of parallel inference. In the pre-LLM era, many early NAR methods demonstrated strong performance on specific tasks such as machine translation [16, 17, 18]. However, these approaches often lacked a rigorous theoretical foundation for density estimation, which limited their viability as general-purpose probabilistic language models.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 458
+        },
+        {
+          "paragraph_id": "p_5765dc0437171de40d32",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p2.1",
+          "text": "Discrete diffusion models [11, 19, 12, 14, 13] have emerged to close this gap. By optimizing the Evidence Lower Bound (ELBO), they provide a principled probabilistic framework for language modeling. The recent success of large-scale systems such as Mercury Coder [1] and Gemini Diffusion [2] is particularly notable. These models show that it is possible to narrow the quality gap with autoregressive systems while offering substantial speedup, thereby challenging the conventional wisdom on ”quality-speed trade-off”, raising new interest in NAR in the modern LLM era.",
+          "kind": "text",
+          "char_start": 460,
+          "char_end": 1029
+        }
+      ],
+      "text": "Non-autoregressive (NAR) models have long been considered an alternative to sequential decoding, valued for their potential of parallel inference. In the pre-LLM era, many early NAR methods demonstrated strong performance on specific tasks such as machine translation [16, 17, 18]. However, these approaches often lacked a rigorous theoretical foundation for density estimation, which limited their viability as general-purpose probabilistic language models.\n\nDiscrete diffusion models [11, 19, 12, 14, 13] have emerged to close this gap. By optimizing the Evidence Lower Bound (ELBO), they provide a principled probabilistic framework for language modeling. The recent success of large-scale systems such as Mercury Coder [1] and Gemini Diffusion [2] is particularly notable. These models show that it is possible to narrow the quality gap with autoregressive systems while offering substantial speedup, thereby challenging the conventional wisdom on ”quality-speed trade-off”, raising new interest in NAR in the modern LLM era."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0003",
+      "title": "3 Seed Diffusion",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Seed Diffusion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_70f611d1523f6b0171e6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "As the first experimental model in our Seed Diffusion series, Seed Diffusion Preview is specifically focused on code generation, thus adopting the data pipelines (code/code-related data only) and processing methodology of the open-sourced Seed Coder project [20]. The architecture is a standard dense Transformer, and we intentionally omit complex components such as LongCoT reasoning in this initial version to first establish a strong and efficient performance baseline. This section introduces its key components and training strategies.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 540
+        }
+      ],
+      "text": "As the first experimental model in our Seed Diffusion series, Seed Diffusion Preview is specifically focused on code generation, thus adopting the data pipelines (code/code-related data only) and processing methodology of the open-sourced Seed Coder project [20]. The architecture is a standard dense Transformer, and we intentionally omit complex components such as LongCoT reasoning in this initial version to first establish a strong and efficient performance baseline. This section introduces its key components and training strategies."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0004",
+      "title": "3.1 TSC: A Two-Stage Curriculum for Robust Diffusion Training",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS1",
+      "path": [
+        "3 Seed Diffusion",
+        "3.1 TSC: A Two-Stage Curriculum for Robust Diffusion Training"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9375d61c28b03bdd3da5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p1.1",
+          "text": "The first stage is scaled diffusion training. Seed Diffusion Preview is a discrete-state diffusion language model trained with two types of forward corruption process. Given an initial data sequence $\\mathbf{x}_{0}\\sim p_{\\text{data}}$ and continuous timestep settings where $t\\sim[0,1]$, the forward process implied by the marginal $q(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ is defined as follows:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 390
+        },
+        {
+          "paragraph_id": "p_bda6a56b11a93b6d238a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1",
+          "text": "Mask-based Forward Process",
+          "kind": "heading",
+          "char_start": 392,
+          "char_end": 418
+        },
+        {
+          "paragraph_id": "p_e347d14c70ea52137aab",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1.p1.1",
+          "text": "For the first 80% diffusion training steps, we use a standard mask-based corruption process [12, 15]. This process gradually replaces tokens in the original sequence $\\mathbf{x}_{0}$ with a special [MASK] token($\\mathbf{m}$). The corrupted sequence $\\mathbf{x}_{t}$ is sampled from the conditional distribution $q(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ where each token is treated independently:",
+          "kind": "text",
+          "char_start": 420,
+          "char_end": 808
+        },
+        {
+          "paragraph_id": "p_826975008e9c53fc27f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E1",
+          "text": "q_{\\text{mask}}(\\mathbf{x}_{t}|\\mathbf{x}_{0})=\\prod_{i=1}^{|\\mathbf{x}_{0}|}q_{\\text{mask}}(\\mathbf{x}_{t}[i]|\\mathbf{x}_{0}[i])",
+          "kind": "equation",
+          "char_start": 810,
+          "char_end": 939
+        },
+        {
+          "paragraph_id": "p_2921a918a09b70cc5a54",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1.p1.2",
+          "text": "The probability of a token remaining unchanged or being masked is determined by a noise schedule $\\gamma_{t}$. For any position $i$, the marginal probability is:",
+          "kind": "text",
+          "char_start": 941,
+          "char_end": 1102
+        },
+        {
+          "paragraph_id": "p_5db064a14a08a4eb752d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E2",
+          "text": "q(\\mathbf{x}_{t}[i]=c|\\mathbf{x}_{0}[i])=\\begin{cases}1-\\gamma_{t}&\\text{if }c=\\mathbf{x}_{0}[i]\\\\ \\gamma_{t}&\\text{if }c=\\mathbf{m}\\end{cases}",
+          "kind": "equation",
+          "char_start": 1104,
+          "char_end": 1247
+        },
+        {
+          "paragraph_id": "p_86f70eebbd5108723556",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1.p1.3",
+          "text": "$\\gamma_{t}$ refers to the noise schedule function designed to be monotonically increased [16, 21].",
+          "kind": "text",
+          "char_start": 1249,
+          "char_end": 1348
+        },
+        {
+          "paragraph_id": "p_78a3ecd098e4010a012d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2",
+          "text": "Edit-based Forward Process",
+          "kind": "heading",
+          "char_start": 1350,
+          "char_end": 1376
+        },
+        {
+          "paragraph_id": "p_ed5cc1fb13e599bdbfe7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2.p1.1",
+          "text": "For the last 20% diffusion training steps, we add an extra edit-based corruption process as augmentation to improve calibration and eliminate unexpected behavior such as repetitions in the sampling process. Similar to mask-based approaches, we control a designed signal-to-noise ratio based on Levenshtein distance, $d_{\\text{Lev}}(\\mathbf{x}_{a},\\mathbf{x}_{b})$, which measures the minimum number of token-level edits required to change one sequence into another (refer to [16] for more insights). The forward process then samples a corrupted sequence based on a predefined edit operation set (e.g., deletions, insertions, and substitutions) and defines the total edit-operation number as $k_{t}$ to approximately control langevin distance. The $q_{\\text{edit}}(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ is implicitly defined by:",
+          "kind": "text",
+          "char_start": 1378,
+          "char_end": 2199
+        },
+        {
+          "paragraph_id": "p_81da0b707129b290ba71",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx1",
+          "text": "\\displaystyle\\mathbf{z}_{0}=\\mathbf{x}_{0};\\quad\\mathbf{z}_{j}=o_{j}(\\mathbf{z}_{j-1})\\quad\\text{for }j=1,\\dots,k_{t},o\\in\\mathcal{O};\\quad\\mathbf{x}_{t}=\\mathbf{z}_{k_{t}}",
+          "kind": "equation",
+          "char_start": 2201,
+          "char_end": 2373
+        },
+        {
+          "paragraph_id": "p_4c3221197032c09529d7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2.p1.2",
+          "text": "$\\mathcal{O}$ is a predefined operations set. Although applying $k_{t}$ edits does not guarantee that the final Levenshtein distance $L(\\mathbf{x}_{0},\\mathbf{x}_{t})$ is exactly $k_{t}$ (e.g., an insertion followed by a deletion can cancel out), it provides a tractable and scalable method to control the corruption level. The target number of edits $k_{t}$ is scheduled as:",
+          "kind": "text",
+          "char_start": 2375,
+          "char_end": 2750
+        },
+        {
+          "paragraph_id": "p_0ece46e07104e85ad592",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx2",
+          "text": "\\displaystyle k_{t}=\\lfloor|\\mathbf{x}_{0}|\\cdot(\\alpha_{t})\\rfloor",
+          "kind": "equation",
+          "char_start": 2752,
+          "char_end": 2819
+        },
+        {
+          "paragraph_id": "p_cc03813f7df2d94c3537",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2.p1.3",
+          "text": "Here $\\alpha_{t}$ denotes the scheduler for the approximate signal-to-noise ratio. As an auxiliary objective, we make $\\alpha_{t}$ lie in the range $[0,0.1]$ to maintain the density estimation ability of mask-based forward process.",
+          "kind": "text",
+          "char_start": 2821,
+          "char_end": 3052
+        },
+        {
+          "paragraph_id": "p_853a170268fe976ef68f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2.p2.1",
+          "text": "Overall Learning Objective The reverse process is parameterized as $p_{\\theta}(\\mathbf{x}_{s}|\\mathbf{x}_{t})$. We set the predicted probability over the mask token always as 0 [12] by adding $-\\inf$ to the corresponding logits. With this formulation, the mask-based forward process implies an analytical posterior, hence a tractable and simple formulation ELBO:",
+          "kind": "text",
+          "char_start": 3054,
+          "char_end": 3416
+        },
+        {
+          "paragraph_id": "p_c3da1902c106e9800f1a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx3",
+          "text": "\\displaystyle L_{\\text{ELBO}}=\\underbrace{-\\log p_{\\theta}\\left(\\mathbf{x}_{0}\\mid\\mathbf{x}_{0}\\right)}_{\\text{Recontruct Loss}}-\\mathbb{E}_{q_{\\text{mask}},t}\\left[\\frac{\\gamma_{t}^{{}^{\\prime}}}{\\gamma_{t}}\\sum_{i=1}^{|\\mathbf{x}_{0}|}\\mathbf{1}\\left[\\mathbf{x}_{t}[i]=\\mathbf{m}\\right]\\log p_{\\theta}\\left(\\mathbf{x}_{0}[i]\\mid\\mathbf{x}_{t}[i]\\right)\\right]",
+          "kind": "equation",
+          "char_start": 3418,
+          "char_end": 3780
+        },
+        {
+          "paragraph_id": "p_92195f393a6960088c05",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px2.p2.2",
+          "text": "Our learning objective derives from ELBO in Eq. 6 by substituting the reconstruct loss with a denoised loss based on the edit-based forward process $q_{\\text{edit}}$ as:",
+          "kind": "text",
+          "char_start": 3782,
+          "char_end": 3951
+        },
+        {
+          "paragraph_id": "p_971824ebd0436d61c187",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx4",
+          "text": "\\displaystyle L_{\\text{diff}}{(\\theta)}=-\\mathbb{E}_{q_{\\text{edit}},t}\\log p_{\\theta}(\\mathbf{x}_{0}|\\mathbf{x}_{t})-\\mathbb{E}_{q_{\\text{mask}},t}\\left[\\frac{\\gamma_{t}^{{}^{\\prime}}}{\\gamma_{t}}\\sum_{i=1}^{|\\mathbf{x}_{0}|}\\mathbf{1}\\left[\\mathbf{x}_{t}[i]=\\mathbf{m}\\right]\\log p_{\\theta}\\left(\\mathbf{x}_{0}[i]\\mid\\mathbf{x}_{t}[i]\\right)\\right]",
+          "kind": "equation",
+          "char_start": 3953,
+          "char_end": 4303
+        },
+        {
+          "paragraph_id": "p_b03c2523b167b639cc9f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Thmtheorem1",
+          "text": "Remark 3.1",
+          "kind": "heading",
+          "char_start": 4305,
+          "char_end": 4315
+        },
+        {
+          "paragraph_id": "p_46f5cab5ce7edfd662cc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Thmtheorem1.p1.1",
+          "text": "Unlike some prior work [12, 13], we do not employ the strategy of ”Carry Over Unmasking”, i.e. directly copying unmasked input tokens to the output, despite potential benefits to perplexity. While a purely mask-based diffusion process offers a low-variance training objective (each position is either the ground truth or a [MASK] token), it introduces a detrimental inductive bias. Such a model learns a spurious correlation that unmasked tokens are always correct, leading to overconfidence and unable to perform self-correction during inference. To mitigate this, our edit-based augmentation forces the model to re-evaluate all tokens, including those unmasked.",
+          "kind": "text",
+          "char_start": 4317,
+          "char_end": 4980
+        }
+      ],
+      "text": "The first stage is scaled diffusion training. Seed Diffusion Preview is a discrete-state diffusion language model trained with two types of forward corruption process. Given an initial data sequence $\\mathbf{x}_{0}\\sim p_{\\text{data}}$ and continuous timestep settings where $t\\sim[0,1]$, the forward process implied by the marginal $q(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ is defined as follows:\n\nMask-based Forward Process\n\nFor the first 80% diffusion training steps, we use a standard mask-based corruption process [12, 15]. This process gradually replaces tokens in the original sequence $\\mathbf{x}_{0}$ with a special [MASK] token($\\mathbf{m}$). The corrupted sequence $\\mathbf{x}_{t}$ is sampled from the conditional distribution $q(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ where each token is treated independently:\n\nq_{\\text{mask}}(\\mathbf{x}_{t}|\\mathbf{x}_{0})=\\prod_{i=1}^{|\\mathbf{x}_{0}|}q_{\\text{mask}}(\\mathbf{x}_{t}[i]|\\mathbf{x}_{0}[i])\n\nThe probability of a token remaining unchanged or being masked is determined by a noise schedule $\\gamma_{t}$. For any position $i$, the marginal probability is:\n\nq(\\mathbf{x}_{t}[i]=c|\\mathbf{x}_{0}[i])=\\begin{cases}1-\\gamma_{t}&\\text{if }c=\\mathbf{x}_{0}[i]\\\\ \\gamma_{t}&\\text{if }c=\\mathbf{m}\\end{cases}\n\n$\\gamma_{t}$ refers to the noise schedule function designed to be monotonically increased [16, 21].\n\nEdit-based Forward Process\n\nFor the last 20% diffusion training steps, we add an extra edit-based corruption process as augmentation to improve calibration and eliminate unexpected behavior such as repetitions in the sampling process. Similar to mask-based approaches, we control a designed signal-to-noise ratio based on Levenshtein distance, $d_{\\text{Lev}}(\\mathbf{x}_{a},\\mathbf{x}_{b})$, which measures the minimum number of token-level edits required to change one sequence into another (refer to [16] for more insights). The forward process then samples a corrupted sequence based on a predefined edit operation set (e.g., deletions, insertions, and substitutions) and defines the total edit-operation number as $k_{t}$ to approximately control langevin distance. The $q_{\\text{edit}}(\\mathbf{x}_{t}|\\mathbf{x}_{0})$ is implicitly defined by:\n\n\\displaystyle\\mathbf{z}_{0}=\\mathbf{x}_{0};\\quad\\mathbf{z}_{j}=o_{j}(\\mathbf{z}_{j-1})\\quad\\text{for }j=1,\\dots,k_{t},o\\in\\mathcal{O};\\quad\\mathbf{x}_{t}=\\mathbf{z}_{k_{t}}\n\n$\\mathcal{O}$ is a predefined operations set. Although applying $k_{t}$ edits does not guarantee that the final Levenshtein distance $L(\\mathbf{x}_{0},\\mathbf{x}_{t})$ is exactly $k_{t}$ (e.g., an insertion followed by a deletion can cancel out), it provides a tractable and scalable method to control the corruption level. The target number of edits $k_{t}$ is scheduled as:\n\n\\displaystyle k_{t}=\\lfloor|\\mathbf{x}_{0}|\\cdot(\\alpha_{t})\\rfloor\n\nHere $\\alpha_{t}$ denotes the scheduler for the approximate signal-to-noise ratio. As an auxiliary objective, we make $\\alpha_{t}$ lie in the range $[0,0.1]$ to maintain the density estimation ability of mask-based forward process.\n\nOverall Learning Objective The reverse process is parameterized as $p_{\\theta}(\\mathbf{x}_{s}|\\mathbf{x}_{t})$. We set the predicted probability over the mask token always as 0 [12] by adding $-\\inf$ to the corresponding logits. With this formulation, the mask-based forward process implies an analytical posterior, hence a tractable and simple formulation ELBO:\n\n\\displaystyle L_{\\text{ELBO}}=\\underbrace{-\\log p_{\\theta}\\left(\\mathbf{x}_{0}\\mid\\mathbf{x}_{0}\\right)}_{\\text{Recontruct Loss}}-\\mathbb{E}_{q_{\\text{mask}},t}\\left[\\frac{\\gamma_{t}^{{}^{\\prime}}}{\\gamma_{t}}\\sum_{i=1}^{|\\mathbf{x}_{0}|}\\mathbf{1}\\left[\\mathbf{x}_{t}[i]=\\mathbf{m}\\right]\\log p_{\\theta}\\left(\\mathbf{x}_{0}[i]\\mid\\mathbf{x}_{t}[i]\\right)\\right]\n\nOur learning objective derives from ELBO in Eq. 6 by substituting the reconstruct loss with a denoised loss based on the edit-based forward process $q_{\\text{edit}}$ as:\n\n\\displaystyle L_{\\text{diff}}{(\\theta)}=-\\mathbb{E}_{q_{\\text{edit}},t}\\log p_{\\theta}(\\mathbf{x}_{0}|\\mathbf{x}_{t})-\\mathbb{E}_{q_{\\text{mask}},t}\\left[\\frac{\\gamma_{t}^{{}^{\\prime}}}{\\gamma_{t}}\\sum_{i=1}^{|\\mathbf{x}_{0}|}\\mathbf{1}\\left[\\mathbf{x}_{t}[i]=\\mathbf{m}\\right]\\log p_{\\theta}\\left(\\mathbf{x}_{0}[i]\\mid\\mathbf{x}_{t}[i]\\right)\\right]\n\nRemark 3.1\n\nUnlike some prior work [12, 13], we do not employ the strategy of ”Carry Over Unmasking”, i.e. directly copying unmasked input tokens to the output, despite potential benefits to perplexity. While a purely mask-based diffusion process offers a low-variance training objective (each position is either the ground truth or a [MASK] token), it introduces a detrimental inductive bias. Such a model learns a spurious correlation that unmasked tokens are always correct, leading to overconfidence and unable to perform self-correction during inference. To mitigate this, our edit-based augmentation forces the model to re-evaluate all tokens, including those unmasked."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0005",
+      "title": "3.2 Tailoring the Trajectory Space of Diffusion",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2",
+      "path": [
+        "3 Seed Diffusion",
+        "3.2 Tailoring the Trajectory Space of Diffusion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_85040eabfae0513ee43d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p1.1",
+          "text": "An important perspective to understand the essentials of mask-based diffusion models is its equivalence to any-order autoregressive modeling, which has been revealed and illustrated by [22]. This perspective builds the correlation between ELBO and an expected log-likelihood of any-order autoregressive models as:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 313
+        },
+        {
+          "paragraph_id": "p_4a37f8147d64dab8608c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.E7",
+          "text": "\\mathcal{J}(\\theta)=-\\mathbb{E}_{\\pi\\sim U(\\mathcal{S}_{d})}\\left[\\sum_{r=1}^{d=|\\mathbf{x}|}\\log p_{\\theta}(\\mathbf{x}_{\\pi(r)}\\mid\\mathbf{x}_{\\pi(<r)})\\right]",
+          "kind": "equation",
+          "char_start": 315,
+          "char_end": 475
+        },
+        {
+          "paragraph_id": "p_93af5bf9b92565e07ba2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p3.1",
+          "text": "Here $S_{d}$ stands for the symmetric group of all possible permutations $\\pi$ over $\\{0,1,\\ldots,d-1\\}$. $p_{\\theta}(\\mathbf{x}_{\\pi(r)}\\mid\\mathbf{x}_{\\pi(<r)})$ models the conditional probability of $\\mathbf{x}_{\\pi(r)}$ given all preceding tokens in the permutations $\\pi$ denoted as $\\mathbf{x}_{\\pi(<r)}$. Now recall that with the transition probability $q_{\\text{mask}}(\\mathbf{x}_{t}|\\mathbf{x}_{s}),t>s$ denotes as:",
+          "kind": "text",
+          "char_start": 477,
+          "char_end": 901
+        },
+        {
+          "paragraph_id": "p_9318fa3465a986a71229",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx5",
+          "text": "\\displaystyle q_{\\text{mask}}(\\mathbf{x}_{t}[i]\\mid\\mathbf{x}_{s}[i])=\\begin{cases}\\frac{1-\\gamma_{t}}{1-\\gamma_{s}}&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{x}_{s}[i]\\neq\\mathbf{m}\\\\ \\frac{\\gamma_{t}-\\gamma_{s}}{1-\\gamma_{s}}&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{m}\\text{ and }\\mathbf{x}_{s}[i]\\neq\\mathbf{m}\\\\ 1&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{x}_{s}[i]=\\mathbf{m}\\end{cases}",
+          "kind": "equation",
+          "char_start": 903,
+          "char_end": 1278
+        },
+        {
+          "paragraph_id": "p_aec8da1d7a95c4c433af",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p3.2",
+          "text": "Intuitively, we interpret any trajectory $\\tau$ with $K$ elements $\\tau=\\{\\mathbf{x}_{0}\\rightarrow\\cdots\\rightarrow\\mathbf{x}_{i}\\rightarrow\\mathbf{x}_{K}\\}$ ($\\mathbf{x}_{K}$ are all mask tokens) obtained based on the above transition conditional probability as an order of autoregressive decomposition.",
+          "kind": "text",
+          "char_start": 1280,
+          "char_end": 1585
+        },
+        {
+          "paragraph_id": "p_fc3d13b33e68a3011007",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p4.1",
+          "text": "Mask-based diffusion training presents a more complex learning problem than standard left-to-right autoregressive (AR) training. By design, diffusion models must learn from all possible generation orders, including many that are redundant, detrimental, or misaligned with the natural structure of language [23]. Consequently, diffusion-trained language models lag significantly behind their AR counterparts, even on code data that lacks a strong left-to-right prior. This persistent gap presents a fundamental challenge for the diffusion approach.",
+          "kind": "text",
+          "char_start": 1587,
+          "char_end": 2134
+        },
+        {
+          "paragraph_id": "p_08347f2282b7a1b349f1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p5.1",
+          "text": "We propose a constrained-order diffusion training process after the two-stage diffusion learning. This procedure involves creating a distilled dataset of optimal generation trajectories. Specifically, for any given sample, a candidate pool of trajectories is generated at scale using the pre-trained diffusion model. A selection criterion based on maximizing the Evidence Lower Bound (ELBO) is applied to filter this pool, and the resulting high-quality trajectories are used to fine-tune the model. With the high-quality synthesized trajectories as $\\mathrm{T}$, the constrained-order training takes the form of the following:",
+          "kind": "text",
+          "char_start": 2136,
+          "char_end": 2763
+        },
+        {
+          "paragraph_id": "p_d0984469093e22227031",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx6",
+          "text": "\\displaystyle L_{\\text{c}}(\\theta)=\\mathbb{E}_{\\tau\\sim U(\\mathrm{T}),(\\mathbf{x}_{i},\\mathbf{x}_{0})\\in\\tau}-\\lambda(\\mathbf{x}_{i})\\log p_{\\theta}(\\mathbf{x}_{0}|f(\\mathbf{x}_{i}))",
+          "kind": "equation",
+          "char_start": 2765,
+          "char_end": 2947
+        },
+        {
+          "paragraph_id": "p_7c5ee542bbbd8412ab84",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p5.2",
+          "text": "$\\lambda(\\mathbf{x}_{i})$ is the weight for balancing loss toward different noise levels, and $f$ is an augmentation function similar to $q_{\\text{edit}}$ in Section. 3.1.",
+          "kind": "text",
+          "char_start": 2949,
+          "char_end": 3120
+        }
+      ],
+      "text": "An important perspective to understand the essentials of mask-based diffusion models is its equivalence to any-order autoregressive modeling, which has been revealed and illustrated by [22]. This perspective builds the correlation between ELBO and an expected log-likelihood of any-order autoregressive models as:\n\n\\mathcal{J}(\\theta)=-\\mathbb{E}_{\\pi\\sim U(\\mathcal{S}_{d})}\\left[\\sum_{r=1}^{d=|\\mathbf{x}|}\\log p_{\\theta}(\\mathbf{x}_{\\pi(r)}\\mid\\mathbf{x}_{\\pi(<r)})\\right]\n\nHere $S_{d}$ stands for the symmetric group of all possible permutations $\\pi$ over $\\{0,1,\\ldots,d-1\\}$. $p_{\\theta}(\\mathbf{x}_{\\pi(r)}\\mid\\mathbf{x}_{\\pi(<r)})$ models the conditional probability of $\\mathbf{x}_{\\pi(r)}$ given all preceding tokens in the permutations $\\pi$ denoted as $\\mathbf{x}_{\\pi(<r)}$. Now recall that with the transition probability $q_{\\text{mask}}(\\mathbf{x}_{t}|\\mathbf{x}_{s}),t>s$ denotes as:\n\n\\displaystyle q_{\\text{mask}}(\\mathbf{x}_{t}[i]\\mid\\mathbf{x}_{s}[i])=\\begin{cases}\\frac{1-\\gamma_{t}}{1-\\gamma_{s}}&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{x}_{s}[i]\\neq\\mathbf{m}\\\\ \\frac{\\gamma_{t}-\\gamma_{s}}{1-\\gamma_{s}}&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{m}\\text{ and }\\mathbf{x}_{s}[i]\\neq\\mathbf{m}\\\\ 1&\\text{if }\\mathbf{x}_{t}[i]=\\mathbf{x}_{s}[i]=\\mathbf{m}\\end{cases}\n\nIntuitively, we interpret any trajectory $\\tau$ with $K$ elements $\\tau=\\{\\mathbf{x}_{0}\\rightarrow\\cdots\\rightarrow\\mathbf{x}_{i}\\rightarrow\\mathbf{x}_{K}\\}$ ($\\mathbf{x}_{K}$ are all mask tokens) obtained based on the above transition conditional probability as an order of autoregressive decomposition.\n\nMask-based diffusion training presents a more complex learning problem than standard left-to-right autoregressive (AR) training. By design, diffusion models must learn from all possible generation orders, including many that are redundant, detrimental, or misaligned with the natural structure of language [23]. Consequently, diffusion-trained language models lag significantly behind their AR counterparts, even on code data that lacks a strong left-to-right prior. This persistent gap presents a fundamental challenge for the diffusion approach.\n\nWe propose a constrained-order diffusion training process after the two-stage diffusion learning. This procedure involves creating a distilled dataset of optimal generation trajectories. Specifically, for any given sample, a candidate pool of trajectories is generated at scale using the pre-trained diffusion model. A selection criterion based on maximizing the Evidence Lower Bound (ELBO) is applied to filter this pool, and the resulting high-quality trajectories are used to fine-tune the model. With the high-quality synthesized trajectories as $\\mathrm{T}$, the constrained-order training takes the form of the following:\n\n\\displaystyle L_{\\text{c}}(\\theta)=\\mathbb{E}_{\\tau\\sim U(\\mathrm{T}),(\\mathbf{x}_{i},\\mathbf{x}_{0})\\in\\tau}-\\lambda(\\mathbf{x}_{i})\\log p_{\\theta}(\\mathbf{x}_{0}|f(\\mathbf{x}_{i}))\n\n$\\lambda(\\mathbf{x}_{i})$ is the weight for balancing loss toward different noise levels, and $f$ is an augmentation function similar to $q_{\\text{edit}}$ in Section. 3.1."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0006",
+      "title": "3.3 On-policy Diffusion Learning",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS3",
+      "path": [
+        "3 Seed Diffusion",
+        "3.3 On-policy Diffusion Learning"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_b63202c79f508483b0f2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p1.1",
+          "text": "Although in theory discrete diffusion models should offer the advantage of parallel decoding, in practice realizing this potential is challenging. A single parallel inference step is computationally expensive, meaning a large number of tokens must be generated simultaneously to amortize this overhead in order to achieve actual inference efficiency gains. Reducing the total number of generation steps for better efficiency, however, can result in severe degradation in performance, especially in mask-based approaches [15].",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 525
+        },
+        {
+          "paragraph_id": "p_290034f56c2d19aeeae8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p2.1",
+          "text": "To fully unlock the parallel power, we propose a simple yet effective on-policy learning paradigm: for the reverse process parameterized with $\\theta$, we optimize the objective as:",
+          "kind": "text",
+          "char_start": 527,
+          "char_end": 708
+        },
+        {
+          "paragraph_id": "p_8503aedea96aef8f9af4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx7",
+          "text": "\\displaystyle\\mathbb{E}_{\\begin{subarray}{c}\\text{prompt}\\sim p_{\\text{data}}\\\\ \\tau\\sim p_{\\theta}(\\cdot|\\text{prompt})\\end{subarray}}\\left[|\\tau|-V(\\tau[0])\\right]",
+          "kind": "equation",
+          "char_start": 710,
+          "char_end": 875
+        },
+        {
+          "paragraph_id": "p_751bc92b8bbd488ef63b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p4.1",
+          "text": "Here $\\tau=\\{\\tau[K],\\cdots,\\tau[i],\\cdots,\\tau[0]\\}$ is the sampled trajectory of the reverse process with a strategic sampling strategy, and the model $\\theta$ is conditioned on the given prompts. The trajectory starts from the sequence with all mask tokens, and the final generated samples are $\\tau[0]$. $|\\tau|$ denotes the sample steps and $V(\\cdot)$ represents a model-based verifier that ensures the sampling process always converges to a reasonable/correct sample. The verifier-related term ($V(\\tau[0])$) in Equation. 10 can be optimized with the log-derivative trick [24]. We observed that directly minimizing trajectory length led to unstable training dynamics. Therefore, we optimize a progressive surrogate loss based on the fact that",
+          "kind": "text",
+          "char_start": 877,
+          "char_end": 1625
+        },
+        {
+          "paragraph_id": "p_d2314f055a07839a3f55",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx8",
+          "text": "\\displaystyle|\\tau|\\propto\\mathbb{E}_{i,j\\in\\{0,\\cdots,K\\}}\\frac{1}{d_{\\text{Lev}}(\\tau[i],\\tau[j])}",
+          "kind": "equation",
+          "char_start": 1627,
+          "char_end": 1727
+        },
+        {
+          "paragraph_id": "p_72f5e754009563192ab9",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p5.1",
+          "text": "The speed-up dynamics during on-policy training is illustrated in Figure 2(a). Interestingly, this procedure has an effect analogous to mode filtering, a technique previously explored in the non-autoregressive (NAT) text generation literature [16, 25].",
+          "kind": "text",
+          "char_start": 1729,
+          "char_end": 1981
+        },
+        {
+          "paragraph_id": "p_73bcddb2eca71d46e4c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F2",
+          "text": "Figure 2: On-policy Training Dynamics $\\And$ Block-wise Inference Time",
+          "kind": "caption",
+          "char_start": 1983,
+          "char_end": 2053
+        }
+      ],
+      "text": "Although in theory discrete diffusion models should offer the advantage of parallel decoding, in practice realizing this potential is challenging. A single parallel inference step is computationally expensive, meaning a large number of tokens must be generated simultaneously to amortize this overhead in order to achieve actual inference efficiency gains. Reducing the total number of generation steps for better efficiency, however, can result in severe degradation in performance, especially in mask-based approaches [15].\n\nTo fully unlock the parallel power, we propose a simple yet effective on-policy learning paradigm: for the reverse process parameterized with $\\theta$, we optimize the objective as:\n\n\\displaystyle\\mathbb{E}_{\\begin{subarray}{c}\\text{prompt}\\sim p_{\\text{data}}\\\\ \\tau\\sim p_{\\theta}(\\cdot|\\text{prompt})\\end{subarray}}\\left[|\\tau|-V(\\tau[0])\\right]\n\nHere $\\tau=\\{\\tau[K],\\cdots,\\tau[i],\\cdots,\\tau[0]\\}$ is the sampled trajectory of the reverse process with a strategic sampling strategy, and the model $\\theta$ is conditioned on the given prompts. The trajectory starts from the sequence with all mask tokens, and the final generated samples are $\\tau[0]$. $|\\tau|$ denotes the sample steps and $V(\\cdot)$ represents a model-based verifier that ensures the sampling process always converges to a reasonable/correct sample. The verifier-related term ($V(\\tau[0])$) in Equation. 10 can be optimized with the log-derivative trick [24]. We observed that directly minimizing trajectory length led to unstable training dynamics. Therefore, we optimize a progressive surrogate loss based on the fact that\n\n\\displaystyle|\\tau|\\propto\\mathbb{E}_{i,j\\in\\{0,\\cdots,K\\}}\\frac{1}{d_{\\text{Lev}}(\\tau[i],\\tau[j])}\n\nThe speed-up dynamics during on-policy training is illustrated in Figure 2(a). Interestingly, this procedure has an effect analogous to mode filtering, a technique previously explored in the non-autoregressive (NAT) text generation literature [16, 25].\n\nFigure 2: On-policy Training Dynamics $\\And$ Block-wise Inference Time"
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0007",
+      "title": "3.4 Inference and Infrastructure",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4",
+      "path": [
+        "3 Seed Diffusion",
+        "3.4 Inference and Infrastructure"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0d26729cc0f54fc10797",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p1.1",
+          "text": "To balance computation and latency, we employ a block-level parallel diffusion sampling scheme that maintains a causal ordering between blocks. For generating tokens in the $n$-th block ($B_{n}$), the reverse process is expressed as $p_{\\theta}(\\mathbf{x}_{t}|\\mathbf{x}_{s},\\mathbf{x}^{B_{0},\\cdots,B_{n}})$. Here $\\mathbf{x}^{B_{0},\\cdots,B_{n}}$ denotes the previously generated block of tokens with $\\mathbf{x}^{B_{0}}=\\emptyset$. This semi-autoregressive (semi-AR) process is a well-established technique for balancing generation quality and efficiency [15, 26, 27]. We avoid block-specific training[26, 27] to retain flexibility for arbitrary block partitioning during inference. We use KV-caching for previously generated blocks to condition subsequent ones. Although this risks potentially introducing potential bias, we empirically observe no significant degradation in generation quality. This robustness is probably due to the distillation of constrained-order trajectories as introduced in Section 3.2.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1014
+        },
+        {
+          "paragraph_id": "p_34b27bb87710e365eb86",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p2.1",
+          "text": "Beyond algorithmic design, our work employs holistic system optimization to support block-level inference efficiently. Specifically, we leverage our internal infrastructure framework, featuring specialized optimizations for diffusion sampling, to accelerate generation. The impact on performance across different block sizes is detailed in Figure 2(b). This analysis informs our selection of the optimal block size, determined by the trade-off between the latency of a single forward pass and the corresponding token generation rate.",
+          "kind": "text",
+          "char_start": 1016,
+          "char_end": 1549
+        }
+      ],
+      "text": "To balance computation and latency, we employ a block-level parallel diffusion sampling scheme that maintains a causal ordering between blocks. For generating tokens in the $n$-th block ($B_{n}$), the reverse process is expressed as $p_{\\theta}(\\mathbf{x}_{t}|\\mathbf{x}_{s},\\mathbf{x}^{B_{0},\\cdots,B_{n}})$. Here $\\mathbf{x}^{B_{0},\\cdots,B_{n}}$ denotes the previously generated block of tokens with $\\mathbf{x}^{B_{0}}=\\emptyset$. This semi-autoregressive (semi-AR) process is a well-established technique for balancing generation quality and efficiency [15, 26, 27]. We avoid block-specific training[26, 27] to retain flexibility for arbitrary block partitioning during inference. We use KV-caching for previously generated blocks to condition subsequent ones. Although this risks potentially introducing potential bias, we empirically observe no significant degradation in generation quality. This robustness is probably due to the distillation of constrained-order trajectories as introduced in Section 3.2.\n\nBeyond algorithmic design, our work employs holistic system optimization to support block-level inference efficiently. Specifically, we leverage our internal infrastructure framework, featuring specialized optimizations for diffusion sampling, to accelerate generation. The impact on performance across different block sizes is detailed in Figure 2(b). This analysis informs our selection of the optimal block size, determined by the trade-off between the latency of a single forward pass and the corresponding token generation rate."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0008",
+      "title": "4 Experiments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Experiments"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_deac1da93f77457fe1ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "We benchmark the performance and decoding speed of Seed Diffusion across a range of code-related tasks. Our evaluation protocols and primary baselines are adapted from [20]. To provide a comprehensive comparison, we also include state-of-the-art Diffusion Language Models for experiments: Mercury [1] and Gemini-Diffusion [2].",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 326
+        }
+      ],
+      "text": "We benchmark the performance and decoding speed of Seed Diffusion across a range of code-related tasks. Our evaluation protocols and primary baselines are adapted from [20]. To provide a comprehensive comparison, we also include state-of-the-art Diffusion Language Models for experiments: Mercury [1] and Gemini-Diffusion [2]."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0009",
+      "title": "4.1 Benchmarks",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS1",
+      "path": [
+        "4 Experiments",
+        "4.1 Benchmarks"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d93ebb9bcc7e97dd1e1f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1",
+          "text": "Table 1: Performance on Aider (”whole” format) and CanItEdit.",
+          "kind": "caption",
+          "char_start": 0,
+          "char_end": 61
+        },
+        {
+          "paragraph_id": "p_40f0d313c21f30889bf2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T1.5",
+          "text": "Model | Size | Aider | CanItEdit\n |  | tries=2 | pass@1\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 1.5 | 25.7\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 44.4 | 36.9\nCodeQwen1.5-7B-Chat | 7B | 38.3 | 34.8\nYi-Coder-9B-Chat | 9B | 54.1 | 50.5\nQwen2.5-Coder-14B-Instruct | 14B | 69.2 | 52.9\nStarCoder2-15B-Instruct | 15B | 38.2 | 31.4\nLlama-3.1-8B-Instruct | 8B | 33.1 | 39.5\nOpenCoder-8B-Instruct | 8B | 30.8 | 39.0\nQwen2.5-Coder-7B-Instruct | 7B | 57.9 | 49.5\nQwen3-8B | 8B | 55.6 | 45.7\nSeed-Coder-8B-Instruct | 8B | 57.1 | 50.5\nSeed-Diffusion-Preview(0705) | - | 44.4 | 54.3\n15B+ Models\nCodestral-22B | 22B | 51.1 | 52.4\nCodeLlama-70B-Instruct | 70B | 15.0 | 40.5\nDeepSeek-Coder-33B-Instruct | 33B | 54.5 | 46.2\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 52.6 | 45.2",
+          "kind": "table",
+          "char_start": 63,
+          "char_end": 829
+        },
+        {
+          "paragraph_id": "p_7b28119d267c11a46b7f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2",
+          "text": "Table 2: Performance on MBXP.",
+          "kind": "caption",
+          "char_start": 831,
+          "char_end": 860
+        },
+        {
+          "paragraph_id": "p_9a878ff85cac4e5dab3b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T2.5.1.1.1.1.1.1",
+          "text": "Model | Size | Python | Java | C++ | C# | TS | JS | PHP | Go | Kotlin | Perl | Ruby | Scala | Swift | Average\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 54.0 | 38.8 | 32.9 | 50.0 | 42.3 | 45.5 | 36.6 | 48.8 | 47.2 | 50.1 | 36.9 | 40.2 | 33.2 | 42.8\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 74.9 | 52.2 | 30.9 | 55.9 | 64.8 | 64.7 | 25.8 | 93.8 | 59.6 | 3.3 | 65.9 | 54.8 | 47.4 | 53.4\nCodeQwen1.5-7B-Chat | 7B | 77.7 | 66.6 | 66.8 | 64.4 | 66.7 | 67.5 | 67.3 | 55.1 | 60.9 | 61.1 | 65.9 | 60.0 | 54.7 | 64.2\nYi-Coder-9B-Chat | 9B | 82.0 | 73.4 | 79.1 | 70.3 | 74.1 | 73.3 | 76.4 | 90.9 | 64.4 | 60.9 | 67.3 | 63.5 | 57.3 | 71.8\nQwen2.5-Coder-14B-Instruct | 14B | 86.2 | 77.5 | 84.8 | 80.1 | 77.6 | 77.7 | 79.7 | 97.1 | 75.3 | 76.2 | 79.3 | 73.1 | 67.2 | 79.4\nStarCoder2-15B-Instruct | 15B | 78.0 | 25.1 | 25.9 | 21.7 | 20.7 | 59.8 | 53.5 | 90.4 | 46.7 | 31.9 | 56.1 | 43.2 | 42.0 | 45.8\nLlama-3.1-8B-Instruct | 8B | 70.1 | 59.8 | 59.1 | 56.6 | 59.1 | 59.1 | 62.5 | 85.7 | 52.2 | 42.6 | 55.9 | 44.5 | 31.8 | 56.8\nOpenCoder-8B-Instruct | 8B | 79.1 | 68.1 | 71.3 | 71.0 | 67.6 | 61.4 | 68.1 | 94.4 | 66.4 | 56.1 | 70.5 | 63.1 | 56.7 | 68.8\nQwen2.5-Coder-7B-Instruct | 7B | 83.5 | 70.5 | 74.1 | 71.5 | 72.2 | 74.1 | 74.2 | 96.0 | 65.5 | 64.4 | 75.5 | 64.2 | 62.0 | 72.9\nQwen3-8B | 8B | 77.0 | 69.0 | 72.8 | 68.9 | 73.0 | 73.8 | 72.3 | 92.9 | 62.0 | 64.6 | 69.0 | 63.1 | 42.2 | 69.3\nSeed-Coder-8B-Instruct | 8B | 85.2 | 72.7 | 77.0 | 74.2 | 72.8 | 78.8 | 74.7 | 95.5 | 73.4 | 72.5 | 78.0 | 70.3 | 54.2 | 75.3\nSeed-Diffusion-Preview(0705) | - | 79.4 | 67.7 | 72.6 | 70.3 | 73.0 | 76.6 | 74.7 | 92.9 | 71.2 | 71.2 | 72.5 | 67.0 | 54.2 | 72.6\n15B+ Models\nCodestral-22B | 22B | 78.2 | 73.6 | 77.3 | 70.1 | 71.7 | 68.5 | 74.9 | 97.1 | 71.0 | 66.6 | 74.2 | 64.4 | 50.1 | 72.1\nCodeLlama-70B-Instruct | 70B | 77.8 | 66.6 | 68.6 | 69.2 | 47.8 | 62.5 | 70.5 | 77.7 | 57.2 | 51.1 | 67.0 | 51.3 | 48.7 | 62.8\nDeepSeek-Coder-33B-Instruct | 33B | 80.4 | 71.8 | 76.8 | 69.9 | 72.4 | 69.8 | 75.1 | 96.4 | 70.1 | 66.6 | 75.1 | 64.6 | 54.3 | 72.6\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 82.8 | 73.3 | 75.3 | 72.4 | 72.4 | 73.1 | 75.1 | 95.1 | 69.9 | 61.6 | 74.5 | 63.5 | 55.0 | 72.6\nDeepSeek-Coder-V2-Instruct | 21B/236B | 89.4 | 78.2 | 77.6 | 72.6 | 74.8 | 80.5 | 75.8 | 89.1 | 74.5 | 70.7 | 80.2 | 67.9 | 59.0 | 76.2\nQwen2.5-Coder-32B-Instruct | 32B | 90.2 | 80.4 | 86.3 | 73.5 | 78.3 | 79.3 | 87.6 | 96.4 | 75.6 | 74.7 | 83.4 | 63.3 | 66.7 | 79.7",
+          "kind": "table",
+          "char_start": 862,
+          "char_end": 3293
+        },
+        {
+          "paragraph_id": "p_8e8d1ce989aa54031e2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p1.1",
+          "text": "To provide a rigorous assessment of Seed Diffusion Preview, we evaluate its performance across a diverse suite of code generation benchmarks:",
+          "kind": "text",
+          "char_start": 3295,
+          "char_end": 3436
+        },
+        {
+          "paragraph_id": "p_69e677268c63da52f9d3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p2.1",
+          "text": "HumanEval and MBPP We present HumanEval and MBPP results for the evaluation of basic coding ability.",
+          "kind": "text",
+          "char_start": 3438,
+          "char_end": 3538
+        },
+        {
+          "paragraph_id": "p_ff8a02254b1ff6b58e8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p3.1",
+          "text": "BigCodeBench BigCodeBench [28] is a recent benchmark that assesses LLMs on real-world programming tasks involving multi-tool use. It features 1,140 Python tasks from 7 domains, requiring models to utilize 139 different libraries. The benchmark emphasizes compositional reasoning and is evaluated with notable rigor, using an average of 5.6 test cases and 99% branch coverage per task.",
+          "kind": "text",
+          "char_start": 3540,
+          "char_end": 3924
+        },
+        {
+          "paragraph_id": "p_8094e9a07d97acfcf898",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p4.1",
+          "text": "LiveCodeBench For Competitive Coding tasks, we utilize LiveCodeBench [29], which continuously curates new problems from prominent competitive programming platforms including LeetCode, AtCoder and CodeForces. Crucially, it also time-stamps each problem with its release date. This temporal tagging enables the creation of contamination-free evaluation slices, ensuring models are assessed only on problems published after their training data cutoff. We provide the evaluation of all stage ”v1-v6” and the most recent stage ”v6” (250201-250501).",
+          "kind": "text",
+          "char_start": 3926,
+          "char_end": 4469
+        },
+        {
+          "paragraph_id": "p_15b6bc1d85d30647308c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p5.1",
+          "text": "MBXP The MBXP benchmark [30] was designed for multilingual code evaluation. It adapts the problems and unit tests from the original, Python-centric MBPP benchmark for usage across more than ten programming languages.",
+          "kind": "text",
+          "char_start": 4471,
+          "char_end": 4687
+        },
+        {
+          "paragraph_id": "p_43fb28b1b0401b1087fd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T3",
+          "text": "Table 3: Performance on NaturalCodeBench.",
+          "kind": "caption",
+          "char_start": 4689,
+          "char_end": 4730
+        },
+        {
+          "paragraph_id": "p_38b04ba2d09673a119e5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.T3.5",
+          "text": "Model | Size | NCB (zh) |  |  | NCB (en) |  |  | Total\n |  | Python | Java | Total | Python | Java | Total\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 18.6 | 8.6 | 13.6 | 17.1 | 14.3 | 15.7 | 14.6\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 38.6 | 31.4 | 35.0 | 32.9 | 32.9 | 32.9 | 33.9\nYi-Coder-9B-Chat | 9B | 41.4 | 45.7 | 43.6 | 38.6 | 44.3 | 41.5 | 42.5\nQwen2.5-Coder-14B-Instruct | 14B | 48.6 | 48.6 | 48.6 | 42.9 | 45.7 | 44.3 | 46.4\nStarCoder2-15B-Instruct | 15B | 44.3 | 30.0 | 37.2 | 38.6 | 42.9 | 40.8 | 39.0\nLlama-3.1-8B-Instruct | 8B | 27.1 | 24.3 | 25.7 | 22.9 | 22.9 | 22.9 | 24.3\nOpenCoder-8B-Instruct | 8B | 40.0 | 30.0 | 35.0 | 35.7 | 24.3 | 30.0 | 32.5\nQwen2.5-Coder-7B-Instruct | 7B | 34.3 | 37.1 | 35.7 | 34.3 | 35.7 | 35.0 | 35.4\nQwen3-8B | 8B | 37.1 | 32.9 | 35.0 | 34.3 | 38.6 | 36.5 | 35.7\nSeed-Coder-8B-Instruct | 8B | 55.7 | 45.7 | 50.7 | 50.0 | 47.1 | 48.6 | 49.6\nSeed-Diffusion-Preview(0705) | - | 52.9 | 38.6 | 45.8 | 45.7 | 38.6 | 38.6 | 42.2\n15B Models\nCodestral-22B | 22B | 40.0 | 44.3 | 42.2 | 41.4 | 45.7 | 43.6 | 42.9\nCodeLlama-70B-Instruct | 70B | 35.1 | 32.1 | 33.6 | 32.8 | 30.5 | 31.7 | 32.6\nDeepSeek-Coder-33B-Instruct | 33B | 44.3 | 38.9 | 41.6 | 44.3 | 44.3 | 44.3 | 43.0\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 41.4 | 47.1 | 44.3 | 41.4 | 37.1 | 39.3 | 41.8",
+          "kind": "table",
+          "char_start": 4732,
+          "char_end": 6034
+        },
+        {
+          "paragraph_id": "p_5fd40429cd48c75074a3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p6.1",
+          "text": "NaturalCodeBench NaturalCodeBench (NCB) [31] was developed to provide a more realistic evaluation environment through a curated set of 402 problems in Python and Java, derived from genuine user queries. Its problems span across six key domains and employ complex test inputs, including varied file types and data structures.",
+          "kind": "text",
+          "char_start": 6036,
+          "char_end": 6360
+        },
+        {
+          "paragraph_id": "p_e5e49ee48943ad641965",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p7.1",
+          "text": "Aider and CanItEdit To assess code-editing capabilities, we use the Aider and CanItEdit benchmark. Aider features 133 coding exercises from Exercism, where a model must edit existing code. The primary challenge is that the model’s modifications must be formatted for automated application without any human intervention. Meanwhile, the CanItEdit benchmark [32] provides a rigorous evaluation of a model’s instructional code-editing capabilities. It comprises 105 hand-crafted problems with a mix of ”descriptive” (explicit) and ”lazy” (ambiguous) instructions.",
+          "kind": "text",
+          "char_start": 6362,
+          "char_end": 6922
+        },
+        {
+          "paragraph_id": "p_0a2be6e00701db9d41fd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS1.p7.1",
+          "text": "Footnote: 1 1 https://aider.chat/docs/leaderboards/edit.html",
+          "kind": "footnote",
+          "char_start": 6924,
+          "char_end": 6984
+        }
+      ],
+      "text": "Table 1: Performance on Aider (”whole” format) and CanItEdit.\n\nModel | Size | Aider | CanItEdit\n |  | tries=2 | pass@1\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 1.5 | 25.7\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 44.4 | 36.9\nCodeQwen1.5-7B-Chat | 7B | 38.3 | 34.8\nYi-Coder-9B-Chat | 9B | 54.1 | 50.5\nQwen2.5-Coder-14B-Instruct | 14B | 69.2 | 52.9\nStarCoder2-15B-Instruct | 15B | 38.2 | 31.4\nLlama-3.1-8B-Instruct | 8B | 33.1 | 39.5\nOpenCoder-8B-Instruct | 8B | 30.8 | 39.0\nQwen2.5-Coder-7B-Instruct | 7B | 57.9 | 49.5\nQwen3-8B | 8B | 55.6 | 45.7\nSeed-Coder-8B-Instruct | 8B | 57.1 | 50.5\nSeed-Diffusion-Preview(0705) | - | 44.4 | 54.3\n15B+ Models\nCodestral-22B | 22B | 51.1 | 52.4\nCodeLlama-70B-Instruct | 70B | 15.0 | 40.5\nDeepSeek-Coder-33B-Instruct | 33B | 54.5 | 46.2\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 52.6 | 45.2\n\nTable 2: Performance on MBXP.\n\nModel | Size | Python | Java | C++ | C# | TS | JS | PHP | Go | Kotlin | Perl | Ruby | Scala | Swift | Average\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 54.0 | 38.8 | 32.9 | 50.0 | 42.3 | 45.5 | 36.6 | 48.8 | 47.2 | 50.1 | 36.9 | 40.2 | 33.2 | 42.8\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 74.9 | 52.2 | 30.9 | 55.9 | 64.8 | 64.7 | 25.8 | 93.8 | 59.6 | 3.3 | 65.9 | 54.8 | 47.4 | 53.4\nCodeQwen1.5-7B-Chat | 7B | 77.7 | 66.6 | 66.8 | 64.4 | 66.7 | 67.5 | 67.3 | 55.1 | 60.9 | 61.1 | 65.9 | 60.0 | 54.7 | 64.2\nYi-Coder-9B-Chat | 9B | 82.0 | 73.4 | 79.1 | 70.3 | 74.1 | 73.3 | 76.4 | 90.9 | 64.4 | 60.9 | 67.3 | 63.5 | 57.3 | 71.8\nQwen2.5-Coder-14B-Instruct | 14B | 86.2 | 77.5 | 84.8 | 80.1 | 77.6 | 77.7 | 79.7 | 97.1 | 75.3 | 76.2 | 79.3 | 73.1 | 67.2 | 79.4\nStarCoder2-15B-Instruct | 15B | 78.0 | 25.1 | 25.9 | 21.7 | 20.7 | 59.8 | 53.5 | 90.4 | 46.7 | 31.9 | 56.1 | 43.2 | 42.0 | 45.8\nLlama-3.1-8B-Instruct | 8B | 70.1 | 59.8 | 59.1 | 56.6 | 59.1 | 59.1 | 62.5 | 85.7 | 52.2 | 42.6 | 55.9 | 44.5 | 31.8 | 56.8\nOpenCoder-8B-Instruct | 8B | 79.1 | 68.1 | 71.3 | 71.0 | 67.6 | 61.4 | 68.1 | 94.4 | 66.4 | 56.1 | 70.5 | 63.1 | 56.7 | 68.8\nQwen2.5-Coder-7B-Instruct | 7B | 83.5 | 70.5 | 74.1 | 71.5 | 72.2 | 74.1 | 74.2 | 96.0 | 65.5 | 64.4 | 75.5 | 64.2 | 62.0 | 72.9\nQwen3-8B | 8B | 77.0 | 69.0 | 72.8 | 68.9 | 73.0 | 73.8 | 72.3 | 92.9 | 62.0 | 64.6 | 69.0 | 63.1 | 42.2 | 69.3\nSeed-Coder-8B-Instruct | 8B | 85.2 | 72.7 | 77.0 | 74.2 | 72.8 | 78.8 | 74.7 | 95.5 | 73.4 | 72.5 | 78.0 | 70.3 | 54.2 | 75.3\nSeed-Diffusion-Preview(0705) | - | 79.4 | 67.7 | 72.6 | 70.3 | 73.0 | 76.6 | 74.7 | 92.9 | 71.2 | 71.2 | 72.5 | 67.0 | 54.2 | 72.6\n15B+ Models\nCodestral-22B | 22B | 78.2 | 73.6 | 77.3 | 70.1 | 71.7 | 68.5 | 74.9 | 97.1 | 71.0 | 66.6 | 74.2 | 64.4 | 50.1 | 72.1\nCodeLlama-70B-Instruct | 70B | 77.8 | 66.6 | 68.6 | 69.2 | 47.8 | 62.5 | 70.5 | 77.7 | 57.2 | 51.1 | 67.0 | 51.3 | 48.7 | 62.8\nDeepSeek-Coder-33B-Instruct | 33B | 80.4 | 71.8 | 76.8 | 69.9 | 72.4 | 69.8 | 75.1 | 96.4 | 70.1 | 66.6 | 75.1 | 64.6 | 54.3 | 72.6\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 82.8 | 73.3 | 75.3 | 72.4 | 72.4 | 73.1 | 75.1 | 95.1 | 69.9 | 61.6 | 74.5 | 63.5 | 55.0 | 72.6\nDeepSeek-Coder-V2-Instruct | 21B/236B | 89.4 | 78.2 | 77.6 | 72.6 | 74.8 | 80.5 | 75.8 | 89.1 | 74.5 | 70.7 | 80.2 | 67.9 | 59.0 | 76.2\nQwen2.5-Coder-32B-Instruct | 32B | 90.2 | 80.4 | 86.3 | 73.5 | 78.3 | 79.3 | 87.6 | 96.4 | 75.6 | 74.7 | 83.4 | 63.3 | 66.7 | 79.7\n\nTo provide a rigorous assessment of Seed Diffusion Preview, we evaluate its performance across a diverse suite of code generation benchmarks:\n\nHumanEval and MBPP We present HumanEval and MBPP results for the evaluation of basic coding ability.\n\nBigCodeBench BigCodeBench [28] is a recent benchmark that assesses LLMs on real-world programming tasks involving multi-tool use. It features 1,140 Python tasks from 7 domains, requiring models to utilize 139 different libraries. The benchmark emphasizes compositional reasoning and is evaluated with notable rigor, using an average of 5.6 test cases and 99% branch coverage per task.\n\nLiveCodeBench For Competitive Coding tasks, we utilize LiveCodeBench [29], which continuously curates new problems from prominent competitive programming platforms including LeetCode, AtCoder and CodeForces. Crucially, it also time-stamps each problem with its release date. This temporal tagging enables the creation of contamination-free evaluation slices, ensuring models are assessed only on problems published after their training data cutoff. We provide the evaluation of all stage ”v1-v6” and the most recent stage ”v6” (250201-250501).\n\nMBXP The MBXP benchmark [30] was designed for multilingual code evaluation. It adapts the problems and unit tests from the original, Python-centric MBPP benchmark for usage across more than ten programming languages.\n\nTable 3: Performance on NaturalCodeBench.\n\nModel | Size | NCB (zh) |  |  | NCB (en) |  |  | Total\n |  | Python | Java | Total | Python | Java | Total\n$\\leq$15B Models\nCodeLlama-7B-Instruct | 7B | 18.6 | 8.6 | 13.6 | 17.1 | 14.3 | 15.7 | 14.6\nDeepSeek-Coder-6.7B-Instruct | 6.7B | 38.6 | 31.4 | 35.0 | 32.9 | 32.9 | 32.9 | 33.9\nYi-Coder-9B-Chat | 9B | 41.4 | 45.7 | 43.6 | 38.6 | 44.3 | 41.5 | 42.5\nQwen2.5-Coder-14B-Instruct | 14B | 48.6 | 48.6 | 48.6 | 42.9 | 45.7 | 44.3 | 46.4\nStarCoder2-15B-Instruct | 15B | 44.3 | 30.0 | 37.2 | 38.6 | 42.9 | 40.8 | 39.0\nLlama-3.1-8B-Instruct | 8B | 27.1 | 24.3 | 25.7 | 22.9 | 22.9 | 22.9 | 24.3\nOpenCoder-8B-Instruct | 8B | 40.0 | 30.0 | 35.0 | 35.7 | 24.3 | 30.0 | 32.5\nQwen2.5-Coder-7B-Instruct | 7B | 34.3 | 37.1 | 35.7 | 34.3 | 35.7 | 35.0 | 35.4\nQwen3-8B | 8B | 37.1 | 32.9 | 35.0 | 34.3 | 38.6 | 36.5 | 35.7\nSeed-Coder-8B-Instruct | 8B | 55.7 | 45.7 | 50.7 | 50.0 | 47.1 | 48.6 | 49.6\nSeed-Diffusion-Preview(0705) | - | 52.9 | 38.6 | 45.8 | 45.7 | 38.6 | 38.6 | 42.2\n15B Models\nCodestral-22B | 22B | 40.0 | 44.3 | 42.2 | 41.4 | 45.7 | 43.6 | 42.9\nCodeLlama-70B-Instruct | 70B | 35.1 | 32.1 | 33.6 | 32.8 | 30.5 | 31.7 | 32.6\nDeepSeek-Coder-33B-Instruct | 33B | 44.3 | 38.9 | 41.6 | 44.3 | 44.3 | 44.3 | 43.0\nDeepSeek-Coder-V2-Lite-Instruct | 2.4B/16B | 41.4 | 47.1 | 44.3 | 41.4 | 37.1 | 39.3 | 41.8\n\nNaturalCodeBench NaturalCodeBench (NCB) [31] was developed to provide a more realistic evaluation environment through a curated set of 402 problems in Python and Java, derived from genuine user queries. Its problems span across six key domains and employ complex test inputs, including varied file types and data structures.\n\nAider and CanItEdit To assess code-editing capabilities, we use the Aider and CanItEdit benchmark. Aider features 133 coding exercises from Exercism, where a model must edit existing code. The primary challenge is that the model’s modifications must be formatted for automated application without any human intervention. Meanwhile, the CanItEdit benchmark [32] provides a rigorous evaluation of a model’s instructional code-editing capabilities. It comprises 105 hand-crafted problems with a mix of ”descriptive” (explicit) and ”lazy” (ambiguous) instructions.\n\nFootnote: 1 1 https://aider.chat/docs/leaderboards/edit.html"
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0010",
+      "title": "4.2 Performance",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4.SS2",
+      "path": [
+        "4 Experiments",
+        "4.2 Performance"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d13ea18621a19d427986",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS2.p1.1",
+          "text": "Seed-Diffusion-Preview has demonstrated huge potential of diffusion for code generation. As shown in Tables 1, 2, 3 and Fig. 1, our model not only achieves performance comparable to advanced autoregressive models while operating at significantly higher speeds, but also delivers a notable boost on editing tasks. These results mark discrete diffusion as a promising direction for future exploration.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 399
+        }
+      ],
+      "text": "Seed-Diffusion-Preview has demonstrated huge potential of diffusion for code generation. As shown in Tables 1, 2, 3 and Fig. 1, our model not only achieves performance comparable to advanced autoregressive models while operating at significantly higher speeds, but also delivers a notable boost on editing tasks. These results mark discrete diffusion as a promising direction for future exploration."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0011",
+      "title": "5 Discussion",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Discussion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_80c9d96dcc273efa2aef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "This work presents the key technical components of an experimental model from our Seed Diffusion project, demonstrating its potential for significant inference acceleration in large-scale language models. We posit that faster inference is merely the most immediate benefit of discrete diffusion. Exploring alternatives to the conventional left-to-right modeling order represents a valuable research direction, as it involves moving away from a pervasive, human-centric assumption in machine learning. Unlocking the full capabilities of discrete diffusion will require significant efforts from the community, particularly in exploring its scaling properties and its applications to complex reasoning tasks.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 705
+        }
+      ],
+      "text": "This work presents the key technical components of an experimental model from our Seed Diffusion project, demonstrating its potential for significant inference acceleration in large-scale language models. We posit that faster inference is merely the most immediate benefit of discrete diffusion. Exploring alternatives to the conventional left-to-right modeling order represents a valuable research direction, as it involves moving away from a pervasive, human-centric assumption in machine learning. Unlocking the full capabilities of discrete diffusion will require significant efforts from the community, particularly in exploring its scaling properties and its applications to complex reasoning tasks."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0012",
+      "title": "Contributions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx1",
+      "path": [
+        "Contributions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_096c211d82d4f179c321",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p1.1",
+          "text": "Project Lead",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 12
+        },
+        {
+          "paragraph_id": "p_c80dbc10e3901e5c710e",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p2.1",
+          "text": "Yuxuan Song1,2,3, Zheng Zhang1,3",
+          "kind": "text",
+          "char_start": 14,
+          "char_end": 46
+        },
+        {
+          "paragraph_id": "p_1ac1f056124664ef6724",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p3.1",
+          "text": "(Alphabetical Order)",
+          "kind": "text",
+          "char_start": 48,
+          "char_end": 68
+        },
+        {
+          "paragraph_id": "p_37d437a716162e2f468e",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p4.1",
+          "text": "Core Contributor",
+          "kind": "text",
+          "char_start": 70,
+          "char_end": 86
+        },
+        {
+          "paragraph_id": "p_e136957c5b8789dcb199",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p5.1",
+          "text": "Yuxuan Song1,2,3, Zheng Zhang1,3, Cheng Luo1",
+          "kind": "text",
+          "char_start": 88,
+          "char_end": 132
+        },
+        {
+          "paragraph_id": "p_0e01f86f67070fadaf61",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p6.1",
+          "text": "Contributor",
+          "kind": "text",
+          "char_start": 134,
+          "char_end": 145
+        },
+        {
+          "paragraph_id": "p_8d8dcb67946eb2adacb1",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p7.1",
+          "text": "Pengyang Gao1, Fan Xia1, Hao Luo1, Zheng Li1, Yuehang Yang1, Hongli Yu1,2,3, Xingwei Qu1, Yuwei Fu1, Jing Su1, Ge Zhang1, Wenhao Huang1",
+          "kind": "text",
+          "char_start": 147,
+          "char_end": 282
+        },
+        {
+          "paragraph_id": "p_33cda976166ea302605c",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p8.1",
+          "text": "Supervision",
+          "kind": "text",
+          "char_start": 284,
+          "char_end": 295
+        },
+        {
+          "paragraph_id": "p_a5cf13a74546d82177e7",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p9.1",
+          "text": "Mingxuan Wang1,3, Lin Yan1, Xiaoying Jia1, Jingjing Liu2,3, Wei-Ying Ma2,3, Ya-Qin Zhang2,3, Yonghui Wu1, Hao Zhou2,3",
+          "kind": "text",
+          "char_start": 297,
+          "char_end": 414
+        },
+        {
+          "paragraph_id": "p_f7d2aeca6475ab25b4e0",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p10.1",
+          "text": "Affiliation",
+          "kind": "text",
+          "char_start": 416,
+          "char_end": 427
+        },
+        {
+          "paragraph_id": "p_39937cbdbf7e8a5e1972",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p11.1",
+          "text": "1ByteDance Seed",
+          "kind": "text",
+          "char_start": 429,
+          "char_end": 444
+        },
+        {
+          "paragraph_id": "p_4b75e5ee0d7825c5bb16",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p12.1",
+          "text": "2Institute for AI Industry Research (AIR), Tsinghua University",
+          "kind": "text",
+          "char_start": 446,
+          "char_end": 508
+        },
+        {
+          "paragraph_id": "p_145eb8f76c84da9c29b0",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p13.1",
+          "text": "3SIA-Lab of Tsinghua AIR and ByteDance Seed",
+          "kind": "text",
+          "char_start": 510,
+          "char_end": 553
+        }
+      ],
+      "text": "Project Lead\n\nYuxuan Song1,2,3, Zheng Zhang1,3\n\n(Alphabetical Order)\n\nCore Contributor\n\nYuxuan Song1,2,3, Zheng Zhang1,3, Cheng Luo1\n\nContributor\n\nPengyang Gao1, Fan Xia1, Hao Luo1, Zheng Li1, Yuehang Yang1, Hongli Yu1,2,3, Xingwei Qu1, Yuwei Fu1, Jing Su1, Ge Zhang1, Wenhao Huang1\n\nSupervision\n\nMingxuan Wang1,3, Lin Yan1, Xiaoying Jia1, Jingjing Liu2,3, Wei-Ying Ma2,3, Ya-Qin Zhang2,3, Yonghui Wu1, Hao Zhou2,3\n\nAffiliation\n\n1ByteDance Seed\n\n2Institute for AI Industry Research (AIR), Tsinghua University\n\n3SIA-Lab of Tsinghua AIR and ByteDance Seed"
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0013",
+      "title": "Acknowledgments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx2",
+      "path": [
+        "Acknowledgments"
+      ],
+      "kind": "acknowledgments",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_73fb657800d46c9ca639",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p1.1",
+          "text": "We thank the Seed-Coder team for their help with the data pipelines and our many colleagues at ByteDance for their support of the Seed Diffusion project.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 153
+        }
+      ],
+      "text": "We thank the Seed-Coder team for their help with the data pipelines and our many colleagues at ByteDance for their support of the Seed Diffusion project."
+    },
+    {
+      "section_id": "arxiv_2508.02193_v1_s0014",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c215426798a6b9723ab8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "[1] Samar Khanna, Siddhant Kharbanda, Shufan Li, Harshit Varma, Eric Wang, Sawyer Birnbaum, Ziyang Luo, Yanis Miraoui, Akash Palrecha, Stefano Ermon, et al. Mercury: Ultra-fast language models based on diffusion. arXiv e-prints, pages arXiv–2506, 2025.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 252
+        },
+        {
+          "paragraph_id": "p_916f14d3400e83dc29d1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "[2] Google DeepMind. https://blog.google/technology/google-deepmind/gemini-diffusion/. https://blog.google/technology/google-deepmind/gemini-diffusion/, 2025. Accessed: 2024-07-24.",
+          "kind": "list_item",
+          "char_start": 254,
+          "char_end": 434
+        },
+        {
+          "paragraph_id": "p_2ac8d178e4c25ddde447",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "[3] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. arXiv preprint arXiv:2006.11239, 2020.",
+          "kind": "list_item",
+          "char_start": 436,
+          "char_end": 563
+        },
+        {
+          "paragraph_id": "p_f70a61c760dea9859f4c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "[4] Yang Song and Stefano Ermon. Generative modeling by estimating gradients of the data distribution. In Advances in Neural Information Processing Systems, pages 11918–11930, 2019.",
+          "kind": "list_item",
+          "char_start": 565,
+          "char_end": 746
+        },
+        {
+          "paragraph_id": "p_1dfd26fdd1cbc582dc45",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "[5] Jascha Sohl-Dickstein, Eric A Weiss, Niru Maheswaranathan, and Surya Ganguli. Deep unsupervised learning using nonequilibrium thermodynamics. arXiv preprint arXiv:1503.03585, 2015.",
+          "kind": "list_item",
+          "char_start": 748,
+          "char_end": 932
+        },
+        {
+          "paragraph_id": "p_e0b33527c49ad4277af5",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "[6] Jonathan Ho, Tim Salimans, Alexey Gritsenko, William Chan, Mohammad Norouzi, and David J Fleet. Video diffusion models. Advances in neural information processing systems, 35:8633–8646, 2022.",
+          "kind": "list_item",
+          "char_start": 934,
+          "char_end": 1128
+        },
+        {
+          "paragraph_id": "p_219f457fc935c23b4acf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "[7] Mihaly Varadi, Damian Bertoni, Paulyna Magana, Urmila Paramval, Ivanna Pidruchna, Malarvizhi Radhakrishnan, Maxim Tsenkov, Sreenath Nair, Milot Mirdita, Jingi Yeo, et al. Alphafold protein structure database in 2024: providing structure coverage for over 214 million protein sequences. Nucleic acids research, 52(D1):D368–D375, 2024.",
+          "kind": "list_item",
+          "char_start": 1130,
+          "char_end": 1467
+        },
+        {
+          "paragraph_id": "p_4bfdc1b4bc5f564c9651",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "[8] Alex Graves, Rupesh Kumar Srivastava, Timothy Atkinson, and Faustino Gomez. Bayesian flow networks. arXiv preprint arXiv:2308.07037, 2023.",
+          "kind": "list_item",
+          "char_start": 1469,
+          "char_end": 1611
+        },
+        {
+          "paragraph_id": "p_03d9d46ebb5125f2ae19",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "[9] Sander Dieleman, Laurent Sartran, Arman Roshannai, Nikolay Savinov, Yaroslav Ganin, Pierre H Richemond, Arnaud Doucet, Robin Strudel, Chris Dyer, Conor Durkan, et al. Continuous diffusion for categorical data. arXiv preprint arXiv:2211.15089, 2022.",
+          "kind": "list_item",
+          "char_start": 1613,
+          "char_end": 1865
+        },
+        {
+          "paragraph_id": "p_a25cc62d868fb6699980",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "[10] Ishaan Gulrajani and Tatsunori B Hashimoto. Likelihood-based diffusion language models. Advances in Neural Information Processing Systems, 36, 2024.",
+          "kind": "list_item",
+          "char_start": 1867,
+          "char_end": 2020
+        },
+        {
+          "paragraph_id": "p_9b143d47bbe1cb707009",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "[11] Jacob Austin, Daniel D Johnson, Jonathan Ho, Daniel Tarlow, and Rianne Van Den Berg. Structured denoising diffusion models in discrete state-spaces. Advances in Neural Information Processing Systems, 34:17981–17993, 2021.",
+          "kind": "list_item",
+          "char_start": 2022,
+          "char_end": 2248
+        },
+        {
+          "paragraph_id": "p_9f3351bc1a3860ad61d9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "[12] Subham Sekhar Sahoo, Marianne Arriola, Yair Schiff, Aaron Gokaslan, Edgar Marroquin, Justin T Chiu, Alexander Rush, and Volodymyr Kuleshov. Simple and effective masked diffusion language models. arXiv preprint arXiv:2406.07524, 2024.",
+          "kind": "list_item",
+          "char_start": 2250,
+          "char_end": 2488
+        },
+        {
+          "paragraph_id": "p_150ea56cf8cbd9a287b1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "[13] Jiaxin Shi, Kehang Han, Zhe Wang, Arnaud Doucet, and Michalis K Titsias. Simplified and generalized masked diffusion for discrete data. arXiv preprint arXiv:2406.04329, 2024.",
+          "kind": "list_item",
+          "char_start": 2490,
+          "char_end": 2669
+        },
+        {
+          "paragraph_id": "p_3f73b186d617af867b11",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "[14] Jingyang Ou, Shen Nie, Kaiwen Xue, Fengqi Zhu, Jiacheng Sun, Zhenguo Li, and Chongxuan Li. Your absorbing discrete diffusion secretly models the conditional distributions of clean data. arXiv preprint arXiv:2406.03736, 2024.",
+          "kind": "list_item",
+          "char_start": 2671,
+          "char_end": 2900
+        },
+        {
+          "paragraph_id": "p_4b5943040d82d09a768c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "[15] Shen Nie, Fengqi Zhu, Zebin You, Xiaolu Zhang, Jingyang Ou, Jun Hu, Jun Zhou, Yankai Lin, Ji-Rong Wen, and Chongxuan Li. Large language diffusion models. arXiv preprint arXiv:2502.09992, 2025.",
+          "kind": "list_item",
+          "char_start": 2902,
+          "char_end": 3099
+        },
+        {
+          "paragraph_id": "p_a0647f3e3e9ab978cafb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "[16] Lihua Qian, Hao Zhou, Yu Bao, Mingxuan Wang, Lin Qiu, Weinan Zhang, Yong Yu, and Lei Li. Glancing transformer for non-autoregressive neural machine translation. In the 59th Annual Meeting of the Association for Computational Linguistics (ACL), July 2021.",
+          "kind": "list_item",
+          "char_start": 3101,
+          "char_end": 3360
+        },
+        {
+          "paragraph_id": "p_00c5b5899cf37429ebec",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "[17] Fei Huang, Hao Zhou, Yang Liu, Hang Li, and Minlie Huang. Directed acyclic transformer for non-autoregressive machine translation. In International Conference on Machine Learning, pages 9410–9428. PMLR, 2022.",
+          "kind": "list_item",
+          "char_start": 3362,
+          "char_end": 3575
+        },
+        {
+          "paragraph_id": "p_d6fb6a7daa84cd9f0b33",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "[18] Marjan Ghazvininejad, Omer Levy, Yinhan Liu, and Luke Zettlemoyer. Mask-predict: Parallel decoding of conditional masked language models. arXiv preprint arXiv:1904.09324, 2019.",
+          "kind": "list_item",
+          "char_start": 3577,
+          "char_end": 3758
+        },
+        {
+          "paragraph_id": "p_74903f0a1cd5cca61d2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "[19] Aaron Lou, Chenlin Meng, and Stefano Ermon. Discrete diffusion language modeling by estimating the ratios of the data distribution. 2023.",
+          "kind": "list_item",
+          "char_start": 3760,
+          "char_end": 3902
+        },
+        {
+          "paragraph_id": "p_a21aea726e0f97d981c7",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "[20] Yuyu Zhang, Jing Su, Yifan Sun, Chenguang Xi, Xia Xiao, Shen Zheng, Anxiang Zhang, Kaibo Liu, Daoguang Zan, Tao Sun, et al. Seed-coder: Let the code model curate data for itself. arXiv preprint arXiv:2506.03524, 2025.",
+          "kind": "list_item",
+          "char_start": 3904,
+          "char_end": 4126
+        },
+        {
+          "paragraph_id": "p_be473be4ce9980bf9d02",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "[21] Lihua Qian, Mingxuan Wang, Yang Liu, and Hao Zhou. Diffusion glancing transformer for parallel sequence-to-sequence learning. In Kevin Duh, Helena Gomez, and Steven Bethard, editors, Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), pages 4846–4862, Mexico City, Mexico, June 2024. Association for Computational Linguistics.",
+          "kind": "list_item",
+          "char_start": 4128,
+          "char_end": 4575
+        },
+        {
+          "paragraph_id": "p_b1d56867c5fe9a5ec1ac",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "[22] Emiel Hoogeboom, Alexey A Gritsenko, Jasmijn Bastings, Ben Poole, Rianne van den Berg, and Tim Salimans. Autoregressive diffusion models. arXiv preprint arXiv:2110.02037, 2021.",
+          "kind": "list_item",
+          "char_start": 4577,
+          "char_end": 4758
+        },
+        {
+          "paragraph_id": "p_a34a244ac3d307cdcbee",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "[23] Ning Miao, Yuxuan Song, Hao Zhou, and Lei Li. Do you have the right scissors? tailoring pre-trained language models via Monte-Carlo methods. In the 58th Annual Meeting of the Association for Computational Linguistics (ACL) - short papers, July 2020.",
+          "kind": "list_item",
+          "char_start": 4760,
+          "char_end": 5014
+        },
+        {
+          "paragraph_id": "p_23d7aab2f8a7e36984e3",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "[24] Shakir Mohamed, Mihaela Rosca, Michael Figurnov, and Andriy Mnih. Monte carlo gradient estimation in machine learning. Journal of Machine Learning Research, 21(132):1–62, 2020.",
+          "kind": "list_item",
+          "char_start": 5016,
+          "char_end": 5197
+        },
+        {
+          "paragraph_id": "p_28426dba3905cd2b460d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "[25] Jiatao Gu, James Bradbury, Caiming Xiong, Victor OK Li, and Richard Socher. Non-autoregressive neural machine translation. In ICLR, 2018.",
+          "kind": "list_item",
+          "char_start": 5199,
+          "char_end": 5341
+        },
+        {
+          "paragraph_id": "p_536f6164f2f7c249880f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "[26] Marianne Arriola, Aaron Gokaslan, Justin T Chiu, Zhihan Yang, Zhixuan Qi, Jiaqi Han, Subham Sekhar Sahoo, and Volodymyr Kuleshov. Block diffusion: Interpolating between autoregressive and diffusion language models. arXiv preprint arXiv:2503.09573, 2025.",
+          "kind": "list_item",
+          "char_start": 5343,
+          "char_end": 5601
+        },
+        {
+          "paragraph_id": "p_d42f6a595f2e01eacfc4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "[27] Jinyi Hu, Shengding Hu, Yuxuan Song, Yufei Huang, Mingxuan Wang, Hao Zhou, Zhiyuan Liu, Wei-Ying Ma, and Maosong Sun. Acdit: Interpolating autoregressive conditional modeling and diffusion transformer. arXiv preprint arXiv:2412.07720, 2024.",
+          "kind": "list_item",
+          "char_start": 5603,
+          "char_end": 5848
+        },
+        {
+          "paragraph_id": "p_5b9088568f712e5ced90",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "[28] Terry Yue Zhuo, Minh Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, Imam Nur Bani Yusuf, Haolan Zhan, Junda He, Indraneil Paul, et al. Bigcodebench: Benchmarking code generation with diverse function calls and complex instructions. arXiv preprint arXiv:2406.15877, 2024.",
+          "kind": "list_item",
+          "char_start": 5850,
+          "char_end": 6140
+        },
+        {
+          "paragraph_id": "p_6621c709570cc4b5e5d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib29",
+          "text": "[29] Naman Jain, King Han, Alex Gu, Wen-Ding Li, Fanjia Yan, Tianjun Zhang, Sida Wang, Armando Solar-Lezama, Koushik Sen, and Ion Stoica. Livecodebench: Holistic and contamination free evaluation of large language models for code. arXiv preprint arXiv:2403.07974, 2024.",
+          "kind": "list_item",
+          "char_start": 6142,
+          "char_end": 6411
+        },
+        {
+          "paragraph_id": "p_4803c23e6ae9d51e4dd9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib30",
+          "text": "[30] Ben Athiwaratkun, Sanjay Krishna Gouda, Zijian Wang, Xiaopeng Li, Yuchen Tian, Ming Tan, Wasi Uddin Ahmad, Shiqi Wang, Qing Sun, Mingyue Shang, et al. Multi-lingual evaluation of code generation models. arXiv preprint arXiv:2210.14868, 2022.",
+          "kind": "list_item",
+          "char_start": 6413,
+          "char_end": 6659
+        },
+        {
+          "paragraph_id": "p_99fa69d177a9618b9c0a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib31",
+          "text": "[31] Shudan Zhang, Hanlin Zhao, Xiao Liu, Qinkai Zheng, Zehan Qi, Xiaotao Gu, Xiaohan Zhang, Yuxiao Dong, and Jie Tang. Naturalcodebench: Examining coding performance mismatch on humaneval and natural user prompts. arXiv preprint arXiv:2405.04520, 2024.",
+          "kind": "list_item",
+          "char_start": 6661,
+          "char_end": 6914
+        },
+        {
+          "paragraph_id": "p_c0e936baef2010135a3d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib32",
+          "text": "[32] Federico Cassano, Luisa Li, Akul Sethi, Noah Shinn, Abby Brennan-Jones, Jacob Ginesin, Edward Berman, George Chakhnashvili, Anton Lozhkov, Carolyn Jane Anderson, et al. Can it edit? evaluating the ability of large language models to follow code editing instructions. arXiv preprint arXiv:2312.12450, 2023.",
+          "kind": "list_item",
+          "char_start": 6916,
+          "char_end": 7226
+        }
+      ],
+      "text": "[1] Samar Khanna, Siddhant Kharbanda, Shufan Li, Harshit Varma, Eric Wang, Sawyer Birnbaum, Ziyang Luo, Yanis Miraoui, Akash Palrecha, Stefano Ermon, et al. Mercury: Ultra-fast language models based on diffusion. arXiv e-prints, pages arXiv–2506, 2025.\n\n[2] Google DeepMind. https://blog.google/technology/google-deepmind/gemini-diffusion/. https://blog.google/technology/google-deepmind/gemini-diffusion/, 2025. Accessed: 2024-07-24.\n\n[3] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. arXiv preprint arXiv:2006.11239, 2020.\n\n[4] Yang Song and Stefano Ermon. Generative modeling by estimating gradients of the data distribution. In Advances in Neural Information Processing Systems, pages 11918–11930, 2019.\n\n[5] Jascha Sohl-Dickstein, Eric A Weiss, Niru Maheswaranathan, and Surya Ganguli. Deep unsupervised learning using nonequilibrium thermodynamics. arXiv preprint arXiv:1503.03585, 2015.\n\n[6] Jonathan Ho, Tim Salimans, Alexey Gritsenko, William Chan, Mohammad Norouzi, and David J Fleet. Video diffusion models. Advances in neural information processing systems, 35:8633–8646, 2022.\n\n[7] Mihaly Varadi, Damian Bertoni, Paulyna Magana, Urmila Paramval, Ivanna Pidruchna, Malarvizhi Radhakrishnan, Maxim Tsenkov, Sreenath Nair, Milot Mirdita, Jingi Yeo, et al. Alphafold protein structure database in 2024: providing structure coverage for over 214 million protein sequences. Nucleic acids research, 52(D1):D368–D375, 2024.\n\n[8] Alex Graves, Rupesh Kumar Srivastava, Timothy Atkinson, and Faustino Gomez. Bayesian flow networks. arXiv preprint arXiv:2308.07037, 2023.\n\n[9] Sander Dieleman, Laurent Sartran, Arman Roshannai, Nikolay Savinov, Yaroslav Ganin, Pierre H Richemond, Arnaud Doucet, Robin Strudel, Chris Dyer, Conor Durkan, et al. Continuous diffusion for categorical data. arXiv preprint arXiv:2211.15089, 2022.\n\n[10] Ishaan Gulrajani and Tatsunori B Hashimoto. Likelihood-based diffusion language models. Advances in Neural Information Processing Systems, 36, 2024.\n\n[11] Jacob Austin, Daniel D Johnson, Jonathan Ho, Daniel Tarlow, and Rianne Van Den Berg. Structured denoising diffusion models in discrete state-spaces. Advances in Neural Information Processing Systems, 34:17981–17993, 2021.\n\n[12] Subham Sekhar Sahoo, Marianne Arriola, Yair Schiff, Aaron Gokaslan, Edgar Marroquin, Justin T Chiu, Alexander Rush, and Volodymyr Kuleshov. Simple and effective masked diffusion language models. arXiv preprint arXiv:2406.07524, 2024.\n\n[13] Jiaxin Shi, Kehang Han, Zhe Wang, Arnaud Doucet, and Michalis K Titsias. Simplified and generalized masked diffusion for discrete data. arXiv preprint arXiv:2406.04329, 2024.\n\n[14] Jingyang Ou, Shen Nie, Kaiwen Xue, Fengqi Zhu, Jiacheng Sun, Zhenguo Li, and Chongxuan Li. Your absorbing discrete diffusion secretly models the conditional distributions of clean data. arXiv preprint arXiv:2406.03736, 2024.\n\n[15] Shen Nie, Fengqi Zhu, Zebin You, Xiaolu Zhang, Jingyang Ou, Jun Hu, Jun Zhou, Yankai Lin, Ji-Rong Wen, and Chongxuan Li. Large language diffusion models. arXiv preprint arXiv:2502.09992, 2025.\n\n[16] Lihua Qian, Hao Zhou, Yu Bao, Mingxuan Wang, Lin Qiu, Weinan Zhang, Yong Yu, and Lei Li. Glancing transformer for non-autoregressive neural machine translation. In the 59th Annual Meeting of the Association for Computational Linguistics (ACL), July 2021.\n\n[17] Fei Huang, Hao Zhou, Yang Liu, Hang Li, and Minlie Huang. Directed acyclic transformer for non-autoregressive machine translation. In International Conference on Machine Learning, pages 9410–9428. PMLR, 2022.\n\n[18] Marjan Ghazvininejad, Omer Levy, Yinhan Liu, and Luke Zettlemoyer. Mask-predict: Parallel decoding of conditional masked language models. arXiv preprint arXiv:1904.09324, 2019.\n\n[19] Aaron Lou, Chenlin Meng, and Stefano Ermon. Discrete diffusion language modeling by estimating the ratios of the data distribution. 2023.\n\n[20] Yuyu Zhang, Jing Su, Yifan Sun, Chenguang Xi, Xia Xiao, Shen Zheng, Anxiang Zhang, Kaibo Liu, Daoguang Zan, Tao Sun, et al. Seed-coder: Let the code model curate data for itself. arXiv preprint arXiv:2506.03524, 2025.\n\n[21] Lihua Qian, Mingxuan Wang, Yang Liu, and Hao Zhou. Diffusion glancing transformer for parallel sequence-to-sequence learning. In Kevin Duh, Helena Gomez, and Steven Bethard, editors, Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), pages 4846–4862, Mexico City, Mexico, June 2024. Association for Computational Linguistics.\n\n[22] Emiel Hoogeboom, Alexey A Gritsenko, Jasmijn Bastings, Ben Poole, Rianne van den Berg, and Tim Salimans. Autoregressive diffusion models. arXiv preprint arXiv:2110.02037, 2021.\n\n[23] Ning Miao, Yuxuan Song, Hao Zhou, and Lei Li. Do you have the right scissors? tailoring pre-trained language models via Monte-Carlo methods. In the 58th Annual Meeting of the Association for Computational Linguistics (ACL) - short papers, July 2020.\n\n[24] Shakir Mohamed, Mihaela Rosca, Michael Figurnov, and Andriy Mnih. Monte carlo gradient estimation in machine learning. Journal of Machine Learning Research, 21(132):1–62, 2020.\n\n[25] Jiatao Gu, James Bradbury, Caiming Xiong, Victor OK Li, and Richard Socher. Non-autoregressive neural machine translation. In ICLR, 2018.\n\n[26] Marianne Arriola, Aaron Gokaslan, Justin T Chiu, Zhihan Yang, Zhixuan Qi, Jiaqi Han, Subham Sekhar Sahoo, and Volodymyr Kuleshov. Block diffusion: Interpolating between autoregressive and diffusion language models. arXiv preprint arXiv:2503.09573, 2025.\n\n[27] Jinyi Hu, Shengding Hu, Yuxuan Song, Yufei Huang, Mingxuan Wang, Hao Zhou, Zhiyuan Liu, Wei-Ying Ma, and Maosong Sun. Acdit: Interpolating autoregressive conditional modeling and diffusion transformer. arXiv preprint arXiv:2412.07720, 2024.\n\n[28] Terry Yue Zhuo, Minh Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, Imam Nur Bani Yusuf, Haolan Zhan, Junda He, Indraneil Paul, et al. Bigcodebench: Benchmarking code generation with diverse function calls and complex instructions. arXiv preprint arXiv:2406.15877, 2024.\n\n[29] Naman Jain, King Han, Alex Gu, Wen-Ding Li, Fanjia Yan, Tianjun Zhang, Sida Wang, Armando Solar-Lezama, Koushik Sen, and Ion Stoica. Livecodebench: Holistic and contamination free evaluation of large language models for code. arXiv preprint arXiv:2403.07974, 2024.\n\n[30] Ben Athiwaratkun, Sanjay Krishna Gouda, Zijian Wang, Xiaopeng Li, Yuchen Tian, Ming Tan, Wasi Uddin Ahmad, Shiqi Wang, Qing Sun, Mingyue Shang, et al. Multi-lingual evaluation of code generation models. arXiv preprint arXiv:2210.14868, 2022.\n\n[31] Shudan Zhang, Hanlin Zhao, Xiao Liu, Qinkai Zheng, Zehan Qi, Xiaotao Gu, Xiaohan Zhang, Yuxiao Dong, and Jie Tang. Naturalcodebench: Examining coding performance mismatch on humaneval and natural user prompts. arXiv preprint arXiv:2405.04520, 2024.\n\n[32] Federico Cassano, Luisa Li, Akul Sethi, Noah Shinn, Abby Brennan-Jones, Jacob Ginesin, Edward Berman, George Chakhnashvili, Anton Lozhkov, Carolyn Jane Anderson, et al. Can it edit? evaluating the ability of large language models to follow code editing instructions. arXiv preprint arXiv:2312.12450, 2023."
+    }
+  ]
+}

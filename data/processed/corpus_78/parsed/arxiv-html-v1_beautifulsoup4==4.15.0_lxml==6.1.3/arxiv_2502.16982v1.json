@@ -1,0 +1,2500 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2502.16982",
+  "version": "v1",
+  "title": "Muon is Scalable for LLM Training",
+  "source_format": "html",
+  "source_sha256": "271babfa46b63c8836969b0dc3ba6441a2d9220512a48b67d8dae2454905819b",
+  "source_url": "https://arxiv.org/html/2502.16982v1",
+  "source_path": "data/corpus_78/html/arxiv_2502.16982v1.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2502.16982_v1_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e17b1d1b77cffc5cc3e5",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "Recently, the Muon optimizer (Jordan et al., 2024) based on matrix orthogonalization has demonstrated strong results in training small-scale language models, but the scalability to larger models has not been proven. We identify two crucial techniques for scaling up Muon: (1) adding weight decay and (2) carefully adjusting the per-parameter update scale. These techniques allow Muon to work out-of-the-box on large-scale training without the need of hyper-parameter tuning. Scaling law experiments indicate that Muon achieves $\\sim\\!2\\times$ computational efficiency compared to AdamW with compute optimal training. Based on these improvements, we introduce Moonlight, a 3B/16B-parameter Mixture-of-Expert (MoE) model trained with 5.7T tokens using Muon. Our model improves the current Pareto frontier, achieving better performance with much fewer training FLOPs compared to prior models. We open-source our distributed Muon implementation that is memory optimal and communication efficient. We also release the pretrained, instruction-tuned, and intermediate checkpoints to support future research.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1100
+        }
+      ],
+      "text": "Recently, the Muon optimizer (Jordan et al., 2024) based on matrix orthogonalization has demonstrated strong results in training small-scale language models, but the scalability to larger models has not been proven. We identify two crucial techniques for scaling up Muon: (1) adding weight decay and (2) carefully adjusting the per-parameter update scale. These techniques allow Muon to work out-of-the-box on large-scale training without the need of hyper-parameter tuning. Scaling law experiments indicate that Muon achieves $\\sim\\!2\\times$ computational efficiency compared to AdamW with compute optimal training. Based on these improvements, we introduce Moonlight, a 3B/16B-parameter Mixture-of-Expert (MoE) model trained with 5.7T tokens using Muon. Our model improves the current Pareto frontier, achieving better performance with much fewer training FLOPs compared to prior models. We open-source our distributed Muon implementation that is memory optimal and communication efficient. We also release the pretrained, instruction-tuned, and intermediate checkpoints to support future research."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_45bacca74d02a6d616ea",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "The rapid advancement of large language models (LLMs) (OpenAI et al., 2024; DeepSeek-AI et al., 2024; Grattafiori et al., 2024; Team et al., 2024) has significantly pushed forward the progress in artificial general intelligence. However, training capable LLMs remains a computationally intensive and resource-demanding process due to scaling laws (Kaplan et al., 2020; Hoffmann et al., 2022). Optimizers play a crucial role in efficiently and effectively training of LLMs, with Adam (Kingma & Ba, 2015) and its variant AdamW (Loshchilov & Hutter, 2019) being the standard choice for most large-scale training.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 609
+        },
+        {
+          "paragraph_id": "p_5f229880fb51af857035",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "Recent developments in optimization algorithms have shown potential to improve training efficiency beyond AdamW (Liu et al., 2024; Jordan et al., 2024; Yuan et al., 2024; Vyas et al., 2025; Li, 2018; Li, 2018a; Pooladzandi & Li, 2024; Li, 2022; Li, 2024; Pethick et al., 2025). Among these, Jordan et al., 2024 proposed Muon, which updates matrix parameters with orthogonalized gradient momentum using Newton-Schulz iteration. Initial experiments with Muon have demonstrated promising results in small-scale language model training. However, as discussed in this blog (Jordan et al., 2024), several critical challenges remain unaddressed: (1) how to effectively scale optimizers based on matrix orthogonalization to larger models with billions of parameters trained with trillions of tokens, (2) how to compute approximate orthogonalization in a distributed setting, and (3) whether such optimizers can generalize across different training stages including pre-training and supervised finetuning (SFT).",
+          "kind": "text",
+          "char_start": 611,
+          "char_end": 1613
+        },
+        {
+          "paragraph_id": "p_4dd29324e8ed8356914c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "In this technical report, we present a comprehensive study addressing these challenges. Our work builds upon Muon while systematically identifying and resolving its limitations in large-scale training scenarios. Our technical contributions include:",
+          "kind": "text",
+          "char_start": 1615,
+          "char_end": 1863
+        },
+        {
+          "paragraph_id": "p_3ed9f2d9949c7f6b7f65",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i1",
+          "text": "• Analysis for Effective Scaling of Muon: Through extensive analysis, we identify that weight decay plays a crucial role in Muon’s scalability. Besides, we propose scale adjustments to Muon’s parameter-wise update rule. Such adjustments allow Muon to work out-of-the-box without hyper-parameter tuning, and also significantly improve training stability.",
+          "kind": "list_item",
+          "char_start": 1865,
+          "char_end": 2218
+        },
+        {
+          "paragraph_id": "p_94926af43e735d4daf25",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i2",
+          "text": "• Efficient Distributed Implementation: We develop a distributed version of Muon with ZeRO-1 (Rajbhandari et al., 2020) style optimization, achieving optimal memory efficiency and reduced communication overhead while preserving the mathematical properties of the algorithm.",
+          "kind": "list_item",
+          "char_start": 2220,
+          "char_end": 2493
+        },
+        {
+          "paragraph_id": "p_c3cae4e1b9f2de49d9ba",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.I1.i3",
+          "text": "• Scaling Law Validation: We performed scaling law research that compares Muon with strong AdamW baselines, and showed the superior performance of Muon (1(a)). Based on the scaling law results, Muon achieves comparable performance to AdamW trained counterparts while requiring only approximately 52% of the training FLOPs.",
+          "kind": "list_item",
+          "char_start": 2495,
+          "char_end": 2817
+        },
+        {
+          "paragraph_id": "p_b7e32afc7ef26d14d844",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "Our comprehensive experiments demonstrate that Muon can effectively replace AdamW as the de facto optimizer for large-scale LLM training, offering significant improvements in both training efficiency and model performance. As a result of this work, we release Moonlight, a 16B-parameter MoE model trained using Muon, along with our implementation and intermediate training checkpoints to facilitate further research in scalable optimization techniques for LLMs.",
+          "kind": "text",
+          "char_start": 2819,
+          "char_end": 3280
+        }
+      ],
+      "text": "The rapid advancement of large language models (LLMs) (OpenAI et al., 2024; DeepSeek-AI et al., 2024; Grattafiori et al., 2024; Team et al., 2024) has significantly pushed forward the progress in artificial general intelligence. However, training capable LLMs remains a computationally intensive and resource-demanding process due to scaling laws (Kaplan et al., 2020; Hoffmann et al., 2022). Optimizers play a crucial role in efficiently and effectively training of LLMs, with Adam (Kingma & Ba, 2015) and its variant AdamW (Loshchilov & Hutter, 2019) being the standard choice for most large-scale training.\n\nRecent developments in optimization algorithms have shown potential to improve training efficiency beyond AdamW (Liu et al., 2024; Jordan et al., 2024; Yuan et al., 2024; Vyas et al., 2025; Li, 2018; Li, 2018a; Pooladzandi & Li, 2024; Li, 2022; Li, 2024; Pethick et al., 2025). Among these, Jordan et al., 2024 proposed Muon, which updates matrix parameters with orthogonalized gradient momentum using Newton-Schulz iteration. Initial experiments with Muon have demonstrated promising results in small-scale language model training. However, as discussed in this blog (Jordan et al., 2024), several critical challenges remain unaddressed: (1) how to effectively scale optimizers based on matrix orthogonalization to larger models with billions of parameters trained with trillions of tokens, (2) how to compute approximate orthogonalization in a distributed setting, and (3) whether such optimizers can generalize across different training stages including pre-training and supervised finetuning (SFT).\n\nIn this technical report, we present a comprehensive study addressing these challenges. Our work builds upon Muon while systematically identifying and resolving its limitations in large-scale training scenarios. Our technical contributions include:\n\n• Analysis for Effective Scaling of Muon: Through extensive analysis, we identify that weight decay plays a crucial role in Muon’s scalability. Besides, we propose scale adjustments to Muon’s parameter-wise update rule. Such adjustments allow Muon to work out-of-the-box without hyper-parameter tuning, and also significantly improve training stability.\n\n• Efficient Distributed Implementation: We develop a distributed version of Muon with ZeRO-1 (Rajbhandari et al., 2020) style optimization, achieving optimal memory efficiency and reduced communication overhead while preserving the mathematical properties of the algorithm.\n\n• Scaling Law Validation: We performed scaling law research that compares Muon with strong AdamW baselines, and showed the superior performance of Muon (1(a)). Based on the scaling law results, Muon achieves comparable performance to AdamW trained counterparts while requiring only approximately 52% of the training FLOPs.\n\nOur comprehensive experiments demonstrate that Muon can effectively replace AdamW as the de facto optimizer for large-scale LLM training, offering significant improvements in both training efficiency and model performance. As a result of this work, we release Moonlight, a 16B-parameter MoE model trained using Muon, along with our implementation and intermediate training checkpoints to facilitate further research in scalable optimization techniques for LLMs."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0002",
+      "title": "2 Methods",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Methods"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0003",
+      "title": "2.1 Background",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS1",
+      "path": [
+        "2 Methods",
+        "2.1 Background"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_469d6309ff9cb5fcda95",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px1",
+          "text": "The Muon Optimizer",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 18
+        },
+        {
+          "paragraph_id": "p_4277263b931d3afbde9c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px1.p1.1",
+          "text": "Muon (Jordan et al., 2024) has recently been proposed to optimize neural network weights representable as matrices. At iteration $t$, given current weight $\\mathbf{W}_{t-1}$, momentum $\\mu$, learning rate $\\eta_{t}$ and objective $\\mathcal{L}_{t}$, the update rule of the Muon optimizer can be stated as follows:",
+          "kind": "text",
+          "char_start": 20,
+          "char_end": 332
+        },
+        {
+          "paragraph_id": "p_a0df1ed54914a23ab91e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx1",
+          "text": "\\displaystyle\\mathbf{M}_{t} \\displaystyle=\\mu\\mathbf{M}_{t-1}+\\nabla\\mathcal{L}_{t}(\\mathbf{W}_{t-1}) \\displaystyle\\mathbf{O}_{t} \\displaystyle=\\text{Newton-Schulz}(\\mathbf{M}_{t})\\text{} \\mu\\mathbf{M}_{t}+\\nabla\\mathcal{L}_{t}(\\mathbf{W}_{t-1}) \\mathbf{M}_{t} \\displaystyle\\mathbf{W}_{t} \\displaystyle=\\mathbf{W}_{t-1}-\\eta_{t}\\mathbf{O}_{t}",
+          "kind": "equation",
+          "char_start": 334,
+          "char_end": 676
+        },
+        {
+          "paragraph_id": "p_18adeb1341fce64867ab",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px1.p1.2",
+          "text": "Here, $\\mathbf{M}_{t}$ is the momentum of gradient at iteration $t$, set as a zero matrix when $t=0$. In Equation 1, a Newton-Schulz iteration process (Bernstein & Newhouse, 2024) is adopted to approximately solve $(\\mathbf{M}_{t}\\mathbf{M}^{\\mathrm{T}}_{t})^{-1/2}\\mathbf{M}_{t}$. Let $\\mathbf{U}\\mathbf{\\Sigma}\\mathbf{V}^{\\mathrm{T}}=\\mathbf{M}_{t}$ be the singular value decomposition (SVD) of $\\mathbf{M}_{t}$, we will have $(\\mathbf{M}_{t}\\mathbf{M}^{\\mathrm{T}}_{t})^{-1/2}\\mathbf{M}_{t}=\\mathbf{U}\\mathbf{V^{T}}$, which orthogonalizes $\\mathbf{M}_{t}$. Intuitively, orthogonalization can ensure that the update matrices are isomorphic, preventing the weight from learning along a few dominant directions (Jordan et al., 2024).",
+          "kind": "text",
+          "char_start": 678,
+          "char_end": 1411
+        },
+        {
+          "paragraph_id": "p_8c27d47e3ef1e97d6f4e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px2",
+          "text": "Newton-Schulz Iterations for Matrix Orthogonalization",
+          "kind": "heading",
+          "char_start": 1413,
+          "char_end": 1466
+        },
+        {
+          "paragraph_id": "p_4e90f842a2dc3a8b10eb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px2.p1.1",
+          "text": "Equation 1 is calculated in an iterative process. At the beginning, we set $\\mathbf{X}_{0}=\\mathbf{M}_{t}/\\|\\mathbf{M}_{t}\\|_{\\mathrm{F}}$. Then, at each iteration $k$, we update $\\mathbf{X}_{k}$ from $\\mathbf{X}_{k-1}$ as follows:",
+          "kind": "text",
+          "char_start": 1468,
+          "char_end": 1699
+        },
+        {
+          "paragraph_id": "p_aed0d07f7e86430f027c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx2",
+          "text": "\\displaystyle\\mathbf{X}_{k} \\displaystyle=a\\mathbf{X}_{k-1}+b(\\mathbf{X}_{k-1}\\mathbf{X}_{k-1}^{\\mathrm{T}})\\mathbf{X}_{k-1}+c(\\mathbf{X}_{k-1}\\mathbf{X}_{k-1}^{\\mathrm{T}})^{2}\\mathbf{X}_{k-1}",
+          "kind": "equation",
+          "char_start": 1701,
+          "char_end": 1894
+        },
+        {
+          "paragraph_id": "p_3326a3fb96061fb5f292",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px2.p1.2",
+          "text": "where $\\mathbf{X}_{N}$ is the result of such process after $N$ iteration steps. Here $a$, $b$, $c$ are coefficients. In order to ensure the correct convergence of Equation 2, we need to tune the coefficients so that the polynomial $f(x)=ax+bx^{3}+cx^{5}$ has a fixed point near 1. In the original design of Jordan et al., 2024, the coefficients are set to $a=3.4445$, $b=-4.7750$, $c=2.0315$ in order to make the iterative process converge faster for small initial singular values. In this work, we follow the same setting of coefficients.",
+          "kind": "text",
+          "char_start": 1896,
+          "char_end": 2435
+        },
+        {
+          "paragraph_id": "p_272dc8e1bd1bdbf77c35",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px3",
+          "text": "Steepest Descent Under Norm Constraints",
+          "kind": "heading",
+          "char_start": 2437,
+          "char_end": 2476
+        },
+        {
+          "paragraph_id": "p_7d6aad8a836003c82454",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.SSS0.Px3.p1.1",
+          "text": "Bernstein & Newhouse, 2024 proposed to view the optimization process in deep learning as steepest descent under norm constraints. From this perspective, we can view the difference between Muon and Adam (Kingma & Ba, 2015; Loshchilov & Hutter, 2019) as the difference in norm constraints. Whereas Adam is a steepest descent under the a norm constraint dynamically adjusted from a Max-of-Max norm, Muon offers a norm constraint that lies in a static range of Schatten-$p$ norm for some large $p$ (Franz, 2024). When equation 1 is accurately computed, the norm constraint offered by Muon will be the spectral norm. Weights of neural networks are used as operators on the input space or the hidden space, which are usually (locally) Euclidean (Cesista, 2024), so the norm constraint on weights should be an induced operator norm (or spectral norm for weight matrices). In this sense, the norm constraint offered by Muon is more reasonable than that offered by Adam.",
+          "kind": "text",
+          "char_start": 2478,
+          "char_end": 3439
+        }
+      ],
+      "text": "The Muon Optimizer\n\nMuon (Jordan et al., 2024) has recently been proposed to optimize neural network weights representable as matrices. At iteration $t$, given current weight $\\mathbf{W}_{t-1}$, momentum $\\mu$, learning rate $\\eta_{t}$ and objective $\\mathcal{L}_{t}$, the update rule of the Muon optimizer can be stated as follows:\n\n\\displaystyle\\mathbf{M}_{t} \\displaystyle=\\mu\\mathbf{M}_{t-1}+\\nabla\\mathcal{L}_{t}(\\mathbf{W}_{t-1}) \\displaystyle\\mathbf{O}_{t} \\displaystyle=\\text{Newton-Schulz}(\\mathbf{M}_{t})\\text{} \\mu\\mathbf{M}_{t}+\\nabla\\mathcal{L}_{t}(\\mathbf{W}_{t-1}) \\mathbf{M}_{t} \\displaystyle\\mathbf{W}_{t} \\displaystyle=\\mathbf{W}_{t-1}-\\eta_{t}\\mathbf{O}_{t}\n\nHere, $\\mathbf{M}_{t}$ is the momentum of gradient at iteration $t$, set as a zero matrix when $t=0$. In Equation 1, a Newton-Schulz iteration process (Bernstein & Newhouse, 2024) is adopted to approximately solve $(\\mathbf{M}_{t}\\mathbf{M}^{\\mathrm{T}}_{t})^{-1/2}\\mathbf{M}_{t}$. Let $\\mathbf{U}\\mathbf{\\Sigma}\\mathbf{V}^{\\mathrm{T}}=\\mathbf{M}_{t}$ be the singular value decomposition (SVD) of $\\mathbf{M}_{t}$, we will have $(\\mathbf{M}_{t}\\mathbf{M}^{\\mathrm{T}}_{t})^{-1/2}\\mathbf{M}_{t}=\\mathbf{U}\\mathbf{V^{T}}$, which orthogonalizes $\\mathbf{M}_{t}$. Intuitively, orthogonalization can ensure that the update matrices are isomorphic, preventing the weight from learning along a few dominant directions (Jordan et al., 2024).\n\nNewton-Schulz Iterations for Matrix Orthogonalization\n\nEquation 1 is calculated in an iterative process. At the beginning, we set $\\mathbf{X}_{0}=\\mathbf{M}_{t}/\\|\\mathbf{M}_{t}\\|_{\\mathrm{F}}$. Then, at each iteration $k$, we update $\\mathbf{X}_{k}$ from $\\mathbf{X}_{k-1}$ as follows:\n\n\\displaystyle\\mathbf{X}_{k} \\displaystyle=a\\mathbf{X}_{k-1}+b(\\mathbf{X}_{k-1}\\mathbf{X}_{k-1}^{\\mathrm{T}})\\mathbf{X}_{k-1}+c(\\mathbf{X}_{k-1}\\mathbf{X}_{k-1}^{\\mathrm{T}})^{2}\\mathbf{X}_{k-1}\n\nwhere $\\mathbf{X}_{N}$ is the result of such process after $N$ iteration steps. Here $a$, $b$, $c$ are coefficients. In order to ensure the correct convergence of Equation 2, we need to tune the coefficients so that the polynomial $f(x)=ax+bx^{3}+cx^{5}$ has a fixed point near 1. In the original design of Jordan et al., 2024, the coefficients are set to $a=3.4445$, $b=-4.7750$, $c=2.0315$ in order to make the iterative process converge faster for small initial singular values. In this work, we follow the same setting of coefficients.\n\nSteepest Descent Under Norm Constraints\n\nBernstein & Newhouse, 2024 proposed to view the optimization process in deep learning as steepest descent under norm constraints. From this perspective, we can view the difference between Muon and Adam (Kingma & Ba, 2015; Loshchilov & Hutter, 2019) as the difference in norm constraints. Whereas Adam is a steepest descent under the a norm constraint dynamically adjusted from a Max-of-Max norm, Muon offers a norm constraint that lies in a static range of Schatten-$p$ norm for some large $p$ (Franz, 2024). When equation 1 is accurately computed, the norm constraint offered by Muon will be the spectral norm. Weights of neural networks are used as operators on the input space or the hidden space, which are usually (locally) Euclidean (Cesista, 2024), so the norm constraint on weights should be an induced operator norm (or spectral norm for weight matrices). In this sense, the norm constraint offered by Muon is more reasonable than that offered by Adam."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0004",
+      "title": "2.2 Scaling Up Muon",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS2",
+      "path": [
+        "2 Methods",
+        "2.2 Scaling Up Muon"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_536311faf6e646ce8997",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px1",
+          "text": "Weight Decay",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 12
+        },
+        {
+          "paragraph_id": "p_b57c6bcf45ea0827ce33",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px1.p1.1",
+          "text": "While Muon performs significantly better than AdamW on a small scale as shown by Jordan et al., 2024, we found the performance gains diminish when we scale up to train a larger model with more tokens. We observed that both the weight and the layer output’s RMS keep growing to a large scale, exceeding the high-precision range of bf16, which might hurt the model’s performance. To resolve this issue, we introduced the standard AdamW (Loshchilov & Hutter, 2019) weight decay mechanism into Muon.",
+          "kind": "text",
+          "char_start": 14,
+          "char_end": 509
+        },
+        {
+          "paragraph_id": "p_379ddb4ef61612e522a5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px1.p1.1",
+          "text": "Footnote: 1 1 The original implementation of Muon omits weight decay. A recent concurrent work in Muon incorporates weight decay and demonstrates improved performance. See this commit and this discussion.",
+          "kind": "footnote",
+          "char_start": 511,
+          "char_end": 715
+        },
+        {
+          "paragraph_id": "p_33707d3a8bd049d20093",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx3",
+          "text": "\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(\\mathbf{O}_{t}+\\lambda\\mathbf{W}_{t-1})",
+          "kind": "equation",
+          "char_start": 717,
+          "char_end": 810
+        },
+        {
+          "paragraph_id": "p_d5fa7bf7548fe8ef0a21",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px1.p3.1",
+          "text": "We experimented on Muon both with and without weight decay to understand its impact on the training dynamics of LLMs. Based on our scaling law research in Sec 3.2, we trained an 800M parameters model with 100B tokens ($\\sim 5\\times$ optimal training tokens). Figure 2 shows validation loss curves of the model trained with AdamW, vanilla Muon (without weight decay), and Muon with weight decay. While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW, achieving lower validation loss in the over-train regime. Therefore, we adjusted our update rule to equation 3, where $\\lambda$ is the weight decay ratio.",
+          "kind": "text",
+          "char_start": 812,
+          "char_end": 1663
+        },
+        {
+          "paragraph_id": "p_4930b3ff10d2a7f91828",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.F2",
+          "text": "Figure 2: Validation loss curves for AdamW (green), Muon without weight decay (red), and Muon with weight decay (blue).",
+          "kind": "caption",
+          "char_start": 1665,
+          "char_end": 1784
+        },
+        {
+          "paragraph_id": "p_ba28551240f975088da4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2",
+          "text": "Consistent update RMS",
+          "kind": "heading",
+          "char_start": 1786,
+          "char_end": 1807
+        },
+        {
+          "paragraph_id": "p_ae3e9d295e9d607d143f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2.p1.1",
+          "text": "An important property of Adam and AdamW (Kingma & Ba, 2015, Loshchilov & Hutter, 2019) is that they maintain a theoretical update RMS around 1. However, we show that Muon’s update RMS varies depending on the shape of the parameters, according to the following lemma:",
+          "kind": "text",
+          "char_start": 1809,
+          "char_end": 2075
+        },
+        {
+          "paragraph_id": "p_7f01b2d18fe994efc69c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2.p1.1",
+          "text": "Footnote: 2 2 Due to Adam’s $\\beta_{1}<\\beta_{2}$ and $\\epsilon>0$, the actual update RMS is usually less than 1.",
+          "kind": "footnote",
+          "char_start": 2077,
+          "char_end": 2190
+        },
+        {
+          "paragraph_id": "p_96b4a2facac1b11563cb",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma1",
+          "text": "Lemma 1.",
+          "kind": "heading",
+          "char_start": 2192,
+          "char_end": 2200
+        },
+        {
+          "paragraph_id": "p_9e4fad1e432dafd75ccc",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma1.p1.1",
+          "text": "For a full-rank matrix parameter of shape $[A,B]$, its theoretical Muon update RMS is $\\sqrt{1/\\max(A,B)}$ .",
+          "kind": "text",
+          "char_start": 2202,
+          "char_end": 2310
+        },
+        {
+          "paragraph_id": "p_f3c3464d751041ae7e77",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2.p2.1",
+          "text": "The proof can be found in the Appendix A. We monitored Muon’s update RMS during training and found it typically close to the theoretical value given above. We note that such inconsistency can be problematic when scaling up the model size:",
+          "kind": "text",
+          "char_start": 2312,
+          "char_end": 2550
+        },
+        {
+          "paragraph_id": "p_8c2e80ffd556964ad24c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i1",
+          "text": "• When $\\max(A,B)$ is too large, e.g. the dense MLP matrix, the updates become too small, thus limiting the model’s representational capacity and leading to suboptimal performances;",
+          "kind": "list_item",
+          "char_start": 2552,
+          "char_end": 2733
+        },
+        {
+          "paragraph_id": "p_c81e909ca38f5295c6c5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i2",
+          "text": "• When $\\max(A,B)$ is too small, e.g. treating each KV head in GQA (Shazeer, 2019) or MLA (DeepSeek-AI et al., 2024) as a separate parameter, the updates become too large, thus causing training instabilities and leading to suboptimal performances as well.",
+          "kind": "list_item",
+          "char_start": 2735,
+          "char_end": 2990
+        },
+        {
+          "paragraph_id": "p_d0c1148ab745382934f3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2.p4.1",
+          "text": "In order to maintain consistent update RMS among matrices of different shapes, we propose to scale the Muon update for each matrix by its $\\sqrt{\\max(A,B)}$ to cancel the effect of Lemma 1 . Experiments in Sec 3.1 show that this strategy is beneficial for optimization.",
+          "kind": "text",
+          "char_start": 2992,
+          "char_end": 3261
+        },
+        {
+          "paragraph_id": "p_f6238d1639c1763837ea",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px2.p4.1",
+          "text": "Footnote: 3 3 Jordan et al., 2024’s original implementation scales the updates by $\\sqrt{\\max(1,A/B)}$, which is equivalent to our proposal (up to a global scale) if all matrices have the same second dimension; Pethick et al., 2025 and You, 2025 discussed a similar issue on update scaling factors concurrently to our work.",
+          "kind": "footnote",
+          "char_start": 3263,
+          "char_end": 3586
+        },
+        {
+          "paragraph_id": "p_9dd6efcf90f1294aa7d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px3",
+          "text": "Matching update RMS of AdamW",
+          "kind": "heading",
+          "char_start": 3588,
+          "char_end": 3616
+        },
+        {
+          "paragraph_id": "p_634499393e57ade53e50",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px3.p1.1",
+          "text": "Muon is designed to update matrix-based parameters. In practice, AdamW is used in couple with Muon to handle non-matrix based parameters, like RMSNorm, LM head, and embedding parameters. We would like the optimizer hyper-parameters (learning rate $\\eta$, weight decay $\\lambda$) to be shared among matrix and non-matrix parameters.",
+          "kind": "text",
+          "char_start": 3618,
+          "char_end": 3949
+        },
+        {
+          "paragraph_id": "p_2d676939be552b441c39",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px3.p2.1",
+          "text": "We propose to match Muon’s update RMS to be similar to that of AdamW. From empirical observations, AdamW’s update RMS is usually around 0.2 to 0.4. Therefore, we scale Muon’s update RMS to this range by the following adjustment:",
+          "kind": "text",
+          "char_start": 3951,
+          "char_end": 4179
+        },
+        {
+          "paragraph_id": "p_990055be68cb25373c61",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx4",
+          "text": "\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{\\max(A,B)}+\\lambda\\mathbf{W}_{t-1})",
+          "kind": "equation",
+          "char_start": 4181,
+          "char_end": 4303
+        },
+        {
+          "paragraph_id": "p_d5df718040a234f6bb7e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px3.p4.1",
+          "text": "We validated this choice with empirical results (see Appendix A for details). Moreover, we highlighted that with this adjustment, Muon can directly reuse the learning rate and weight decay tuned for AdamW.",
+          "kind": "text",
+          "char_start": 4305,
+          "char_end": 4510
+        },
+        {
+          "paragraph_id": "p_e3729eb49270852c97ac",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px4",
+          "text": "Other Hyper-parameters",
+          "kind": "heading",
+          "char_start": 4512,
+          "char_end": 4534
+        },
+        {
+          "paragraph_id": "p_36ab99fd0fa38e8e6ec7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS2.SSS0.Px4.p1.1",
+          "text": "Muon contains two other tunnable hyper-parameters: Newton-Schulz iteration steps and momentum $\\mu$. We empirically observe that when setting $N$ to $10$, the iterative process will yield a more accurate orthogonalization result than $N=5$, but it won’t lead to better performances. Hence we set $N=5$ in this work for the sake of efficiency. We do not see a consistent performance gain in tuning momentum, so we chose 0.95, same as Jordan et al., 2024.",
+          "kind": "text",
+          "char_start": 4536,
+          "char_end": 4989
+        }
+      ],
+      "text": "Weight Decay\n\nWhile Muon performs significantly better than AdamW on a small scale as shown by Jordan et al., 2024, we found the performance gains diminish when we scale up to train a larger model with more tokens. We observed that both the weight and the layer output’s RMS keep growing to a large scale, exceeding the high-precision range of bf16, which might hurt the model’s performance. To resolve this issue, we introduced the standard AdamW (Loshchilov & Hutter, 2019) weight decay mechanism into Muon.\n\nFootnote: 1 1 The original implementation of Muon omits weight decay. A recent concurrent work in Muon incorporates weight decay and demonstrates improved performance. See this commit and this discussion.\n\n\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(\\mathbf{O}_{t}+\\lambda\\mathbf{W}_{t-1})\n\nWe experimented on Muon both with and without weight decay to understand its impact on the training dynamics of LLMs. Based on our scaling law research in Sec 3.2, we trained an 800M parameters model with 100B tokens ($\\sim 5\\times$ optimal training tokens). Figure 2 shows validation loss curves of the model trained with AdamW, vanilla Muon (without weight decay), and Muon with weight decay. While vanilla Muon initially converges faster, we observed that some model weights grew too large over time, potentially limiting the model’s long-term performances. Adding weight decay addressed this issue - the results demonstrate that Muon with weight decay outperforms both vanilla Muon and AdamW, achieving lower validation loss in the over-train regime. Therefore, we adjusted our update rule to equation 3, where $\\lambda$ is the weight decay ratio.\n\nFigure 2: Validation loss curves for AdamW (green), Muon without weight decay (red), and Muon with weight decay (blue).\n\nConsistent update RMS\n\nAn important property of Adam and AdamW (Kingma & Ba, 2015, Loshchilov & Hutter, 2019) is that they maintain a theoretical update RMS around 1. However, we show that Muon’s update RMS varies depending on the shape of the parameters, according to the following lemma:\n\nFootnote: 2 2 Due to Adam’s $\\beta_{1}<\\beta_{2}$ and $\\epsilon>0$, the actual update RMS is usually less than 1.\n\nLemma 1.\n\nFor a full-rank matrix parameter of shape $[A,B]$, its theoretical Muon update RMS is $\\sqrt{1/\\max(A,B)}$ .\n\nThe proof can be found in the Appendix A. We monitored Muon’s update RMS during training and found it typically close to the theoretical value given above. We note that such inconsistency can be problematic when scaling up the model size:\n\n• When $\\max(A,B)$ is too large, e.g. the dense MLP matrix, the updates become too small, thus limiting the model’s representational capacity and leading to suboptimal performances;\n\n• When $\\max(A,B)$ is too small, e.g. treating each KV head in GQA (Shazeer, 2019) or MLA (DeepSeek-AI et al., 2024) as a separate parameter, the updates become too large, thus causing training instabilities and leading to suboptimal performances as well.\n\nIn order to maintain consistent update RMS among matrices of different shapes, we propose to scale the Muon update for each matrix by its $\\sqrt{\\max(A,B)}$ to cancel the effect of Lemma 1 . Experiments in Sec 3.1 show that this strategy is beneficial for optimization.\n\nFootnote: 3 3 Jordan et al., 2024’s original implementation scales the updates by $\\sqrt{\\max(1,A/B)}$, which is equivalent to our proposal (up to a global scale) if all matrices have the same second dimension; Pethick et al., 2025 and You, 2025 discussed a similar issue on update scaling factors concurrently to our work.\n\nMatching update RMS of AdamW\n\nMuon is designed to update matrix-based parameters. In practice, AdamW is used in couple with Muon to handle non-matrix based parameters, like RMSNorm, LM head, and embedding parameters. We would like the optimizer hyper-parameters (learning rate $\\eta$, weight decay $\\lambda$) to be shared among matrix and non-matrix parameters.\n\nWe propose to match Muon’s update RMS to be similar to that of AdamW. From empirical observations, AdamW’s update RMS is usually around 0.2 to 0.4. Therefore, we scale Muon’s update RMS to this range by the following adjustment:\n\n\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{\\max(A,B)}+\\lambda\\mathbf{W}_{t-1})\n\nWe validated this choice with empirical results (see Appendix A for details). Moreover, we highlighted that with this adjustment, Muon can directly reuse the learning rate and weight decay tuned for AdamW.\n\nOther Hyper-parameters\n\nMuon contains two other tunnable hyper-parameters: Newton-Schulz iteration steps and momentum $\\mu$. We empirically observe that when setting $N$ to $10$, the iterative process will yield a more accurate orthogonalization result than $N=5$, but it won’t lead to better performances. Hence we set $N=5$ in this work for the sake of efficiency. We do not see a consistent performance gain in tuning momentum, so we chose 0.95, same as Jordan et al., 2024."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0005",
+      "title": "2.3 Distributed Muon",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS3",
+      "path": [
+        "2 Methods",
+        "2.3 Distributed Muon"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_1e312dde21bd8ce4dedb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px1",
+          "text": "ZeRO-1 and Megatron-LM",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 22
+        },
+        {
+          "paragraph_id": "p_eda29d6b87c2844a61b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px1.p1.1",
+          "text": "Rajbhandari et al., 2020 introduced the ZeRO-1 technique that partitions the expensive optimizer states (e.g. master weights, momentum) all over the cluster. Megatron-LM (Shoeybi et al., 2020) integrated ZeRO-1 into its native parallel designs. Based on Megatron-LM’s sophisticated parallel strategies, e.g. Tensor-Parallel (TP), Pipeline Parallel (PP), Expert Parallel (EP) and Data Parallel (DP), the communication workload of ZeRO-1 can be reduced from gathering all over the distributed world to only gathering over the data parallel group.",
+          "kind": "text",
+          "char_start": 24,
+          "char_end": 568
+        },
+        {
+          "paragraph_id": "p_d13b6f0303bd2814dd64",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px2",
+          "text": "Method",
+          "kind": "heading",
+          "char_start": 570,
+          "char_end": 576
+        },
+        {
+          "paragraph_id": "p_ea8a48a08ca13e1ceb29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px2.p1.1",
+          "text": "ZeRO-1 is efficient for AdamW because it calculates updates in an element-wise fashion. However, Muon requires the full gradient matrix to calculate the updates. Therefore, vanilla ZeRO-1 is not directly applicable to Muon. We propose a new distributed solution based on ZeRO-1 for Muon, referred to as Distributed Muon. Distributed Muon follows ZeRO-1 to partition the optimizer states on DP, and introduces two additional operations compared to a vanilla Zero-1 AdamW optimizer:",
+          "kind": "text",
+          "char_start": 578,
+          "char_end": 1058
+        },
+        {
+          "paragraph_id": "p_fcc9d3e79fec381ed473",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I2.i1",
+          "text": "1. DP Gather. For a local DP partitioned master weight ($1/DP$ the size of the model weight), this operation is to gather the corresponding partitioned gradients into a full gradient matrix.",
+          "kind": "list_item",
+          "char_start": 1060,
+          "char_end": 1250
+        },
+        {
+          "paragraph_id": "p_3f9a7be30d11905fd6b6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I2.i2",
+          "text": "2. Calculate Full Update. After the above gathering, perform Newton-Schulz iteration steps on the full gradient matrix as described in Sec 2.1. Note that we will then discard part of the full update matrix, as we only need the partition corresponding to the local parameters to perform update.",
+          "kind": "list_item",
+          "char_start": 1252,
+          "char_end": 1545
+        },
+        {
+          "paragraph_id": "p_d773f2c33fc1072d8602",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px2.p3.1",
+          "text": "The implementation of Distributed Muon is described in Algorithm 1. The additional operations introduced by Distributed Muon are colored in blue.",
+          "kind": "text",
+          "char_start": 1547,
+          "char_end": 1692
+        },
+        {
+          "paragraph_id": "p_540c360c4821943a3047",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg1",
+          "text": "Algorithm 1 Distributed Muon",
+          "kind": "caption",
+          "char_start": 1694,
+          "char_end": 1722
+        },
+        {
+          "paragraph_id": "p_f368c1a6dce623f381da",
+          "page": null,
+          "bbox": null,
+          "element_id": "alg1.4",
+          "text": "0: Full Gradients $\\mathbf{G}$, DP partitioned Momentum $\\mathbf{m}$, DP partitioned parameters $\\mathbf{p}$, momentum $\\mu$.\n1: // Reduce-scatter $G$ on DP for correct gradients\n2: $\\mathbf{g}=\\text{reduce\\_scatter($\\mathbf{G}$, dp\\_group)}$\n3: // Apply momentum to $\\mathbf{g}$ using local partitioned momentum $\\mathbf{m}$\n4: $\\mathbf{g}^{\\prime}=\\text{update\\_with\\_momentum}(\\mathbf{g},\\mathbf{m},\\mu)$\n5: // DP Gather: gathering $\\mathbf{g^{\\prime}}$ across DP into a full matrix $\\mathbf{G}$\n6: $\\mathbf{G}=\\text{gather($\\mathbf{g^{\\prime}}$, dp\\_group)}$\n7: // Calculate Muon update\n8: $\\mathbf{U}=\\text{Newton-Schulz}(\\mathbf{G})$\n9: // Discard the rest of $\\mathbf{U}$ and only keep the local partition ${\\mathbf{u}}$, then apply the update rule\n10: $\\mathbf{p}^{\\prime}=\\text{apply\\_update}(\\mathbf{p},\\mathbf{u})$\n11: // All-gather updated $\\mathbf{p^{\\prime}}$ into $\\mathbf{P}$\n12: $\\mathbf{P}=\\text{all\\_gather($\\mathbf{p^{\\prime}}$, dp\\_group)}$\n13: // Return the update RMS for logging\n14: return $\\sqrt{\\mathbf{u}^{2}.\\texttt{mean}()}$",
+          "kind": "listing",
+          "char_start": 1724,
+          "char_end": 2777
+        },
+        {
+          "paragraph_id": "p_725f9b34aeabf135f160",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px3",
+          "text": "Analysis",
+          "kind": "heading",
+          "char_start": 2779,
+          "char_end": 2787
+        },
+        {
+          "paragraph_id": "p_0146208b746fa6fdd002",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px3.p1.1",
+          "text": "We compared Distributed Muon to a classic ZeRO-1 based distributed AdamW (referred as Distributed AdamW for simplicity) in several aspects:",
+          "kind": "text",
+          "char_start": 2789,
+          "char_end": 2928
+        },
+        {
+          "paragraph_id": "p_e2b50913117bfc7a3bd0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I3.i1",
+          "text": "• Memory Usage. Muon uses only one momentum buffer, while AdamW uses two momentum buffers. Therefore, the additional memory used by the Muon optimizer is half of Distributed AdamW.",
+          "kind": "list_item",
+          "char_start": 2930,
+          "char_end": 3110
+        },
+        {
+          "paragraph_id": "p_d22cb7c91e3112885872",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I3.i2",
+          "text": "• Communication Overhead. For each device, the additional DP gathering is only required by the local DP partitioned parameters $\\mathbf{p}$. Therefore, the communication cost is less than the reduce-scatter of $\\mathbf{G}$ or the all-gather of $\\mathbf{P}$. Besides, Muon only requires the Newton-Schulz iteration steps in bf16, thus further reducing the communication overhead to 50% comparing to fp32. Overall, the communication workload of Distributed Muon is $(1,1.25]$ of that of Distributed AdamW. The upper-bound is calculated as that the communication of Distributed Muon is 4 (fp32 $\\mathbf{G}$ reduce-scatter) + 2 (bf16 Muon gather) + 4 (fp32 $\\mathbf{P}$ all-gather), while Distributed AdamW is 4 + 4. In practice, as we usually train with multiple DP, the empirical additional cost usually is closer to the lower-bound 1..",
+          "kind": "list_item",
+          "char_start": 3112,
+          "char_end": 3946
+        },
+        {
+          "paragraph_id": "p_c4b870386de895601fba",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I3.i2",
+          "text": "Footnote: 4 4 If TP is enabled, Distributed Muon needs an extra bf16 TP gather on TP group.",
+          "kind": "footnote",
+          "char_start": 3948,
+          "char_end": 4039
+        },
+        {
+          "paragraph_id": "p_a52bc37b70707f975cf4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I3.i3",
+          "text": "• Latency. Distributed Muon has larger end-to-end latencies than Distributed AdamW because it introduces additional communication and requires running Newton-Schulz iteration steps. However, this is not a significant issue because (a) only about 5 Newton-Schultz iteration steps are needed for a good result (discussed in Sec 2.2), and (b) the end-to-end latency caused by the optimizer is negligible compared to the model’s forward-backward pass time (e.g. usually 1% to 3%). Moreover, several engineering techniques, such as overlapping gather and computation, and overlapping optimizer reduce-scatter with parameter gather, can further reduce latency.",
+          "kind": "list_item",
+          "char_start": 4041,
+          "char_end": 4695
+        },
+        {
+          "paragraph_id": "p_a31180a95d3da2e19b8e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS3.SSS0.Px3.p3.1",
+          "text": "When training large-scale models in our distributed cluster, Distributed Muon has no noticeable latency overhead compared to its AdamW counterparts. We will soon release a pull request that implements Distributed Muon for the open-source Megatron-LM (Shoeybi et al., 2020) project.",
+          "kind": "text",
+          "char_start": 4697,
+          "char_end": 4978
+        }
+      ],
+      "text": "ZeRO-1 and Megatron-LM\n\nRajbhandari et al., 2020 introduced the ZeRO-1 technique that partitions the expensive optimizer states (e.g. master weights, momentum) all over the cluster. Megatron-LM (Shoeybi et al., 2020) integrated ZeRO-1 into its native parallel designs. Based on Megatron-LM’s sophisticated parallel strategies, e.g. Tensor-Parallel (TP), Pipeline Parallel (PP), Expert Parallel (EP) and Data Parallel (DP), the communication workload of ZeRO-1 can be reduced from gathering all over the distributed world to only gathering over the data parallel group.\n\nMethod\n\nZeRO-1 is efficient for AdamW because it calculates updates in an element-wise fashion. However, Muon requires the full gradient matrix to calculate the updates. Therefore, vanilla ZeRO-1 is not directly applicable to Muon. We propose a new distributed solution based on ZeRO-1 for Muon, referred to as Distributed Muon. Distributed Muon follows ZeRO-1 to partition the optimizer states on DP, and introduces two additional operations compared to a vanilla Zero-1 AdamW optimizer:\n\n1. DP Gather. For a local DP partitioned master weight ($1/DP$ the size of the model weight), this operation is to gather the corresponding partitioned gradients into a full gradient matrix.\n\n2. Calculate Full Update. After the above gathering, perform Newton-Schulz iteration steps on the full gradient matrix as described in Sec 2.1. Note that we will then discard part of the full update matrix, as we only need the partition corresponding to the local parameters to perform update.\n\nThe implementation of Distributed Muon is described in Algorithm 1. The additional operations introduced by Distributed Muon are colored in blue.\n\nAlgorithm 1 Distributed Muon\n\n0: Full Gradients $\\mathbf{G}$, DP partitioned Momentum $\\mathbf{m}$, DP partitioned parameters $\\mathbf{p}$, momentum $\\mu$.\n1: // Reduce-scatter $G$ on DP for correct gradients\n2: $\\mathbf{g}=\\text{reduce\\_scatter($\\mathbf{G}$, dp\\_group)}$\n3: // Apply momentum to $\\mathbf{g}$ using local partitioned momentum $\\mathbf{m}$\n4: $\\mathbf{g}^{\\prime}=\\text{update\\_with\\_momentum}(\\mathbf{g},\\mathbf{m},\\mu)$\n5: // DP Gather: gathering $\\mathbf{g^{\\prime}}$ across DP into a full matrix $\\mathbf{G}$\n6: $\\mathbf{G}=\\text{gather($\\mathbf{g^{\\prime}}$, dp\\_group)}$\n7: // Calculate Muon update\n8: $\\mathbf{U}=\\text{Newton-Schulz}(\\mathbf{G})$\n9: // Discard the rest of $\\mathbf{U}$ and only keep the local partition ${\\mathbf{u}}$, then apply the update rule\n10: $\\mathbf{p}^{\\prime}=\\text{apply\\_update}(\\mathbf{p},\\mathbf{u})$\n11: // All-gather updated $\\mathbf{p^{\\prime}}$ into $\\mathbf{P}$\n12: $\\mathbf{P}=\\text{all\\_gather($\\mathbf{p^{\\prime}}$, dp\\_group)}$\n13: // Return the update RMS for logging\n14: return $\\sqrt{\\mathbf{u}^{2}.\\texttt{mean}()}$\n\nAnalysis\n\nWe compared Distributed Muon to a classic ZeRO-1 based distributed AdamW (referred as Distributed AdamW for simplicity) in several aspects:\n\n• Memory Usage. Muon uses only one momentum buffer, while AdamW uses two momentum buffers. Therefore, the additional memory used by the Muon optimizer is half of Distributed AdamW.\n\n• Communication Overhead. For each device, the additional DP gathering is only required by the local DP partitioned parameters $\\mathbf{p}$. Therefore, the communication cost is less than the reduce-scatter of $\\mathbf{G}$ or the all-gather of $\\mathbf{P}$. Besides, Muon only requires the Newton-Schulz iteration steps in bf16, thus further reducing the communication overhead to 50% comparing to fp32. Overall, the communication workload of Distributed Muon is $(1,1.25]$ of that of Distributed AdamW. The upper-bound is calculated as that the communication of Distributed Muon is 4 (fp32 $\\mathbf{G}$ reduce-scatter) + 2 (bf16 Muon gather) + 4 (fp32 $\\mathbf{P}$ all-gather), while Distributed AdamW is 4 + 4. In practice, as we usually train with multiple DP, the empirical additional cost usually is closer to the lower-bound 1..\n\nFootnote: 4 4 If TP is enabled, Distributed Muon needs an extra bf16 TP gather on TP group.\n\n• Latency. Distributed Muon has larger end-to-end latencies than Distributed AdamW because it introduces additional communication and requires running Newton-Schulz iteration steps. However, this is not a significant issue because (a) only about 5 Newton-Schultz iteration steps are needed for a good result (discussed in Sec 2.2), and (b) the end-to-end latency caused by the optimizer is negligible compared to the model’s forward-backward pass time (e.g. usually 1% to 3%). Moreover, several engineering techniques, such as overlapping gather and computation, and overlapping optimizer reduce-scatter with parameter gather, can further reduce latency.\n\nWhen training large-scale models in our distributed cluster, Distributed Muon has no noticeable latency overhead compared to its AdamW counterparts. We will soon release a pull request that implements Distributed Muon for the open-source Megatron-LM (Shoeybi et al., 2020) project."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0006",
+      "title": "3 Experiments",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Experiments"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0007",
+      "title": "3.1 Consistent Update RMS",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS1",
+      "path": [
+        "3 Experiments",
+        "3.1 Consistent Update RMS"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c60ef8fdca55d695e56b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p1.1",
+          "text": "As discussed in Sec 2.2, we aim to match the update RMS across all matrix parameters and also match it with that of AdamW. We experimented with two methods to control the Muon update RMS among parameters and compared them to a baseline that only maintains a consistent RMS with AdamW:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 284
+        },
+        {
+          "paragraph_id": "p_01306891a4223ab01316",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i1",
+          "text": "1. Baseline. We multiplied the update matrix by $0.2\\cdot\\sqrt{H}$ ($H$ is the model hidden size) to maintain a consistent update RMS with AdamW. Note that $\\max(A,B)$ equals to $H$ for most matrices. $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{H}+\\lambda\\mathbf{W}_{t-1})$ (5)",
+          "kind": "list_item",
+          "char_start": 286,
+          "char_end": 607
+        },
+        {
+          "paragraph_id": "p_946668b4e4a702e0ae7d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i2",
+          "text": "2. Update Norm. We can directly normalize the updates calculated via Newton-Schulz iterations so its RMS strictly becomes 0.2; $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}/\\mathop{\\text{RMS}}(\\mathbf{O}_{t})+\\lambda\\mathbf{W}_{t-1})$ (6)",
+          "kind": "list_item",
+          "char_start": 609,
+          "char_end": 879
+        },
+        {
+          "paragraph_id": "p_7a9f56d9e7d3de1153cc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i3",
+          "text": "3. Adjusted LR. For each update matrix, we can scale its learning rate by a factor of $0.2\\cdot\\sqrt{\\max(A,B)}$ based on its shape. $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{\\max(A,B)}+\\lambda\\mathbf{W}_{t-1})$ (7)",
+          "kind": "list_item",
+          "char_start": 881,
+          "char_end": 1142
+        },
+        {
+          "paragraph_id": "p_4ec19d7db1924819309a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1",
+          "text": "Analysis",
+          "kind": "heading",
+          "char_start": 1144,
+          "char_end": 1152
+        },
+        {
+          "paragraph_id": "p_a3135e602adf0ca0676c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1.p1.1",
+          "text": "We designed experiments to illustrate the impact of Muon update RMS at an early training stage, because we observed that unexpected behaviors happened very quickly when training models at larger scale. We experimented with small scale 800M models as described in 3.2. The problem of inconsistent update RMS is more pronounced when the disparity between matrix dimensions increases. To highlight the problem for further study, we slightly modify the model architecture by replacing the Swiglu MLP with a standard 2-layer MLP, changing the shape of its matrix parameters from $[H,2.6H]$ to $[H,4H]$. We evaluated the model’s loss and monitored a few of its parameters’ RMS, specifically, attention query (shape $[H,H]$) and MLP (shape $[H,4H]$). We evaluated the model after training for 4B tokens out of a 20B-token schedule. From Table 1, we observed several interesting findings:",
+          "kind": "text",
+          "char_start": 1154,
+          "char_end": 2034
+        },
+        {
+          "paragraph_id": "p_ad89ef0d1c4569ae4476",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T1",
+          "text": "Table 1: Controlling Muon’s Update RMS Across Different Model Params",
+          "kind": "caption",
+          "char_start": 2036,
+          "char_end": 2104
+        },
+        {
+          "paragraph_id": "p_8077bba1e9626bfcfea9",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T1.2",
+          "text": "Methods | Training loss | Validation loss | query weight RMS | MLP weight RMS\nBaseline | 2.734 | 2.812 | 3.586e-2 | 2.52e-2\nUpdate Norm | 2.72 | 2.789 | 4.918e-2 | 5.01e-2\nAdjusted LR | 2.721 | 2.789 | 3.496e-2 | 4.89e-2",
+          "kind": "table",
+          "char_start": 2106,
+          "char_end": 2326
+        },
+        {
+          "paragraph_id": "p_b3b17fa2e2e9f1d3633b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I2.i1",
+          "text": "1. Both Update Norm and Adjusted LR achieved better performances than Baseline;",
+          "kind": "list_item",
+          "char_start": 2328,
+          "char_end": 2407
+        },
+        {
+          "paragraph_id": "p_21b66cfaba510a30d49f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I2.i2",
+          "text": "2. For the MLP weight matrix of shape $[H,4H]$, both Update Norm and Adjusted LR obtain a weight RMS that is roughly doubled comparing to Baseline. This is reasonable as $\\sqrt{\\text{max}(H,4H)}/\\sqrt{H}=2$, so the update RMS of Update Norm and Adjusted LR is roughly two times of Baseline;",
+          "kind": "list_item",
+          "char_start": 2409,
+          "char_end": 2699
+        },
+        {
+          "paragraph_id": "p_b774ba5c5a37c58f3576",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I2.i3",
+          "text": "3. For the attention query weight matrix of shape $[H,H]$, Update Norm still norms the update, while Adjusted LR does not because $\\sqrt{\\text{max}(H,H)}/\\sqrt{H}=1$. As a result, Adjusted LR results in a similar weight RMS as Baseline, but Update Norm has a larger weight rms similar to its MLP.",
+          "kind": "list_item",
+          "char_start": 2701,
+          "char_end": 2997
+        },
+        {
+          "paragraph_id": "p_41191ca0d053b5e869a8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.SSS0.Px1.p3.1",
+          "text": "Based on these findings, we choose the Adjusted LR method for future experiments because it has lower cost.",
+          "kind": "text",
+          "char_start": 2999,
+          "char_end": 3106
+        }
+      ],
+      "text": "As discussed in Sec 2.2, we aim to match the update RMS across all matrix parameters and also match it with that of AdamW. We experimented with two methods to control the Muon update RMS among parameters and compared them to a baseline that only maintains a consistent RMS with AdamW:\n\n1. Baseline. We multiplied the update matrix by $0.2\\cdot\\sqrt{H}$ ($H$ is the model hidden size) to maintain a consistent update RMS with AdamW. Note that $\\max(A,B)$ equals to $H$ for most matrices. $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{H}+\\lambda\\mathbf{W}_{t-1})$ (5)\n\n2. Update Norm. We can directly normalize the updates calculated via Newton-Schulz iterations so its RMS strictly becomes 0.2; $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}/\\mathop{\\text{RMS}}(\\mathbf{O}_{t})+\\lambda\\mathbf{W}_{t-1})$ (6)\n\n3. Adjusted LR. For each update matrix, we can scale its learning rate by a factor of $0.2\\cdot\\sqrt{\\max(A,B)}$ based on its shape. $\\displaystyle\\mathbf{W}_{t}=\\mathbf{W}_{t-1}-\\eta_{t}(0.2\\cdot\\mathbf{O}_{t}\\cdot\\sqrt{\\max(A,B)}+\\lambda\\mathbf{W}_{t-1})$ (7)\n\nAnalysis\n\nWe designed experiments to illustrate the impact of Muon update RMS at an early training stage, because we observed that unexpected behaviors happened very quickly when training models at larger scale. We experimented with small scale 800M models as described in 3.2. The problem of inconsistent update RMS is more pronounced when the disparity between matrix dimensions increases. To highlight the problem for further study, we slightly modify the model architecture by replacing the Swiglu MLP with a standard 2-layer MLP, changing the shape of its matrix parameters from $[H,2.6H]$ to $[H,4H]$. We evaluated the model’s loss and monitored a few of its parameters’ RMS, specifically, attention query (shape $[H,H]$) and MLP (shape $[H,4H]$). We evaluated the model after training for 4B tokens out of a 20B-token schedule. From Table 1, we observed several interesting findings:\n\nTable 1: Controlling Muon’s Update RMS Across Different Model Params\n\nMethods | Training loss | Validation loss | query weight RMS | MLP weight RMS\nBaseline | 2.734 | 2.812 | 3.586e-2 | 2.52e-2\nUpdate Norm | 2.72 | 2.789 | 4.918e-2 | 5.01e-2\nAdjusted LR | 2.721 | 2.789 | 3.496e-2 | 4.89e-2\n\n1. Both Update Norm and Adjusted LR achieved better performances than Baseline;\n\n2. For the MLP weight matrix of shape $[H,4H]$, both Update Norm and Adjusted LR obtain a weight RMS that is roughly doubled comparing to Baseline. This is reasonable as $\\sqrt{\\text{max}(H,4H)}/\\sqrt{H}=2$, so the update RMS of Update Norm and Adjusted LR is roughly two times of Baseline;\n\n3. For the attention query weight matrix of shape $[H,H]$, Update Norm still norms the update, while Adjusted LR does not because $\\sqrt{\\text{max}(H,H)}/\\sqrt{H}=1$. As a result, Adjusted LR results in a similar weight RMS as Baseline, but Update Norm has a larger weight rms similar to its MLP.\n\nBased on these findings, we choose the Adjusted LR method for future experiments because it has lower cost."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0008",
+      "title": "3.2 Scaling Law of Muon",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2",
+      "path": [
+        "3 Experiments",
+        "3.2 Scaling Law of Muon"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6cf26bde394854054697",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p1.1",
+          "text": "For a fair comparison with AdamW, we performed scaling law experiments on a series of dense models in Llama (Grattafiori et al., 2024) architecture. Building a strong baseline is of crucial importance in optimizer research. Hence, we perform a grid search for hyper-parameters of AdamW, following the compute-optimal training setup (Kaplan et al., 2020) (the grid search experiments can be found in Appendix B). Details of the model architecture and hyper-parameters can be found in Table 2. For Muon, as discussed in Sec 2.2, since we matched Muon’s update RMS to AdamW, we directly reused the hyper-parameters that are optimal for the AdamW baseline.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 652
+        },
+        {
+          "paragraph_id": "p_cc107fd082101a999ba3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T2",
+          "text": "Table 2: Scaling Law Models and Hyper-Parameters",
+          "kind": "caption",
+          "char_start": 654,
+          "char_end": 702
+        },
+        {
+          "paragraph_id": "p_f1a7c0141478ddd4c93f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T2.2",
+          "text": "# Params. w/o Embedding | Head | Layer | Hidden | Tokens | LR | Batch Size*\n399M | 12 | 12 | 1536 | 8.92B | 9.503e-4 | 96\n545M | 14 | 14 | 1792 | 14.04B | 9.143e-4 | 128\n822M | 16 | 16 | 2048 | 20.76B | 8.825e-4 | 160\n1.1B | 18 | 18 | 2304 | 28.54B | 8.561e-4 | 192\n1.5B | 20 | 20 | 2560 | 38.91B | 8.305e-4 | 256",
+          "kind": "table",
+          "char_start": 704,
+          "char_end": 1017
+        },
+        {
+          "paragraph_id": "p_8023d29bf98134decd18",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F3",
+          "text": "Figure 3: Fitted scaling law curves for Muon and AdamW optimizers.",
+          "kind": "caption",
+          "char_start": 1019,
+          "char_end": 1085
+        },
+        {
+          "paragraph_id": "p_a98aa44c352bfa2ebf82",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p2.1",
+          "text": "The fitted scaling law curve can be found in figure 3, and the fitted equations are detailed in table 3. As shown in Figure 1(a), Muon only requires about 52% training FLOPs to match the performance of AdamW under compute-optimal setting.",
+          "kind": "text",
+          "char_start": 1087,
+          "char_end": 1325
+        },
+        {
+          "paragraph_id": "p_306d8402571124a62d46",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T3",
+          "text": "Table 3: Fitted parameters of the scaling law curves",
+          "kind": "caption",
+          "char_start": 1327,
+          "char_end": 1379
+        },
+        {
+          "paragraph_id": "p_9862b9e30bd6de92782c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T3.2",
+          "text": "| Muon | AdamW\nLM loss (seqlen=8K) | $2.506\\times C^{-0.052}$ | $2.608\\times C^{-0.054}$",
+          "kind": "table",
+          "char_start": 1381,
+          "char_end": 1469
+        }
+      ],
+      "text": "For a fair comparison with AdamW, we performed scaling law experiments on a series of dense models in Llama (Grattafiori et al., 2024) architecture. Building a strong baseline is of crucial importance in optimizer research. Hence, we perform a grid search for hyper-parameters of AdamW, following the compute-optimal training setup (Kaplan et al., 2020) (the grid search experiments can be found in Appendix B). Details of the model architecture and hyper-parameters can be found in Table 2. For Muon, as discussed in Sec 2.2, since we matched Muon’s update RMS to AdamW, we directly reused the hyper-parameters that are optimal for the AdamW baseline.\n\nTable 2: Scaling Law Models and Hyper-Parameters\n\n# Params. w/o Embedding | Head | Layer | Hidden | Tokens | LR | Batch Size*\n399M | 12 | 12 | 1536 | 8.92B | 9.503e-4 | 96\n545M | 14 | 14 | 1792 | 14.04B | 9.143e-4 | 128\n822M | 16 | 16 | 2048 | 20.76B | 8.825e-4 | 160\n1.1B | 18 | 18 | 2304 | 28.54B | 8.561e-4 | 192\n1.5B | 20 | 20 | 2560 | 38.91B | 8.305e-4 | 256\n\nFigure 3: Fitted scaling law curves for Muon and AdamW optimizers.\n\nThe fitted scaling law curve can be found in figure 3, and the fitted equations are detailed in table 3. As shown in Figure 1(a), Muon only requires about 52% training FLOPs to match the performance of AdamW under compute-optimal setting.\n\nTable 3: Fitted parameters of the scaling law curves\n\n| Muon | AdamW\nLM loss (seqlen=8K) | $2.506\\times C^{-0.052}$ | $2.608\\times C^{-0.054}$"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0009",
+      "title": "3.3 Pretraining with Muon",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS3",
+      "path": [
+        "3 Experiments",
+        "3.3 Pretraining with Muon"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_23a3bd9ba13ade8ba95d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px1",
+          "text": "Model Architecture",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 18
+        },
+        {
+          "paragraph_id": "p_53a9b47dd3d29219dec2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px1.p1.1",
+          "text": "To evaluate Muon against contemporary model architectures, we pretrained from scratch using the deepseek-v3-small architecture (DeepSeek-AI et al., 2024) as it demonstrates strong performance and the original results serve as a reference for comparison. Our pretrained model has 2.24B activated and 15.29B total parameters (3B activated and 16B total when including embedding). Minor modifications to the architecture are detailed in Appendix C.",
+          "kind": "text",
+          "char_start": 20,
+          "char_end": 465
+        },
+        {
+          "paragraph_id": "p_7fd392432774adc144cc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2",
+          "text": "Pretraining Data",
+          "kind": "heading",
+          "char_start": 467,
+          "char_end": 483
+        },
+        {
+          "paragraph_id": "p_c04a629628a5aeab2e37",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px2.p1.1",
+          "text": "Our pretraining data details can be found in Team, 2025. The maximum context length during pretraining is 8K.",
+          "kind": "text",
+          "char_start": 485,
+          "char_end": 594
+        },
+        {
+          "paragraph_id": "p_fcbac048232afbfc6db4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px3",
+          "text": "Pretraining",
+          "kind": "heading",
+          "char_start": 596,
+          "char_end": 607
+        },
+        {
+          "paragraph_id": "p_5e1288b348804be858bf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px3.p1.1",
+          "text": "The model is trained in several stages. We use a 1e-3 auxfree bias update rate in stage 1 and 2, and 0.0 auxfree bias update rate in stage 3. The weight decay is set to 0.1 for all stages. More details and discussions of model training can be found in the Appendix D.",
+          "kind": "text",
+          "char_start": 609,
+          "char_end": 876
+        },
+        {
+          "paragraph_id": "p_8513cc8e09f420e33baa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I3.i1",
+          "text": "1. 0 to 33B tokens: In this stage, the learning rate linearly increases to 4.2e-4 in 2k steps. The batch size is kept at 2048 examples;",
+          "kind": "list_item",
+          "char_start": 878,
+          "char_end": 1013
+        },
+        {
+          "paragraph_id": "p_8eb05a5d2b6277a162bd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I3.i2",
+          "text": "2. 33B to 5.2T tokens: In this stage, the learning rate decays from 4.2e-4 to 4.2e-5 in a cosine style. We keep the batch size at 2048 until 200B tokens, and then doubled to 4096 for the remaining;",
+          "kind": "list_item",
+          "char_start": 1015,
+          "char_end": 1212
+        },
+        {
+          "paragraph_id": "p_ef06d82b03e166a3d37a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I3.i3",
+          "text": "3. 5.2T to 5.7T tokens: In this stage (also referred as the cooldown stage), the learning rate increases to 1e-4 in in 100 steps, and then linearly decays to 0 in 500B tokens, and we keep a constant 4096 batch size. In this stage, we use the highest quality data, focusing on math, code, and reasoning.",
+          "kind": "list_item",
+          "char_start": 1214,
+          "char_end": 1516
+        },
+        {
+          "paragraph_id": "p_13e34dedb3b451d9e07b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px4",
+          "text": "Evaluation Benchmarks",
+          "kind": "heading",
+          "char_start": 1518,
+          "char_end": 1539
+        },
+        {
+          "paragraph_id": "p_0a08bcf18534b253d107",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px4.p1.1",
+          "text": "Our evaluation encompasses four primary categories of benchmarks, each designed to assess distinct capabilities of the model:",
+          "kind": "text",
+          "char_start": 1541,
+          "char_end": 1666
+        },
+        {
+          "paragraph_id": "p_9d7bbead3b7cce210058",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I4.i1",
+          "text": "• English Language Understanding and Reasoning: MMLU(5-shot)(Hendrycks et al., 2021), MMLU-pro(5-shot) (Wang et al., 2024), BBH(3-shot) (Suzgun et al., 2022), TriviaQA(5-shot) (Joshi et al., 2017)",
+          "kind": "list_item",
+          "char_start": 1668,
+          "char_end": 1864
+        },
+        {
+          "paragraph_id": "p_f68a4cb3b8f947c84a75",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I4.i2",
+          "text": "• Code Generation: HumanEval(pass@1) (Chen et al., 2021), MBPP(pass@1)(Austin et al., 2021)",
+          "kind": "list_item",
+          "char_start": 1866,
+          "char_end": 1957
+        },
+        {
+          "paragraph_id": "p_485e2e36f8235691b7da",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I4.i3",
+          "text": "• Mathematical Reasoning: GSM8K(4-shot) (Cobbe et al., 2021) MATH (Hendrycks et al., 2021a), CMATH (Wei et al., 2023)",
+          "kind": "list_item",
+          "char_start": 1959,
+          "char_end": 2076
+        },
+        {
+          "paragraph_id": "p_f67e7e4356de026a90ec",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I4.i4",
+          "text": "• Chinese Language Understanding and Reasoning: C-Eval(5-shot) (Huang et al., 2023), CMMLU(5-shot)(Li et al., 2024)",
+          "kind": "list_item",
+          "char_start": 2078,
+          "char_end": 2193
+        },
+        {
+          "paragraph_id": "p_b4f1bef6410b2ff0d996",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5",
+          "text": "Performance",
+          "kind": "heading",
+          "char_start": 2195,
+          "char_end": 2206
+        },
+        {
+          "paragraph_id": "p_8e0e2c84ce8fff952641",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5.p1.1",
+          "text": "We named our model trained with Muon “Moonlight”. We compared Moonlight with different public models on a similar scale. We first evaluated Moonlight at 1.2T tokens and compared it with the following models that have the same architecture and trained with comparable number of tokens:",
+          "kind": "text",
+          "char_start": 2208,
+          "char_end": 2492
+        },
+        {
+          "paragraph_id": "p_bb7bb8ec2fbb9c060a02",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I5.i1",
+          "text": "• Deepseek-v3-Small (DeepSeek-AI et al., 2024) is a 2.4B/16B-parameter MoE model trained with 1.33T tokens;",
+          "kind": "list_item",
+          "char_start": 2494,
+          "char_end": 2601
+        },
+        {
+          "paragraph_id": "p_9b48076639bc5eada534",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I5.i2",
+          "text": "• Moonlight-A follows the same training settings as Moonlight, except that it uses the AdamW optimizer.",
+          "kind": "list_item",
+          "char_start": 2603,
+          "char_end": 2706
+        },
+        {
+          "paragraph_id": "p_09c8ba92e0872f83d9e5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5.p3.1",
+          "text": "For Moonlight and Moonlight-A, we used the intermediate 1.2T token checkpoint of the total 5.7T pretraining, where the learning rate is not decayed to minimal and the model has not gone through the cooldown stage yet.",
+          "kind": "text",
+          "char_start": 2708,
+          "char_end": 2925
+        },
+        {
+          "paragraph_id": "p_4c221718c36a145fa8af",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T4",
+          "text": "Table 4: Comparison of different models at around 1.2T tokens.",
+          "kind": "caption",
+          "char_start": 2927,
+          "char_end": 2989
+        },
+        {
+          "paragraph_id": "p_46190b87acf9244a2749",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T4.2",
+          "text": "| Benchmark (Metric) | DSV3-Small | Moonlight-A@1.2T | Moonlight@1.2T\n | Activated Params† | 2.24B | 2.24B | 2.24B\n | Total Params† | 15.29B | 15.29B | 15.29B\n | Training Tokens | 1.33T | 1.2T | 1.2T\n | Optimizer | AdamW | AdamW | Muon\nEnglish | MMLU | 53.3 | 60.2 | 60.4\nMMLU-pro | - | 26.8 | 28.1\nBBH | 41.4 | 45.3 | 43.2\nTriviaQA | - | 57.4 | 58.1\nCode | HumanEval | 26.8 | 29.3 | 37.2\nMBPP | 36.8 | 49.2 | 52.9\nMath | GSM8K | 31.4 | 43.8 | 45.0\nMATH | 10.7 | 16.1 | 19.8\nCMath | - | 57.8 | 60.2\nChinese | C-Eval | - | 57.2 | 59.9\nCMMLU | - | 58.2 | 58.8",
+          "kind": "table",
+          "char_start": 2991,
+          "char_end": 3548
+        },
+        {
+          "paragraph_id": "p_030701a0dec364c9c6ec",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5.p4.1",
+          "text": "As shown in Table 4, Moonlight-A, our AdamW-trained baseline model, demonstrates strong performance compared to similar public models. Moonlight performs significantly better than Moonlight-A, proving the scaling effectiveness of Muon. We observed that Muon especially excels on Math and Code related tasks, and we encourage the research community to further investigate this phenomena. After Moonlight is fully trained to 5.7T tokens, we compared it with public models at similar scale and showed the results in Table 5:",
+          "kind": "text",
+          "char_start": 3550,
+          "char_end": 4071
+        },
+        {
+          "paragraph_id": "p_f1abaf9221cf5cc4a5ca",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I6.i1",
+          "text": "• LLAMA3-3B from Grattafiori et al., 2024 is a 3B-parameter dense model trained with 9T tokens.",
+          "kind": "list_item",
+          "char_start": 4073,
+          "char_end": 4168
+        },
+        {
+          "paragraph_id": "p_98b4a4e9a141639e54bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I6.i2",
+          "text": "• Qwen2.5-3B from Yang et al., 2024 is a 3B-parameter dense model trained with 18T tokens.",
+          "kind": "list_item",
+          "char_start": 4170,
+          "char_end": 4260
+        },
+        {
+          "paragraph_id": "p_c7b0c887c7aaf4ceac0c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I6.i3",
+          "text": "• Deepseek-v2-Lite from DeepSeek-AI, 2024 is a 2.4B/16B-parameter MOE model trained with 5.7T tokens.",
+          "kind": "list_item",
+          "char_start": 4262,
+          "char_end": 4363
+        },
+        {
+          "paragraph_id": "p_095f88fdd3deff6ce816",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T5",
+          "text": "Table 5: Comparison of different models on various benchmarks.",
+          "kind": "caption",
+          "char_start": 4365,
+          "char_end": 4427
+        },
+        {
+          "paragraph_id": "p_e2b6751902ad5872c6b2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T5.2",
+          "text": "| Benchmark (Metric) | Llama3.2-3B | Qwen2.5-3B | DSV2-Lite | Moonlight\n | Activated Param† | 2.81B | 2.77B | 2.24B | 2.24B\n | Total Params† | 2.81B | 2.77B | 15.29B | 15.29B\n | Training Tokens | 9T | 18T | 5.7T | 5.7T\n | Optimizer | AdamW | Unknown | AdamW | Muon\nEnglish | MMLU | 54.7 | 65.6 | 58.3 | 70.0\nMMLU-pro | 25.0 | 34.6 | 25.5 | 42.4\nBBH | 46.8 | 56.3 | 44.1 | 65.2\nTriviaQA‡ | 59.6 | 51.1 | 65.1 | 66.3\nCode | HumanEval | 28.0 | 42.1 | 29.9 | 48.1\nMBPP | 48.7 | 57.1 | 43.2 | 63.8\nMath | GSM8K | 34.0 | 79.1 | 41.1 | 77.4\nMATH | 8.5 | 42.6 | 17.1 | 45.3\nCMath | - | 80.0 | 58.4 | 81.1\nChinese | C-Eval | - | 75.0 | 60.3 | 77.2\nCMMLU | - | 75.0 | 64.3 | 78.2",
+          "kind": "table",
+          "char_start": 4429,
+          "char_end": 5098
+        },
+        {
+          "paragraph_id": "p_3c34ec447cb86ddbfdc0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5.p6.1",
+          "text": "As shown in Table 5, Moonlight outperforms models with similar architectures trained with an equivalent number of tokens. Even when compared to dense models trained on substantially larger datasets, Moonlight maintains competitive performance. Detailed comparisons can be found in Appendix E. The performance of Moonlight is further compared with other well-known language models on MMLU and GSM8k, as illustrated in Figure 1(b) and Appendix E Figure 8.. Notably, Moonlight lies on the Pareto frontier of model performance versus training budget, outperforming many other models across various sizes.",
+          "kind": "text",
+          "char_start": 5100,
+          "char_end": 5700
+        },
+        {
+          "paragraph_id": "p_76de6063264f2ca5245e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.SSS0.Px5.p6.1",
+          "text": "Footnote: 5 5 Performance metrics and computational requirements (FLOPs) for baseline models are sourced from (OLMo et al., 2024)",
+          "kind": "footnote",
+          "char_start": 5702,
+          "char_end": 5831
+        }
+      ],
+      "text": "Model Architecture\n\nTo evaluate Muon against contemporary model architectures, we pretrained from scratch using the deepseek-v3-small architecture (DeepSeek-AI et al., 2024) as it demonstrates strong performance and the original results serve as a reference for comparison. Our pretrained model has 2.24B activated and 15.29B total parameters (3B activated and 16B total when including embedding). Minor modifications to the architecture are detailed in Appendix C.\n\nPretraining Data\n\nOur pretraining data details can be found in Team, 2025. The maximum context length during pretraining is 8K.\n\nPretraining\n\nThe model is trained in several stages. We use a 1e-3 auxfree bias update rate in stage 1 and 2, and 0.0 auxfree bias update rate in stage 3. The weight decay is set to 0.1 for all stages. More details and discussions of model training can be found in the Appendix D.\n\n1. 0 to 33B tokens: In this stage, the learning rate linearly increases to 4.2e-4 in 2k steps. The batch size is kept at 2048 examples;\n\n2. 33B to 5.2T tokens: In this stage, the learning rate decays from 4.2e-4 to 4.2e-5 in a cosine style. We keep the batch size at 2048 until 200B tokens, and then doubled to 4096 for the remaining;\n\n3. 5.2T to 5.7T tokens: In this stage (also referred as the cooldown stage), the learning rate increases to 1e-4 in in 100 steps, and then linearly decays to 0 in 500B tokens, and we keep a constant 4096 batch size. In this stage, we use the highest quality data, focusing on math, code, and reasoning.\n\nEvaluation Benchmarks\n\nOur evaluation encompasses four primary categories of benchmarks, each designed to assess distinct capabilities of the model:\n\n• English Language Understanding and Reasoning: MMLU(5-shot)(Hendrycks et al., 2021), MMLU-pro(5-shot) (Wang et al., 2024), BBH(3-shot) (Suzgun et al., 2022), TriviaQA(5-shot) (Joshi et al., 2017)\n\n• Code Generation: HumanEval(pass@1) (Chen et al., 2021), MBPP(pass@1)(Austin et al., 2021)\n\n• Mathematical Reasoning: GSM8K(4-shot) (Cobbe et al., 2021) MATH (Hendrycks et al., 2021a), CMATH (Wei et al., 2023)\n\n• Chinese Language Understanding and Reasoning: C-Eval(5-shot) (Huang et al., 2023), CMMLU(5-shot)(Li et al., 2024)\n\nPerformance\n\nWe named our model trained with Muon “Moonlight”. We compared Moonlight with different public models on a similar scale. We first evaluated Moonlight at 1.2T tokens and compared it with the following models that have the same architecture and trained with comparable number of tokens:\n\n• Deepseek-v3-Small (DeepSeek-AI et al., 2024) is a 2.4B/16B-parameter MoE model trained with 1.33T tokens;\n\n• Moonlight-A follows the same training settings as Moonlight, except that it uses the AdamW optimizer.\n\nFor Moonlight and Moonlight-A, we used the intermediate 1.2T token checkpoint of the total 5.7T pretraining, where the learning rate is not decayed to minimal and the model has not gone through the cooldown stage yet.\n\nTable 4: Comparison of different models at around 1.2T tokens.\n\n| Benchmark (Metric) | DSV3-Small | Moonlight-A@1.2T | Moonlight@1.2T\n | Activated Params† | 2.24B | 2.24B | 2.24B\n | Total Params† | 15.29B | 15.29B | 15.29B\n | Training Tokens | 1.33T | 1.2T | 1.2T\n | Optimizer | AdamW | AdamW | Muon\nEnglish | MMLU | 53.3 | 60.2 | 60.4\nMMLU-pro | - | 26.8 | 28.1\nBBH | 41.4 | 45.3 | 43.2\nTriviaQA | - | 57.4 | 58.1\nCode | HumanEval | 26.8 | 29.3 | 37.2\nMBPP | 36.8 | 49.2 | 52.9\nMath | GSM8K | 31.4 | 43.8 | 45.0\nMATH | 10.7 | 16.1 | 19.8\nCMath | - | 57.8 | 60.2\nChinese | C-Eval | - | 57.2 | 59.9\nCMMLU | - | 58.2 | 58.8\n\nAs shown in Table 4, Moonlight-A, our AdamW-trained baseline model, demonstrates strong performance compared to similar public models. Moonlight performs significantly better than Moonlight-A, proving the scaling effectiveness of Muon. We observed that Muon especially excels on Math and Code related tasks, and we encourage the research community to further investigate this phenomena. After Moonlight is fully trained to 5.7T tokens, we compared it with public models at similar scale and showed the results in Table 5:\n\n• LLAMA3-3B from Grattafiori et al., 2024 is a 3B-parameter dense model trained with 9T tokens.\n\n• Qwen2.5-3B from Yang et al., 2024 is a 3B-parameter dense model trained with 18T tokens.\n\n• Deepseek-v2-Lite from DeepSeek-AI, 2024 is a 2.4B/16B-parameter MOE model trained with 5.7T tokens.\n\nTable 5: Comparison of different models on various benchmarks.\n\n| Benchmark (Metric) | Llama3.2-3B | Qwen2.5-3B | DSV2-Lite | Moonlight\n | Activated Param† | 2.81B | 2.77B | 2.24B | 2.24B\n | Total Params† | 2.81B | 2.77B | 15.29B | 15.29B\n | Training Tokens | 9T | 18T | 5.7T | 5.7T\n | Optimizer | AdamW | Unknown | AdamW | Muon\nEnglish | MMLU | 54.7 | 65.6 | 58.3 | 70.0\nMMLU-pro | 25.0 | 34.6 | 25.5 | 42.4\nBBH | 46.8 | 56.3 | 44.1 | 65.2\nTriviaQA‡ | 59.6 | 51.1 | 65.1 | 66.3\nCode | HumanEval | 28.0 | 42.1 | 29.9 | 48.1\nMBPP | 48.7 | 57.1 | 43.2 | 63.8\nMath | GSM8K | 34.0 | 79.1 | 41.1 | 77.4\nMATH | 8.5 | 42.6 | 17.1 | 45.3\nCMath | - | 80.0 | 58.4 | 81.1\nChinese | C-Eval | - | 75.0 | 60.3 | 77.2\nCMMLU | - | 75.0 | 64.3 | 78.2\n\nAs shown in Table 5, Moonlight outperforms models with similar architectures trained with an equivalent number of tokens. Even when compared to dense models trained on substantially larger datasets, Moonlight maintains competitive performance. Detailed comparisons can be found in Appendix E. The performance of Moonlight is further compared with other well-known language models on MMLU and GSM8k, as illustrated in Figure 1(b) and Appendix E Figure 8.. Notably, Moonlight lies on the Pareto frontier of model performance versus training budget, outperforming many other models across various sizes.\n\nFootnote: 5 5 Performance metrics and computational requirements (FLOPs) for baseline models are sourced from (OLMo et al., 2024)"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0010",
+      "title": "3.4 Dynamics of Singular Spectrum",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS4",
+      "path": [
+        "3 Experiments",
+        "3.4 Dynamics of Singular Spectrum"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e5c7c135f96799a01632",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p1.1",
+          "text": "In order to validate the intuition that Muon can optimize the weight matrices in more diverse directions, we conducted a spectral analysis of the weight matrices trained with Muon and AdamW. For a weight matrix with singular values $\\sigma=(\\sigma_{1},\\sigma_{2},\\cdots,\\sigma_{n})$, we calculate the SVD entropy (Alter et al., 2000; Roy & Vetterli, 2007) of this matrix as follows:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 382
+        },
+        {
+          "paragraph_id": "p_dadb17598585f0312a9d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Ex3",
+          "text": "H(\\sigma)=-\\frac{1}{\\log n}\\sum_{i=1}^{n}\\frac{\\sigma^{2}_{i}}{\\sum_{j=1}^{n}\\sigma^{2}_{j}}\\log\\frac{\\sigma^{2}_{i}}{\\sum_{j=1}^{n}\\sigma^{2}_{j}}",
+          "kind": "equation",
+          "char_start": 384,
+          "char_end": 531
+        },
+        {
+          "paragraph_id": "p_cbb5715c381d68337caf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p1.2",
+          "text": "As shown in Figure 4, we visualized the average SVD entropy of the weight matrices across different training checkpoints during pretraining with 1.2T tokens. We can see that across all training checkpoints and all groups of weight matrices, the SVD entropy of Muon is higher than that of AdamW, which verifies the intuition that Muon can provide a more diverse spectrum of updates for the weight matrices. This discrepancy is more significant in the router weights for expert selection, which indicates that mixture-of-expert models can benefit more from Muon.",
+          "kind": "text",
+          "char_start": 533,
+          "char_end": 1093
+        },
+        {
+          "paragraph_id": "p_074cc12ae116a999b521",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS4.p2.1",
+          "text": "Moreover, we visualized the singular value distributions of each weight matrix at the checkpoint trained with 1.2T tokens as demonstrated in Appendix F. We find that, for over 90% of the weight matrices, the SVD entropy when optimized by Muon is higher than that of AdamW, providing strong empirical evidence for Muon’s superior capability in exploring diverse optimization directions.",
+          "kind": "text",
+          "char_start": 1095,
+          "char_end": 1480
+        },
+        {
+          "paragraph_id": "p_a941377649993132af71",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F4",
+          "text": "Figure 4: SVD entropy of weight matrices across different training iterations. We categorize the weight matrices into 6 different groups: 1) AttnQO denotes the weight matrices related to the query and output projection in the attention layer; 2) AttnKV denotes the weight matrices related to the key and value projection in the attention layer; 3) Experts denotes the weight matrices in expert models; 4) SharedExperts denotes the weight matrices in shared expert models; 5) Router denotes the weight matrices in the router; 6) Dense denotes the weight matrices in the first dense layer. The SVD entropy is calculated as the macro-average of the weight matrices in each group across all layers. For weights in expert models, we only calculate 3 out of 64 experts in different layers for efficiency.",
+          "kind": "caption",
+          "char_start": 1482,
+          "char_end": 2280
+        }
+      ],
+      "text": "In order to validate the intuition that Muon can optimize the weight matrices in more diverse directions, we conducted a spectral analysis of the weight matrices trained with Muon and AdamW. For a weight matrix with singular values $\\sigma=(\\sigma_{1},\\sigma_{2},\\cdots,\\sigma_{n})$, we calculate the SVD entropy (Alter et al., 2000; Roy & Vetterli, 2007) of this matrix as follows:\n\nH(\\sigma)=-\\frac{1}{\\log n}\\sum_{i=1}^{n}\\frac{\\sigma^{2}_{i}}{\\sum_{j=1}^{n}\\sigma^{2}_{j}}\\log\\frac{\\sigma^{2}_{i}}{\\sum_{j=1}^{n}\\sigma^{2}_{j}}\n\nAs shown in Figure 4, we visualized the average SVD entropy of the weight matrices across different training checkpoints during pretraining with 1.2T tokens. We can see that across all training checkpoints and all groups of weight matrices, the SVD entropy of Muon is higher than that of AdamW, which verifies the intuition that Muon can provide a more diverse spectrum of updates for the weight matrices. This discrepancy is more significant in the router weights for expert selection, which indicates that mixture-of-expert models can benefit more from Muon.\n\nMoreover, we visualized the singular value distributions of each weight matrix at the checkpoint trained with 1.2T tokens as demonstrated in Appendix F. We find that, for over 90% of the weight matrices, the SVD entropy when optimized by Muon is higher than that of AdamW, providing strong empirical evidence for Muon’s superior capability in exploring diverse optimization directions.\n\nFigure 4: SVD entropy of weight matrices across different training iterations. We categorize the weight matrices into 6 different groups: 1) AttnQO denotes the weight matrices related to the query and output projection in the attention layer; 2) AttnKV denotes the weight matrices related to the key and value projection in the attention layer; 3) Experts denotes the weight matrices in expert models; 4) SharedExperts denotes the weight matrices in shared expert models; 5) Router denotes the weight matrices in the router; 6) Dense denotes the weight matrices in the first dense layer. The SVD entropy is calculated as the macro-average of the weight matrices in each group across all layers. For weights in expert models, we only calculate 3 out of 64 experts in different layers for efficiency."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0011",
+      "title": "3.5 Supervised Finetuning (SFT) with Muon",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS5",
+      "path": [
+        "3 Experiments",
+        "3.5 Supervised Finetuning (SFT) with Muon"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0303d380ed443dd7c231",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS5.p1.1",
+          "text": "In this section, we present ablation studies on the Muon optimizer within the standard SFT stage of LLM training. Our findings demonstrate that the benefits introduced by Muon persist during the SFT stage. Specifically, a model that is both Muon-pretrained and Muon-finetuned outperforms others in the ablation studies. However, we also observe that when the SFT optimizer differs from the pretraining optimizer, SFT with Muon does not show a significant advantage over AdamW. This suggests that there is still considerable room for further exploration, which we leave for future work.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 585
+        }
+      ],
+      "text": "In this section, we present ablation studies on the Muon optimizer within the standard SFT stage of LLM training. Our findings demonstrate that the benefits introduced by Muon persist during the SFT stage. Specifically, a model that is both Muon-pretrained and Muon-finetuned outperforms others in the ablation studies. However, we also observe that when the SFT optimizer differs from the pretraining optimizer, SFT with Muon does not show a significant advantage over AdamW. This suggests that there is still considerable room for further exploration, which we leave for future work."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0012",
+      "title": "3.5.1 Ablation Studies on the Interchangeability of Pretrain and SFT Optimizers",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS5.SSS1",
+      "path": [
+        "3 Experiments",
+        "3.5 Supervised Finetuning (SFT) with Muon",
+        "3.5.1 Ablation Studies on the Interchangeability of Pretrain and SFT Optimizers"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_16c651963b84f630782d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS5.SSS1.p1.1",
+          "text": "To further investigate Muon’s potential, we finetuned Moonlight@1.2T and Moonlight-A@1.2T using both the Muon and AdamW optimizers. These models were finetuned for two epochs on the open-source tulu-3-sft-mixture dataset (Lambert et al., 2024), which contains 4k sequence length data. The learning rate followed a linear decay schedule, starting at $5\\times 10^{-5}$ and gradually reducing to $0$. The results, shown in Table 6, highlight the superior performance of Moonlight@1.2T compared to Moonlight-A@1.2T.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 511
+        },
+        {
+          "paragraph_id": "p_d4ef26cd96b1f0c472d6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T6",
+          "text": "Table 6: Examining the impact of optimizer interchangeability between pretraining and SFT phases.",
+          "kind": "caption",
+          "char_start": 513,
+          "char_end": 610
+        },
+        {
+          "paragraph_id": "p_49cd6e176f792bd75f2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T6.2",
+          "text": "Benchmark (Metric) | # Shots | Moonlight-1.2T\nPretraining Optimizer | - | Muon | AdamW | Muon | AdamW\nSFT Optimzier | - | Muon | Muon | AdamW | AdamW\nMMLU (EM) | 0-shot (CoT) | 55.7 | 55.3 | 50.2 | 52.0\nHumanEval (Pass@1) | 0-shot | 57.3 | 53.7 | 52.4 | 53.1\nMBPP (Pass@1) | 0-shot | 55.6 | 55.5 | 55.2 | 55.2\nGSM8K (EM) | 5-shot | 68.0 | 62.1 | 64.9 | 64.6",
+          "kind": "table",
+          "char_start": 612,
+          "char_end": 969
+        }
+      ],
+      "text": "To further investigate Muon’s potential, we finetuned Moonlight@1.2T and Moonlight-A@1.2T using both the Muon and AdamW optimizers. These models were finetuned for two epochs on the open-source tulu-3-sft-mixture dataset (Lambert et al., 2024), which contains 4k sequence length data. The learning rate followed a linear decay schedule, starting at $5\\times 10^{-5}$ and gradually reducing to $0$. The results, shown in Table 6, highlight the superior performance of Moonlight@1.2T compared to Moonlight-A@1.2T.\n\nTable 6: Examining the impact of optimizer interchangeability between pretraining and SFT phases.\n\nBenchmark (Metric) | # Shots | Moonlight-1.2T\nPretraining Optimizer | - | Muon | AdamW | Muon | AdamW\nSFT Optimzier | - | Muon | Muon | AdamW | AdamW\nMMLU (EM) | 0-shot (CoT) | 55.7 | 55.3 | 50.2 | 52.0\nHumanEval (Pass@1) | 0-shot | 57.3 | 53.7 | 52.4 | 53.1\nMBPP (Pass@1) | 0-shot | 55.6 | 55.5 | 55.2 | 55.2\nGSM8K (EM) | 5-shot | 68.0 | 62.1 | 64.9 | 64.6"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0013",
+      "title": "3.5.2 SFT with Muon on public pretrained models",
+      "level": 3,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS5.SSS2",
+      "path": [
+        "3 Experiments",
+        "3.5 Supervised Finetuning (SFT) with Muon",
+        "3.5.2 SFT with Muon on public pretrained models"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_bd5f7dee44d8f6d91d09",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS5.SSS2.p1.1",
+          "text": "We further applied Muon to the supervised fine-tuning (SFT) of a public pretrained model, specifically the Qwen2.5-7B base model (Yang et al., 2024), using the open-source tulu-3-sft-mixture dataset (Lambert et al., 2024). The dataset was packed with an 8k sequence length, and we employed a cosine decay learning rate schedule, starting at $2\\times 10^{-5}$ and gradually decreasing to $2\\times 10^{-6}$. The results are presented in Table 7. For comparison, we show that the Muon-finetuned model achieves performance on par with the Adam-finetuned model. These results indicate that for optimal performance, it is more effective to apply Muon during the pretraining phase rather than during supervised fine-tuning.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 716
+        },
+        {
+          "paragraph_id": "p_81d2d56dda0b9cc5e465",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T7",
+          "text": "Table 7: Comparison of Adam and Muon optimizers applied to the SFT of the Qwen2.5-7B pretrained model.",
+          "kind": "caption",
+          "char_start": 718,
+          "char_end": 820
+        },
+        {
+          "paragraph_id": "p_c41acd5f2746c4624e21",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T7.2",
+          "text": "Benchmark (Metric) | # Shots | Adam-SFT | Muon-SFT\nPretrained Model | - | Qwen2.5-7B\nMMLU (EM) | 0-shot (CoT) | 71.4 | 70.8\nHumanEval (Pass@1) | 0-shot | 79.3 | 77.4\nMBPP (Pass@1) | 0-shot | 71.9 | 71.6\nGSM8K (EM) | 5-shot | 89.8 | 85.8",
+          "kind": "table",
+          "char_start": 822,
+          "char_end": 1058
+        }
+      ],
+      "text": "We further applied Muon to the supervised fine-tuning (SFT) of a public pretrained model, specifically the Qwen2.5-7B base model (Yang et al., 2024), using the open-source tulu-3-sft-mixture dataset (Lambert et al., 2024). The dataset was packed with an 8k sequence length, and we employed a cosine decay learning rate schedule, starting at $2\\times 10^{-5}$ and gradually decreasing to $2\\times 10^{-6}$. The results are presented in Table 7. For comparison, we show that the Muon-finetuned model achieves performance on par with the Adam-finetuned model. These results indicate that for optimal performance, it is more effective to apply Muon during the pretraining phase rather than during supervised fine-tuning.\n\nTable 7: Comparison of Adam and Muon optimizers applied to the SFT of the Qwen2.5-7B pretrained model.\n\nBenchmark (Metric) | # Shots | Adam-SFT | Muon-SFT\nPretrained Model | - | Qwen2.5-7B\nMMLU (EM) | 0-shot (CoT) | 71.4 | 70.8\nHumanEval (Pass@1) | 0-shot | 79.3 | 77.4\nMBPP (Pass@1) | 0-shot | 71.9 | 71.6\nGSM8K (EM) | 5-shot | 89.8 | 85.8"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0014",
+      "title": "4 Discussions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Discussions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_34ed80bc4887999e9b29",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "There are several possible directions for future research that could further explore and expand upon the current findings.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 122
+        },
+        {
+          "paragraph_id": "p_54d7abeff31dd8517b53",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1",
+          "text": "Incorporating All Parameters into the Muon Framework",
+          "kind": "heading",
+          "char_start": 124,
+          "char_end": 176
+        },
+        {
+          "paragraph_id": "p_8636dba10cf4f69e2dd9",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1.p1.1",
+          "text": "Currently, the Muon optimizer is utilized in conjunction with the Adam optimizer, where certain parameters remain under the purview of Adam optimization. This hybrid approach, while functional, presents an opportunity for improvement. The integration of the optimization of all parameters exclusively within the Muon framework is a topic of significant research interest.",
+          "kind": "text",
+          "char_start": 178,
+          "char_end": 549
+        },
+        {
+          "paragraph_id": "p_b28f8326c5d0ffa9a907",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2",
+          "text": "Extending Muon to Schatten Norms",
+          "kind": "heading",
+          "char_start": 551,
+          "char_end": 583
+        },
+        {
+          "paragraph_id": "p_c33f8d307eeaf27ae67e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2.p1.1",
+          "text": "The Muon optimizer can be interpreted as the steepest descent method under the spectral norm. Given the broad applicability and versatility of Schatten norms, extending Muon to encompass the general Schatten norm is a promising direction. This extension may unlock additional optimization capabilities and potentially yield superior results compared to the current spectral norm-based implementation.",
+          "kind": "text",
+          "char_start": 585,
+          "char_end": 985
+        },
+        {
+          "paragraph_id": "p_c51bcab973858547c1f3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3",
+          "text": "Understanding and Solving the Pretraining-Finetuning Mismatch",
+          "kind": "heading",
+          "char_start": 987,
+          "char_end": 1048
+        },
+        {
+          "paragraph_id": "p_d508322817145dfc9178",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p1.1",
+          "text": "A notable phenomenon observed in practice is the suboptimal performance of models pretrained with AdamW when fine-tuned with Muon, and vice versa. This optimizer mismatch presents a significant barrier to effectively leveraging the extensive repository of AdamW-pretrained checkpoints, thereby necessitating a rigorous theoretical investigation. A precise understanding of the underlying mechanisms is essential for devising robust and effective solutions.",
+          "kind": "text",
+          "char_start": 1050,
+          "char_end": 1506
+        }
+      ],
+      "text": "There are several possible directions for future research that could further explore and expand upon the current findings.\n\nIncorporating All Parameters into the Muon Framework\n\nCurrently, the Muon optimizer is utilized in conjunction with the Adam optimizer, where certain parameters remain under the purview of Adam optimization. This hybrid approach, while functional, presents an opportunity for improvement. The integration of the optimization of all parameters exclusively within the Muon framework is a topic of significant research interest.\n\nExtending Muon to Schatten Norms\n\nThe Muon optimizer can be interpreted as the steepest descent method under the spectral norm. Given the broad applicability and versatility of Schatten norms, extending Muon to encompass the general Schatten norm is a promising direction. This extension may unlock additional optimization capabilities and potentially yield superior results compared to the current spectral norm-based implementation.\n\nUnderstanding and Solving the Pretraining-Finetuning Mismatch\n\nA notable phenomenon observed in practice is the suboptimal performance of models pretrained with AdamW when fine-tuned with Muon, and vice versa. This optimizer mismatch presents a significant barrier to effectively leveraging the extensive repository of AdamW-pretrained checkpoints, thereby necessitating a rigorous theoretical investigation. A precise understanding of the underlying mechanisms is essential for devising robust and effective solutions."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0015",
+      "title": "5 Conclusions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Conclusions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f74fb7da9e6d2dcce62f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "In this technical report, we presented a comprehensive study on the scalability of Muon in LLM training. Through systematic analysis and improvements, we successfully applied Muon to a 3B/16B-parameter MoE model trained on 5.7 trillion tokens. Our results demonstrate that Muon can effectively replace AdamW as the standard optimizer for large-scale LLM training, offering significant advantages in both training efficiency and model performance. By open-sourcing our implementation, the Moonlight model, and intermediate training checkpoints, we aim to facilitate further research in scalable optimization techniques and accelerate the development of training methods for LLMs.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 678
+        }
+      ],
+      "text": "In this technical report, we presented a comprehensive study on the scalability of Muon in LLM training. Through systematic analysis and improvements, we successfully applied Muon to a 3B/16B-parameter MoE model trained on 5.7 trillion tokens. Our results demonstrate that Muon can effectively replace AdamW as the standard optimizer for large-scale LLM training, offering significant advantages in both training efficiency and model performance. By open-sourcing our implementation, the Moonlight model, and intermediate training checkpoints, we aim to facilitate further research in scalable optimization techniques and accelerate the development of training methods for LLMs."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0016",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_89a88ca423f6d4b8cf99",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx1",
+          "text": "Alter et al. (2000) Orly Alter, Patrick. Brown and David Botstein “Singular value decomposition for genome-wide expression data processing and modeling” In Proceedings of the National Academy of Sciences 97.18, 2000, pp. 10101–10106 DOI: 10.1073/pnas.97.18.10101",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 262
+        },
+        {
+          "paragraph_id": "p_9a83830995f3d51e8daf",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx2",
+          "text": "Austin et al. (2021) Jacob Austin et al. “Program Synthesis with Large Language Models”, 2021 arXiv: https://arxiv.org/abs/2108.07732",
+          "kind": "list_item",
+          "char_start": 264,
+          "char_end": 397
+        },
+        {
+          "paragraph_id": "p_e00f3aee9413300e58f9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx3",
+          "text": "Bernstein & Newhouse (2024) Jeremy Bernstein and Laker Newhouse “Old Optimizer, New Norm: An Anthology”, 2024 arXiv: https://arxiv.org/abs/2409.20325",
+          "kind": "list_item",
+          "char_start": 399,
+          "char_end": 548
+        },
+        {
+          "paragraph_id": "p_4c713ecc02c70a048bc9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx4",
+          "text": "Bi et al. (2024) Xiao Bi et al. “Deepseek llm: Scaling open-source language models with longtermism” In arXiv preprint arXiv:2401.02954, 2024",
+          "kind": "list_item",
+          "char_start": 550,
+          "char_end": 691
+        },
+        {
+          "paragraph_id": "p_fe7649f0cccc3684ad3a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx5",
+          "text": "Cesista (2024) Franz Cesista “Deep Learning Optimizers as Steepest Descent in Normed Spaces”, 2024 URL: http://leloykun.github.io/ponder/steepest-descent-opt/",
+          "kind": "list_item",
+          "char_start": 693,
+          "char_end": 851
+        },
+        {
+          "paragraph_id": "p_4397eb4cabaeac75b2be",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx6",
+          "text": "Chen et al. (2021) Mark Chen et al. “Evaluating Large Language Models Trained on Code”, 2021 arXiv:2107.03374 [cs.LG]",
+          "kind": "list_item",
+          "char_start": 853,
+          "char_end": 970
+        },
+        {
+          "paragraph_id": "p_ee5c0e6fd995a2a0bf0f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx7",
+          "text": "Cobbe et al. (2021) Karl Cobbe et al. “Training Verifiers to Solve Math Word Problems”, 2021 arXiv: https://arxiv.org/abs/2110.14168",
+          "kind": "list_item",
+          "char_start": 972,
+          "char_end": 1104
+        },
+        {
+          "paragraph_id": "p_97390104f102c98288cd",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx8",
+          "text": "DeepSeek-AI (2024) DeepSeek-AI “DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model”, 2024 arXiv:2405.04434 [cs.CL]",
+          "kind": "list_item",
+          "char_start": 1106,
+          "char_end": 1252
+        },
+        {
+          "paragraph_id": "p_5c920963fee121dbf970",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx9",
+          "text": "DeepSeek-AI et al. (2024) DeepSeek-AI et al. “DeepSeek-V3 Technical Report”, 2024 arXiv: https://arxiv.org/abs/2412.19437",
+          "kind": "list_item",
+          "char_start": 1254,
+          "char_end": 1375
+        },
+        {
+          "paragraph_id": "p_9c1c2c1d0432ff53a7d1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx10",
+          "text": "Franz (2024) Louis Franz “The Case for Muon”, 2024 URL: https://x.com/leloykun/status/1846842887839125941",
+          "kind": "list_item",
+          "char_start": 1377,
+          "char_end": 1482
+        },
+        {
+          "paragraph_id": "p_2c564d6a529f4fae370f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx11",
+          "text": "Grattafiori et al. (2024) Aaron Grattafiori et al. “The Llama 3 Herd of Models”, 2024 arXiv: https://arxiv.org/abs/2407.21783",
+          "kind": "list_item",
+          "char_start": 1484,
+          "char_end": 1609
+        },
+        {
+          "paragraph_id": "p_8d4b3e61aef20a7e22cc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx12",
+          "text": "Hendrycks et al. (2021) Dan Hendrycks et al. “Measuring Massive Multitask Language Understanding”, 2021 arXiv: https://arxiv.org/abs/2009.03300",
+          "kind": "list_item",
+          "char_start": 1611,
+          "char_end": 1754
+        },
+        {
+          "paragraph_id": "p_d8c7bad214212e12d781",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx13",
+          "text": "Hendrycks et al. (2021a) Dan Hendrycks et al. “Measuring Mathematical Problem Solving With the MATH Dataset”, 2021 arXiv: https://arxiv.org/abs/2103.03874",
+          "kind": "list_item",
+          "char_start": 1756,
+          "char_end": 1910
+        },
+        {
+          "paragraph_id": "p_8ac865fa3c34663b1de8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx14",
+          "text": "Hoffmann et al. (2022) Jordan Hoffmann et al. “Training Compute-Optimal Large Language Models”, 2022 arXiv: https://arxiv.org/abs/2203.15556",
+          "kind": "list_item",
+          "char_start": 1912,
+          "char_end": 2052
+        },
+        {
+          "paragraph_id": "p_2eca5b263a31ad6aae1b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx15",
+          "text": "Huang et al. (2023) Yuzhen Huang et al. “C-Eval: A Multi-Level Multi-Discipline Chinese Evaluation Suite for Foundation Models”, 2023 arXiv: https://arxiv.org/abs/2305.08322",
+          "kind": "list_item",
+          "char_start": 2054,
+          "char_end": 2227
+        },
+        {
+          "paragraph_id": "p_9b8111cc9c38ffc77636",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx16",
+          "text": "Jordan et al. (2024) Keller Jordan et al. “Muon: An optimizer for hidden layers in neural networks”, 2024 URL: https://kellerjordan.github.io/posts/muon/",
+          "kind": "list_item",
+          "char_start": 2229,
+          "char_end": 2382
+        },
+        {
+          "paragraph_id": "p_b539d4a7c3caff1d8057",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx17",
+          "text": "Joshi et al. (2017) Mandar Joshi et al. “TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension”, 2017 arXiv: https://arxiv.org/abs/1705.03551",
+          "kind": "list_item",
+          "char_start": 2384,
+          "char_end": 2560
+        },
+        {
+          "paragraph_id": "p_71f527db95a65aec46d6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx18",
+          "text": "Kaplan et al. (2020) Jared Kaplan et al. “Scaling Laws for Neural Language Models”, 2020 arXiv: https://arxiv.org/abs/2001.08361",
+          "kind": "list_item",
+          "char_start": 2562,
+          "char_end": 2690
+        },
+        {
+          "paragraph_id": "p_52dfead1a56a2c930d5b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx19",
+          "text": "Kingma & Ba (2015) Diederik. Kingma and Jimmy Ba “Adam: A Method for Stochastic Optimization” In 3rd International Conference on Learning Representations, ICLR 2015, San Diego, CA, USA, May 7-9, 2015, Conference Track Proceedings, 2015 URL: http://arxiv.org/abs/1412.6980",
+          "kind": "list_item",
+          "char_start": 2692,
+          "char_end": 2963
+        },
+        {
+          "paragraph_id": "p_a02979c5336fc476236b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx20",
+          "text": "Lambert et al. (2024) Nathan Lambert et al. “Tülu 3: Pushing Frontiers in Open Language Model Post-Training”, 2024",
+          "kind": "list_item",
+          "char_start": 2965,
+          "char_end": 3079
+        },
+        {
+          "paragraph_id": "p_3dc42fdf3ae72792996f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx21",
+          "text": "Li et al. (2024) Haonan Li et al. “CMMLU: Measuring massive multitask language understanding in Chinese”, 2024 arXiv: https://arxiv.org/abs/2306.09212",
+          "kind": "list_item",
+          "char_start": 3081,
+          "char_end": 3231
+        },
+        {
+          "paragraph_id": "p_17d9193aa2487b921b9b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx22",
+          "text": "Li (2018) Xi-Lin Li “Preconditioned Stochastic Gradient Descent” In IEEE Transactions on Neural Networks and Learning Systems 29.5 Institute of ElectricalElectronics Engineers (IEEE), 2018, pp. 1454–1466 DOI: 10.1109/tnnls.2017.2672978",
+          "kind": "list_item",
+          "char_start": 3233,
+          "char_end": 3468
+        },
+        {
+          "paragraph_id": "p_4bf15276d09016b2e40b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx23",
+          "text": "Li (2018a) Xi-Lin Li “Preconditioner on Matrix Lie Group for SGD”, 2018 arXiv: https://arxiv.org/abs/1809.10232",
+          "kind": "list_item",
+          "char_start": 3470,
+          "char_end": 3581
+        },
+        {
+          "paragraph_id": "p_2092f7151310282c957d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx24",
+          "text": "Li (2024) Xi-Lin Li “Stochastic Hessian Fittings with Lie Groups”, 2024 arXiv: https://arxiv.org/abs/2402.11858",
+          "kind": "list_item",
+          "char_start": 3583,
+          "char_end": 3694
+        },
+        {
+          "paragraph_id": "p_d491ca42a0b691baecd6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx25",
+          "text": "Li (2022) Xilin Li “Black Box Lie Group Preconditioners for SGD”, 2022 arXiv: https://arxiv.org/abs/2211.04422",
+          "kind": "list_item",
+          "char_start": 3696,
+          "char_end": 3806
+        },
+        {
+          "paragraph_id": "p_69d9555fbf4277c67db2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx26",
+          "text": "Liu et al. (2024) Hong Liu et al. “Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training” In The Twelfth International Conference on Learning Representations, 2024 URL: https://openreview.net/forum?id=3xHDeA8Noi",
+          "kind": "list_item",
+          "char_start": 3808,
+          "char_end": 4050
+        },
+        {
+          "paragraph_id": "p_17bc76b037c0e583fa2f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx27",
+          "text": "Loshchilov & Hutter (2019) Ilya Loshchilov and Frank Hutter “Decoupled Weight Decay Regularization” In International Conference on Learning Representations, 2019 URL: https://openreview.net/forum?id=Bkg6RiCqY7",
+          "kind": "list_item",
+          "char_start": 4052,
+          "char_end": 4261
+        },
+        {
+          "paragraph_id": "p_783e6a98e8e14a0b2a5b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx28",
+          "text": "OLMo et al. (2024) Team OLMo et al. “2 OLMo 2 Furious” In arXiv preprint arXiv:2501.00656, 2024",
+          "kind": "list_item",
+          "char_start": 4263,
+          "char_end": 4358
+        },
+        {
+          "paragraph_id": "p_e781da18dc9f768fd0bb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx29",
+          "text": "OpenAI et al. (2024) OpenAI et al. “GPT-4 Technical Report”, 2024 arXiv: https://arxiv.org/abs/2303.08774",
+          "kind": "list_item",
+          "char_start": 4360,
+          "char_end": 4465
+        },
+        {
+          "paragraph_id": "p_c7810fe7c378002f0755",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx30",
+          "text": "Pethick et al. (2025) Thomas Pethick et al. “Training Deep Learning Models with Norm-Constrained LMOs”, 2025 arXiv: https://arxiv.org/abs/2502.07529",
+          "kind": "list_item",
+          "char_start": 4467,
+          "char_end": 4615
+        },
+        {
+          "paragraph_id": "p_f12dceb10c2fbc54091d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx31",
+          "text": "Pooladzandi & Li (2024) Omead Pooladzandi and Xi-Lin Li “Curvature-Informed SGD via General Purpose Lie-Group Preconditioners”, 2024 arXiv: https://arxiv.org/abs/2402.04553",
+          "kind": "list_item",
+          "char_start": 4617,
+          "char_end": 4789
+        },
+        {
+          "paragraph_id": "p_76786f4ec6822f6bb645",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx32",
+          "text": "Rajbhandari et al. (2020) Samyam Rajbhandari et al. “ZeRO: Memory optimizations Toward Training Trillion Parameter Models” In SC20: International Conference for High Performance Computing, Networking, Storage and Analysis IEEE, 2020, pp. 1–16 DOI: 10.1109/sc41405.2020.00024",
+          "kind": "list_item",
+          "char_start": 4791,
+          "char_end": 5065
+        },
+        {
+          "paragraph_id": "p_a3710cd427d496a8818a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx33",
+          "text": "Roy & Vetterli (2007) Olivier Roy and Martin Vetterli “The effective rank: A measure of effective dimensionality” In 2007 15th European Signal Processing Conference, 2007, pp. 606–610",
+          "kind": "list_item",
+          "char_start": 5067,
+          "char_end": 5250
+        },
+        {
+          "paragraph_id": "p_ce7cb6d9bf6fc9990f42",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx34",
+          "text": "Shazeer (2019) Noam Shazeer “Fast Transformer Decoding: One Write-Head is All You Need”, 2019 arXiv: https://arxiv.org/abs/1911.02150",
+          "kind": "list_item",
+          "char_start": 5252,
+          "char_end": 5385
+        },
+        {
+          "paragraph_id": "p_d9b7295ad4bdefbb91bc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx35",
+          "text": "Shoeybi et al. (2020) Mohammad Shoeybi et al. “Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism”, 2020 arXiv: https://arxiv.org/abs/1909.08053",
+          "kind": "list_item",
+          "char_start": 5387,
+          "char_end": 5566
+        },
+        {
+          "paragraph_id": "p_169143e1ec883c3f7703",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx36",
+          "text": "Suzgun et al. (2022) Mirac Suzgun et al. “Challenging BIG-Bench Tasks and Whether Chain-of-Thought Can Solve Them”, 2022 arXiv: https://arxiv.org/abs/2210.09261",
+          "kind": "list_item",
+          "char_start": 5568,
+          "char_end": 5728
+        },
+        {
+          "paragraph_id": "p_890d36d30d34c1b99480",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx37",
+          "text": "Team et al. (2024) Gemini Team et al. “Gemini: A Family of Highly Capable Multimodal Models”, 2024 arXiv: https://arxiv.org/abs/2312.11805",
+          "kind": "list_item",
+          "char_start": 5730,
+          "char_end": 5868
+        },
+        {
+          "paragraph_id": "p_3607dbfef2c178b5460b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx38",
+          "text": "Team et al. (2024a) Gemma Team et al. “Gemma 2: Improving open language models at a practical size” In arXiv preprint arXiv:2408.00118, 2024",
+          "kind": "list_item",
+          "char_start": 5870,
+          "char_end": 6010
+        },
+        {
+          "paragraph_id": "p_cd11b31e2e6f67bf56ea",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx39",
+          "text": "Team (2025) Kimi Team “Kimi k1.5: Scaling Reinforcement Learning with LLMs”, 2025",
+          "kind": "list_item",
+          "char_start": 6012,
+          "char_end": 6093
+        },
+        {
+          "paragraph_id": "p_846aa8d63dae78293ec8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx40",
+          "text": "Vyas et al. (2025) Nikhil Vyas et al. “SOAP: Improving and Stabilizing Shampoo using Adam” In The Thirteenth International Conference on Learning Representations, 2025 URL: https://openreview.net/forum?id=IDxZhXrpNf",
+          "kind": "list_item",
+          "char_start": 6095,
+          "char_end": 6310
+        },
+        {
+          "paragraph_id": "p_bdc45ea636ddf117221e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx41",
+          "text": "Wang et al. (2024) Yubo Wang et al. “MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark”, 2024 arXiv: https://arxiv.org/abs/2406.01574",
+          "kind": "list_item",
+          "char_start": 6312,
+          "char_end": 6479
+        },
+        {
+          "paragraph_id": "p_cf89b5f714200070e800",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx42",
+          "text": "Wei et al. (2023) Tianwen Wei et al. “CMATH: Can Your Language Model Pass Chinese Elementary School Math Test?”, 2023 arXiv: https://arxiv.org/abs/2306.16636",
+          "kind": "list_item",
+          "char_start": 6481,
+          "char_end": 6638
+        },
+        {
+          "paragraph_id": "p_8d42abd40fe75368ee0b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx43",
+          "text": "Yang et al. (2024) An Yang et al. “Qwen2.5 Technical Report” In arXiv preprint arXiv:2412.15115, 2024",
+          "kind": "list_item",
+          "char_start": 6640,
+          "char_end": 6741
+        },
+        {
+          "paragraph_id": "p_a87c164c4835e19adf11",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx44",
+          "text": "You (2025) Jiacheng You “Jiacheng You’s discussion on Muon’s Update RMS”, 2025 URL: https://x.com/YouJiacheng/status/1890094769386451309",
+          "kind": "list_item",
+          "char_start": 6743,
+          "char_end": 6879
+        },
+        {
+          "paragraph_id": "p_6497d9c9c2ae31a62b7f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx45",
+          "text": "Yuan et al. (2024) Huizhuo Yuan et al. “MARS: Unleashing the Power of Variance Reduction for Training Large Models”, 2024 arXiv:2411.10438 [cs.LG]",
+          "kind": "list_item",
+          "char_start": 6881,
+          "char_end": 7027
+        }
+      ],
+      "text": "Alter et al. (2000) Orly Alter, Patrick. Brown and David Botstein “Singular value decomposition for genome-wide expression data processing and modeling” In Proceedings of the National Academy of Sciences 97.18, 2000, pp. 10101–10106 DOI: 10.1073/pnas.97.18.10101\n\nAustin et al. (2021) Jacob Austin et al. “Program Synthesis with Large Language Models”, 2021 arXiv: https://arxiv.org/abs/2108.07732\n\nBernstein & Newhouse (2024) Jeremy Bernstein and Laker Newhouse “Old Optimizer, New Norm: An Anthology”, 2024 arXiv: https://arxiv.org/abs/2409.20325\n\nBi et al. (2024) Xiao Bi et al. “Deepseek llm: Scaling open-source language models with longtermism” In arXiv preprint arXiv:2401.02954, 2024\n\nCesista (2024) Franz Cesista “Deep Learning Optimizers as Steepest Descent in Normed Spaces”, 2024 URL: http://leloykun.github.io/ponder/steepest-descent-opt/\n\nChen et al. (2021) Mark Chen et al. “Evaluating Large Language Models Trained on Code”, 2021 arXiv:2107.03374 [cs.LG]\n\nCobbe et al. (2021) Karl Cobbe et al. “Training Verifiers to Solve Math Word Problems”, 2021 arXiv: https://arxiv.org/abs/2110.14168\n\nDeepSeek-AI (2024) DeepSeek-AI “DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model”, 2024 arXiv:2405.04434 [cs.CL]\n\nDeepSeek-AI et al. (2024) DeepSeek-AI et al. “DeepSeek-V3 Technical Report”, 2024 arXiv: https://arxiv.org/abs/2412.19437\n\nFranz (2024) Louis Franz “The Case for Muon”, 2024 URL: https://x.com/leloykun/status/1846842887839125941\n\nGrattafiori et al. (2024) Aaron Grattafiori et al. “The Llama 3 Herd of Models”, 2024 arXiv: https://arxiv.org/abs/2407.21783\n\nHendrycks et al. (2021) Dan Hendrycks et al. “Measuring Massive Multitask Language Understanding”, 2021 arXiv: https://arxiv.org/abs/2009.03300\n\nHendrycks et al. (2021a) Dan Hendrycks et al. “Measuring Mathematical Problem Solving With the MATH Dataset”, 2021 arXiv: https://arxiv.org/abs/2103.03874\n\nHoffmann et al. (2022) Jordan Hoffmann et al. “Training Compute-Optimal Large Language Models”, 2022 arXiv: https://arxiv.org/abs/2203.15556\n\nHuang et al. (2023) Yuzhen Huang et al. “C-Eval: A Multi-Level Multi-Discipline Chinese Evaluation Suite for Foundation Models”, 2023 arXiv: https://arxiv.org/abs/2305.08322\n\nJordan et al. (2024) Keller Jordan et al. “Muon: An optimizer for hidden layers in neural networks”, 2024 URL: https://kellerjordan.github.io/posts/muon/\n\nJoshi et al. (2017) Mandar Joshi et al. “TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension”, 2017 arXiv: https://arxiv.org/abs/1705.03551\n\nKaplan et al. (2020) Jared Kaplan et al. “Scaling Laws for Neural Language Models”, 2020 arXiv: https://arxiv.org/abs/2001.08361\n\nKingma & Ba (2015) Diederik. Kingma and Jimmy Ba “Adam: A Method for Stochastic Optimization” In 3rd International Conference on Learning Representations, ICLR 2015, San Diego, CA, USA, May 7-9, 2015, Conference Track Proceedings, 2015 URL: http://arxiv.org/abs/1412.6980\n\nLambert et al. (2024) Nathan Lambert et al. “Tülu 3: Pushing Frontiers in Open Language Model Post-Training”, 2024\n\nLi et al. (2024) Haonan Li et al. “CMMLU: Measuring massive multitask language understanding in Chinese”, 2024 arXiv: https://arxiv.org/abs/2306.09212\n\nLi (2018) Xi-Lin Li “Preconditioned Stochastic Gradient Descent” In IEEE Transactions on Neural Networks and Learning Systems 29.5 Institute of ElectricalElectronics Engineers (IEEE), 2018, pp. 1454–1466 DOI: 10.1109/tnnls.2017.2672978\n\nLi (2018a) Xi-Lin Li “Preconditioner on Matrix Lie Group for SGD”, 2018 arXiv: https://arxiv.org/abs/1809.10232\n\nLi (2024) Xi-Lin Li “Stochastic Hessian Fittings with Lie Groups”, 2024 arXiv: https://arxiv.org/abs/2402.11858\n\nLi (2022) Xilin Li “Black Box Lie Group Preconditioners for SGD”, 2022 arXiv: https://arxiv.org/abs/2211.04422\n\nLiu et al. (2024) Hong Liu et al. “Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training” In The Twelfth International Conference on Learning Representations, 2024 URL: https://openreview.net/forum?id=3xHDeA8Noi\n\nLoshchilov & Hutter (2019) Ilya Loshchilov and Frank Hutter “Decoupled Weight Decay Regularization” In International Conference on Learning Representations, 2019 URL: https://openreview.net/forum?id=Bkg6RiCqY7\n\nOLMo et al. (2024) Team OLMo et al. “2 OLMo 2 Furious” In arXiv preprint arXiv:2501.00656, 2024\n\nOpenAI et al. (2024) OpenAI et al. “GPT-4 Technical Report”, 2024 arXiv: https://arxiv.org/abs/2303.08774\n\nPethick et al. (2025) Thomas Pethick et al. “Training Deep Learning Models with Norm-Constrained LMOs”, 2025 arXiv: https://arxiv.org/abs/2502.07529\n\nPooladzandi & Li (2024) Omead Pooladzandi and Xi-Lin Li “Curvature-Informed SGD via General Purpose Lie-Group Preconditioners”, 2024 arXiv: https://arxiv.org/abs/2402.04553\n\nRajbhandari et al. (2020) Samyam Rajbhandari et al. “ZeRO: Memory optimizations Toward Training Trillion Parameter Models” In SC20: International Conference for High Performance Computing, Networking, Storage and Analysis IEEE, 2020, pp. 1–16 DOI: 10.1109/sc41405.2020.00024\n\nRoy & Vetterli (2007) Olivier Roy and Martin Vetterli “The effective rank: A measure of effective dimensionality” In 2007 15th European Signal Processing Conference, 2007, pp. 606–610\n\nShazeer (2019) Noam Shazeer “Fast Transformer Decoding: One Write-Head is All You Need”, 2019 arXiv: https://arxiv.org/abs/1911.02150\n\nShoeybi et al. (2020) Mohammad Shoeybi et al. “Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism”, 2020 arXiv: https://arxiv.org/abs/1909.08053\n\nSuzgun et al. (2022) Mirac Suzgun et al. “Challenging BIG-Bench Tasks and Whether Chain-of-Thought Can Solve Them”, 2022 arXiv: https://arxiv.org/abs/2210.09261\n\nTeam et al. (2024) Gemini Team et al. “Gemini: A Family of Highly Capable Multimodal Models”, 2024 arXiv: https://arxiv.org/abs/2312.11805\n\nTeam et al. (2024a) Gemma Team et al. “Gemma 2: Improving open language models at a practical size” In arXiv preprint arXiv:2408.00118, 2024\n\nTeam (2025) Kimi Team “Kimi k1.5: Scaling Reinforcement Learning with LLMs”, 2025\n\nVyas et al. (2025) Nikhil Vyas et al. “SOAP: Improving and Stabilizing Shampoo using Adam” In The Thirteenth International Conference on Learning Representations, 2025 URL: https://openreview.net/forum?id=IDxZhXrpNf\n\nWang et al. (2024) Yubo Wang et al. “MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark”, 2024 arXiv: https://arxiv.org/abs/2406.01574\n\nWei et al. (2023) Tianwen Wei et al. “CMATH: Can Your Language Model Pass Chinese Elementary School Math Test?”, 2023 arXiv: https://arxiv.org/abs/2306.16636\n\nYang et al. (2024) An Yang et al. “Qwen2.5 Technical Report” In arXiv preprint arXiv:2412.15115, 2024\n\nYou (2025) Jiacheng You “Jiacheng You’s discussion on Muon’s Update RMS”, 2025 URL: https://x.com/YouJiacheng/status/1890094769386451309\n\nYuan et al. (2024) Huizhuo Yuan et al. “MARS: Unleashing the Power of Variance Reduction for Training Large Models”, 2024 arXiv:2411.10438 [cs.LG]"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0017",
+      "title": "Appendix A Update RMS",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A Update RMS"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c990fe3d893fcfa38bab",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1",
+          "text": "Proof of Lemma 1",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 16
+        },
+        {
+          "paragraph_id": "p_55a584891a02afd90f3f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1.1",
+          "text": "Proof.",
+          "kind": "heading",
+          "char_start": 18,
+          "char_end": 24
+        },
+        {
+          "paragraph_id": "p_2ebf43d9f7113e96e26e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1.p1.1",
+          "text": "Without loss of generality, consider the orthogonal matrices $U\\in\\mathbb{R}^{n\\times n}$ and $V\\in\\mathbb{R}^{m\\times m}$ where $n\\geq m\\geq r$. We will show that for $X=U_{[:,:r]}V_{[:r,:]}$ (the update of the Muon has the same format), the RMS value is $\\sqrt{r/mn}$. From the definition of matrix multiplication:",
+          "kind": "text",
+          "char_start": 26,
+          "char_end": 342
+        },
+        {
+          "paragraph_id": "p_d2ad4d385f9ff73ba247",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.Ex4",
+          "text": "X_{i,j}=\\sum_{k=1}^{r}U_{i,k}V_{k,j}",
+          "kind": "equation",
+          "char_start": 344,
+          "char_end": 380
+        },
+        {
+          "paragraph_id": "p_029e0c27e209da4b34ac",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1.p2.1",
+          "text": "The RMS can be expressed as:",
+          "kind": "text",
+          "char_start": 382,
+          "char_end": 410
+        },
+        {
+          "paragraph_id": "p_fa980763f1c71cba78e4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.Ex5",
+          "text": "\\displaystyle\\text{RMS}(X)^{2} \\displaystyle=\\frac{1}{mn}\\sum_{i=1}^{n}\\sum_{j=1}^{m}\\sum_{k=1}^{r}U_{i,k}^{2}V_{k,j}^{2} \\displaystyle=\\frac{1}{mn}\\sum_{k=1}^{r}\\left(\\sum_{i=1}^{n}U_{i,k}^{2}\\right)\\left(\\sum_{j=1}^{m}V_{k,j}^{2}\\right) \\displaystyle=\\frac{1}{mn}\\sum_{k=1}^{r}1 \\displaystyle=\\frac{r}{mn}",
+          "kind": "equation",
+          "char_start": 412,
+          "char_end": 719
+        },
+        {
+          "paragraph_id": "p_b2175b3161e6cf26bb39",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1.p3.1",
+          "text": "Therefore, $\\text{RMS}(X)=\\sqrt{r/mn}$. For the common case where the matrices are full-rank, $r=m$, yielding $\\text{RMS}(X)=\\sqrt{1/n}$. ∎",
+          "kind": "text",
+          "char_start": 721,
+          "char_end": 860
+        },
+        {
+          "paragraph_id": "p_2abd9b0cfc995cf0eed6",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px2",
+          "text": "Consistent Update RMS Across Muon and AdamW",
+          "kind": "heading",
+          "char_start": 862,
+          "char_end": 905
+        },
+        {
+          "paragraph_id": "p_272f2d96059bd8980c77",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px2.p1.1",
+          "text": "As discussed in 2.2, we’d like to match the update RMS between Muon and AdamW optimizers. This is validated by experiments on small-scale models. We set Muon’s Update RMS in the range of $[0.05,0.1,0.2,0.4,0.8]$ and AdamW as baseline. We reported the loss and representative weight matrix RMS at 2k steps (about 2B tokens) in the Table 8. From the results, we find that 0.2 RMS and 0.4 RMS performed similarly and much better than other settings. These findings are consistent with our empirical observation that AdamW’s update RMS is in the range of $0.2\\sim 0.4$. We opted to control the update RMS of Muon to 0.2.",
+          "kind": "text",
+          "char_start": 907,
+          "char_end": 1523
+        },
+        {
+          "paragraph_id": "p_447858fccda69a9840dc",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.T8",
+          "text": "Table 8: Muon Update RMS Experiments",
+          "kind": "caption",
+          "char_start": 1525,
+          "char_end": 1561
+        },
+        {
+          "paragraph_id": "p_3cf587b0752d9708acb2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.T8.2",
+          "text": "Optimizer | AdamW | 0.05 RMS* | 0.1 RMS | 0.2 RMS | 0.4 RMS | 0.8 RMS\nLM training loss | 3.512 | 3.355 | 3.239 | 3.198 | 3.199 | 3.386\nLM validation loss | 3.679 | 3.503 | 3.374 | 3.325 | 3.314 | 3.543\nAttnQ weight RMS | 1.01e-2 | 5.74e-3 | 8.44e-3 | 1.57e-2 | 2.95e-2 | 7.23e-2\nMlp weight RMS | 1.25e-2 | 8.01e-3 | 1.27e-2 | 2.35e-2 | 4.51e-2 | 8.73e-2",
+          "kind": "table",
+          "char_start": 1563,
+          "char_end": 1916
+        }
+      ],
+      "text": "Proof of Lemma 1\n\nProof.\n\nWithout loss of generality, consider the orthogonal matrices $U\\in\\mathbb{R}^{n\\times n}$ and $V\\in\\mathbb{R}^{m\\times m}$ where $n\\geq m\\geq r$. We will show that for $X=U_{[:,:r]}V_{[:r,:]}$ (the update of the Muon has the same format), the RMS value is $\\sqrt{r/mn}$. From the definition of matrix multiplication:\n\nX_{i,j}=\\sum_{k=1}^{r}U_{i,k}V_{k,j}\n\nThe RMS can be expressed as:\n\n\\displaystyle\\text{RMS}(X)^{2} \\displaystyle=\\frac{1}{mn}\\sum_{i=1}^{n}\\sum_{j=1}^{m}\\sum_{k=1}^{r}U_{i,k}^{2}V_{k,j}^{2} \\displaystyle=\\frac{1}{mn}\\sum_{k=1}^{r}\\left(\\sum_{i=1}^{n}U_{i,k}^{2}\\right)\\left(\\sum_{j=1}^{m}V_{k,j}^{2}\\right) \\displaystyle=\\frac{1}{mn}\\sum_{k=1}^{r}1 \\displaystyle=\\frac{r}{mn}\n\nTherefore, $\\text{RMS}(X)=\\sqrt{r/mn}$. For the common case where the matrices are full-rank, $r=m$, yielding $\\text{RMS}(X)=\\sqrt{1/n}$. ∎\n\nConsistent Update RMS Across Muon and AdamW\n\nAs discussed in 2.2, we’d like to match the update RMS between Muon and AdamW optimizers. This is validated by experiments on small-scale models. We set Muon’s Update RMS in the range of $[0.05,0.1,0.2,0.4,0.8]$ and AdamW as baseline. We reported the loss and representative weight matrix RMS at 2k steps (about 2B tokens) in the Table 8. From the results, we find that 0.2 RMS and 0.4 RMS performed similarly and much better than other settings. These findings are consistent with our empirical observation that AdamW’s update RMS is in the range of $0.2\\sim 0.4$. We opted to control the update RMS of Muon to 0.2.\n\nTable 8: Muon Update RMS Experiments\n\nOptimizer | AdamW | 0.05 RMS* | 0.1 RMS | 0.2 RMS | 0.4 RMS | 0.8 RMS\nLM training loss | 3.512 | 3.355 | 3.239 | 3.198 | 3.199 | 3.386\nLM validation loss | 3.679 | 3.503 | 3.374 | 3.325 | 3.314 | 3.543\nAttnQ weight RMS | 1.01e-2 | 5.74e-3 | 8.44e-3 | 1.57e-2 | 2.95e-2 | 7.23e-2\nMlp weight RMS | 1.25e-2 | 8.01e-3 | 1.27e-2 | 2.35e-2 | 4.51e-2 | 8.73e-2"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0018",
+      "title": "Appendix B AdamW Baseline Scaling Law",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2",
+      "path": [
+        "Appendix B AdamW Baseline Scaling Law"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_57d2988662fb3f7e132e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.p1.1",
+          "text": "To ensure the fairness and accuracy of our experiments, we conducted a series of experiments on our proprietary dataset to derive scaling law parameters that are optimal for AdamW. This includes determining the optimal model size($N$), number of training tokens($D$), learning rate($\\eta$), batch size($B$) under a constrained computational budget (FLOPs, $C$). (Kaplan et al., 2020; Hoffmann et al., 2022; Bi et al., 2024) Table 9 presents the results of our systematic parameter search process.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 496
+        },
+        {
+          "paragraph_id": "p_09ce87c3174ad3694451",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.T9",
+          "text": "Table 9: Empirical Relationships Between Scaling Law Parameters and Computational Budget (FLOPs)",
+          "kind": "caption",
+          "char_start": 498,
+          "char_end": 594
+        },
+        {
+          "paragraph_id": "p_46374ddc5d7e18727b45",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.T9.2",
+          "text": "$N(C)$ | $D(C)$ | $\\eta(C)$ | $B(C)$\n$0.0483359\\cdot C^{0.5112684}$ | $3.4480927\\cdot C^{0.4887316}$ | $0.0127339\\cdot C^{-0.0574752}$ | $0.0065202\\cdot C^{0.4137915}$",
+          "kind": "table",
+          "char_start": 596,
+          "char_end": 763
+        },
+        {
+          "paragraph_id": "p_00c1764a33e345609c82",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS0.SSS0.Px1",
+          "text": "Hyper-Parameters Search",
+          "kind": "heading",
+          "char_start": 765,
+          "char_end": 788
+        },
+        {
+          "paragraph_id": "p_ecf3ac47825bf2015feb",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS0.SSS0.Px1.p1.1",
+          "text": "To systematically identify optimal scaling law hyper-parameters in the AdamW baseline, we adopted a multistage search protocol. First, we selected multiple computational budgets (FLOPs levels) and initialized model sizes, learning rates, and batch sizes based on empirical guidelines from prior studies. For each fixed FLOPs constraint, we varied the model size $N$ while adjusting the training token count $D$ inversely to maintain $C=6ND$, thereby exploring the trade-off between model capacity and data efficiency. Each configuration was trained to convergence, and the validation loss was recorded to determine the Pareto-optimal combinations of $N$ and $D$. Subsequently, with the optimal $N-D$ pairs fixed, we refined the learning rate and batch size through grid searches, ensuring stability and convergence across configurations. To mitigate local minima and enhance robustness, this iterative procedure was repeated 2–3 times, progressively narrowing the hyper-parameter space.",
+          "kind": "text",
+          "char_start": 790,
+          "char_end": 1776
+        },
+        {
+          "paragraph_id": "p_0890d9a01a0b8d49bf2f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SS0.SSS0.Px1.p2.1",
+          "text": "The optimization process is further illustrated in Figure 5, which depicts the loss landscapes as functions of training tokens, learning rate, and batch size across varying FLOPs budgets. Each bowl-shaped curve represents the loss surface for a specific FLOPs level, with a distinct global minimum corresponding to the optimal hyper-parameter configuration.",
+          "kind": "text",
+          "char_start": 1778,
+          "char_end": 2135
+        },
+        {
+          "paragraph_id": "p_9076f9fb2362b51ab7af",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.F5",
+          "text": "Figure 5: Optimization Landscapes for Scaling Law Hyper-parameters Across FLOPs Budgets",
+          "kind": "caption",
+          "char_start": 2137,
+          "char_end": 2224
+        }
+      ],
+      "text": "To ensure the fairness and accuracy of our experiments, we conducted a series of experiments on our proprietary dataset to derive scaling law parameters that are optimal for AdamW. This includes determining the optimal model size($N$), number of training tokens($D$), learning rate($\\eta$), batch size($B$) under a constrained computational budget (FLOPs, $C$). (Kaplan et al., 2020; Hoffmann et al., 2022; Bi et al., 2024) Table 9 presents the results of our systematic parameter search process.\n\nTable 9: Empirical Relationships Between Scaling Law Parameters and Computational Budget (FLOPs)\n\n$N(C)$ | $D(C)$ | $\\eta(C)$ | $B(C)$\n$0.0483359\\cdot C^{0.5112684}$ | $3.4480927\\cdot C^{0.4887316}$ | $0.0127339\\cdot C^{-0.0574752}$ | $0.0065202\\cdot C^{0.4137915}$\n\nHyper-Parameters Search\n\nTo systematically identify optimal scaling law hyper-parameters in the AdamW baseline, we adopted a multistage search protocol. First, we selected multiple computational budgets (FLOPs levels) and initialized model sizes, learning rates, and batch sizes based on empirical guidelines from prior studies. For each fixed FLOPs constraint, we varied the model size $N$ while adjusting the training token count $D$ inversely to maintain $C=6ND$, thereby exploring the trade-off between model capacity and data efficiency. Each configuration was trained to convergence, and the validation loss was recorded to determine the Pareto-optimal combinations of $N$ and $D$. Subsequently, with the optimal $N-D$ pairs fixed, we refined the learning rate and batch size through grid searches, ensuring stability and convergence across configurations. To mitigate local minima and enhance robustness, this iterative procedure was repeated 2–3 times, progressively narrowing the hyper-parameter space.\n\nThe optimization process is further illustrated in Figure 5, which depicts the loss landscapes as functions of training tokens, learning rate, and batch size across varying FLOPs budgets. Each bowl-shaped curve represents the loss surface for a specific FLOPs level, with a distinct global minimum corresponding to the optimal hyper-parameter configuration.\n\nFigure 5: Optimization Landscapes for Scaling Law Hyper-parameters Across FLOPs Budgets"
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0019",
+      "title": "Appendix C Model Architecture",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A3",
+      "path": [
+        "Appendix C Model Architecture"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_4c3fa38bea39b5971250",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.p1.1",
+          "text": "Muon is agnostic to model architectures, and we used a model similar to Deepseek-V3-Small as described in DeepSeek-AI et al., 2024, because it is a strong model with open weights as a baseline. We made several small modifications in the Moonlight model and listed them here:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 274
+        },
+        {
+          "paragraph_id": "p_635ecb54eb48133a7bf4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px1",
+          "text": "Multi-token Prediction (MTP)",
+          "kind": "heading",
+          "char_start": 276,
+          "char_end": 304
+        },
+        {
+          "paragraph_id": "p_cd464222c9868054dd8e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px1.p1.1",
+          "text": "MTP has not shown significant benefits to pretraining in our experiments. For simplicity, we do not introduce MTP layers into the Moonlight model.",
+          "kind": "text",
+          "char_start": 306,
+          "char_end": 452
+        },
+        {
+          "paragraph_id": "p_62b09c2797700ffa3534",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px2",
+          "text": "Auxfree Bias Update",
+          "kind": "heading",
+          "char_start": 454,
+          "char_end": 473
+        },
+        {
+          "paragraph_id": "p_e533c9e4133477071969",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px2.p1.1",
+          "text": "In DeepSeek-AI et al., 2024, auxfree bias is updated by: $b_{i}=b_{i}+u\\times\\text{sign}(e_{i})$, where $u$ is the update ratio, $b_{i}$ is the bias for the ith expert, and $e_{i}$ is the expert’s violating ratio. We slightly modified the update rule as: $b_{i}=b_{i}+u\\times(\\text{sign}(e_{i})-\\text{sign}(e).\\text{mean}())$, where $\\text{sign}(e).\\text{mean}()$ is the average of the signs of all expert’s violating ratio, in order to control the magnitude of the bias, while does not change the topk selection logic.",
+          "kind": "text",
+          "char_start": 475,
+          "char_end": 994
+        },
+        {
+          "paragraph_id": "p_4a73d3c1e6820be3720e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px3",
+          "text": "Gate Scaling Factor",
+          "kind": "heading",
+          "char_start": 996,
+          "char_end": 1015
+        },
+        {
+          "paragraph_id": "p_ebc57781873bdea5b548",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.SS0.SSS0.Px3.p1.1",
+          "text": "Deepseek-V2-Lite did not use the gate scaling factor, and Deepseek-V3 used a scaling factor of 2.5. We used a scaling factor of 2.446 to control a similar output rms like dense models. The code for calculating our gate scaling factor can be found in Figure 6.",
+          "kind": "text",
+          "char_start": 1017,
+          "char_end": 1276
+        },
+        {
+          "paragraph_id": "p_b2b1886e7064b21373ae",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.F6.2",
+          "text": "1 import numpy as np\n2\n3 def sigmoid(x):\n4 return 1 / (1 + np.exp(-x))\n5\n6 def calc_gate_scaling_factor(num_experts: int, topk: int, iter_times: int):\n7 \"\"\"Calculate the gate scaling factor for MoE.\n8\n9 Args:\n10 num_experts (int): The number of experts.\n11 topk (int): The number of experts to select.\n12 iter_timers (int): The number of iterations.\n13\n14 Returns:\n15 float: The gate scaling factor.\n16 \"\"\"\n17 factors = []\n18 for _ in range(iter_times):\n19\n20 # mock gaussian logits\n21 logits = np.random.randn(num_experts)\n22 # select topk logits\n23 p = np.sort(sigmoid(logits))[::-1]\n24 p = p[:topk]\n25 # renormalize\n26 p = p / p.sum()\n27 # calculate the scaling factor\n28 factors.append( 1/ (p**2).sum()**0.5)\n29 return np.mean(factors)",
+          "kind": "listing",
+          "char_start": 1278,
+          "char_end": 2017
+        },
+        {
+          "paragraph_id": "p_461b94a1ba4a7de33caf",
+          "page": null,
+          "bbox": null,
+          "element_id": "A3.F6",
+          "text": "Figure 6: Python implementation for calculating the gate scaling factor.",
+          "kind": "caption",
+          "char_start": 2019,
+          "char_end": 2091
+        }
+      ],
+      "text": "Muon is agnostic to model architectures, and we used a model similar to Deepseek-V3-Small as described in DeepSeek-AI et al., 2024, because it is a strong model with open weights as a baseline. We made several small modifications in the Moonlight model and listed them here:\n\nMulti-token Prediction (MTP)\n\nMTP has not shown significant benefits to pretraining in our experiments. For simplicity, we do not introduce MTP layers into the Moonlight model.\n\nAuxfree Bias Update\n\nIn DeepSeek-AI et al., 2024, auxfree bias is updated by: $b_{i}=b_{i}+u\\times\\text{sign}(e_{i})$, where $u$ is the update ratio, $b_{i}$ is the bias for the ith expert, and $e_{i}$ is the expert’s violating ratio. We slightly modified the update rule as: $b_{i}=b_{i}+u\\times(\\text{sign}(e_{i})-\\text{sign}(e).\\text{mean}())$, where $\\text{sign}(e).\\text{mean}()$ is the average of the signs of all expert’s violating ratio, in order to control the magnitude of the bias, while does not change the topk selection logic.\n\nGate Scaling Factor\n\nDeepseek-V2-Lite did not use the gate scaling factor, and Deepseek-V3 used a scaling factor of 2.5. We used a scaling factor of 2.446 to control a similar output rms like dense models. The code for calculating our gate scaling factor can be found in Figure 6.\n\n1 import numpy as np\n2\n3 def sigmoid(x):\n4 return 1 / (1 + np.exp(-x))\n5\n6 def calc_gate_scaling_factor(num_experts: int, topk: int, iter_times: int):\n7 \"\"\"Calculate the gate scaling factor for MoE.\n8\n9 Args:\n10 num_experts (int): The number of experts.\n11 topk (int): The number of experts to select.\n12 iter_timers (int): The number of iterations.\n13\n14 Returns:\n15 float: The gate scaling factor.\n16 \"\"\"\n17 factors = []\n18 for _ in range(iter_times):\n19\n20 # mock gaussian logits\n21 logits = np.random.randn(num_experts)\n22 # select topk logits\n23 p = np.sort(sigmoid(logits))[::-1]\n24 p = p[:topk]\n25 # renormalize\n26 p = p / p.sum()\n27 # calculate the scaling factor\n28 factors.append( 1/ (p**2).sum()**0.5)\n29 return np.mean(factors)\n\nFigure 6: Python implementation for calculating the gate scaling factor."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0020",
+      "title": "Appendix D Training Stability",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A4",
+      "path": [
+        "Appendix D Training Stability"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_cfedf2c8d08ddf5e9f38",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.F7",
+          "text": "Figure 7: Training dynamics comparison between Moonlight and Moonlight-A",
+          "kind": "caption",
+          "char_start": 0,
+          "char_end": 72
+        },
+        {
+          "paragraph_id": "p_c57cc71340d19666d0e4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px1",
+          "text": "No Loss or Grad Norm Spike",
+          "kind": "heading",
+          "char_start": 74,
+          "char_end": 100
+        },
+        {
+          "paragraph_id": "p_6e27451cafbb0164cfdf",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px1.p1.1",
+          "text": "The Moonlight training process was very smooth and we did not meet any loss spike or gradient norm spike. The loss and grad norm curve can be seen in Figure 7 (Moonlight is colored in blue and Moonlight-A trained by AdamW is colored in red)",
+          "kind": "text",
+          "char_start": 102,
+          "char_end": 342
+        },
+        {
+          "paragraph_id": "p_e0b63d8a9feb683179d4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px2",
+          "text": "Max Attention Logit",
+          "kind": "heading",
+          "char_start": 344,
+          "char_end": 363
+        },
+        {
+          "paragraph_id": "p_d194a1e3c298b575fb40",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px2.p1.1",
+          "text": "During training, we observed that while both the training loss and gradient norm remained stable throughout the process, the maximum attention logit (computed as the single largest logit value across the global batch) exhibited a distinct upward trajectory in specific layers during the initial training phase, exceeding a threshold of 100. Notably, AdamW demonstrated healthier behavior in controlling this metric compared to alternative optimizers.",
+          "kind": "text",
+          "char_start": 365,
+          "char_end": 815
+        },
+        {
+          "paragraph_id": "p_59cae9d9aa042cf20ce6",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px2.p2.1",
+          "text": "To further investigate the impacts of this phenomenon, we introduced the large attention logits ratio metric, defined as the proportion of attention logits exceeding 100 within a batch. As shown in Fig.7, this ratio remained consistently low (about $10^{-4}$), indicating that extreme large logit values were sparse. Furthermore, the maximum logit values gradually decrease as training progressed, suggesting that the optimization dynamics become healthier.",
+          "kind": "text",
+          "char_start": 817,
+          "char_end": 1274
+        },
+        {
+          "paragraph_id": "p_ba948d37b008fd59c0ae",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px3",
+          "text": "RMSNorm Gamma Weight Decay",
+          "kind": "heading",
+          "char_start": 1276,
+          "char_end": 1302
+        },
+        {
+          "paragraph_id": "p_6e307c3950dc65bd8ad8",
+          "page": null,
+          "bbox": null,
+          "element_id": "A4.SS0.SSS0.Px3.p1.1",
+          "text": "It is noteworthy that applying weight decay to the RMSNorm gamma parameter is crucial for ensuring training stability, as it effectively prevents excessively high output RMS values in each layer.",
+          "kind": "text",
+          "char_start": 1304,
+          "char_end": 1499
+        }
+      ],
+      "text": "Figure 7: Training dynamics comparison between Moonlight and Moonlight-A\n\nNo Loss or Grad Norm Spike\n\nThe Moonlight training process was very smooth and we did not meet any loss spike or gradient norm spike. The loss and grad norm curve can be seen in Figure 7 (Moonlight is colored in blue and Moonlight-A trained by AdamW is colored in red)\n\nMax Attention Logit\n\nDuring training, we observed that while both the training loss and gradient norm remained stable throughout the process, the maximum attention logit (computed as the single largest logit value across the global batch) exhibited a distinct upward trajectory in specific layers during the initial training phase, exceeding a threshold of 100. Notably, AdamW demonstrated healthier behavior in controlling this metric compared to alternative optimizers.\n\nTo further investigate the impacts of this phenomenon, we introduced the large attention logits ratio metric, defined as the proportion of attention logits exceeding 100 within a batch. As shown in Fig.7, this ratio remained consistently low (about $10^{-4}$), indicating that extreme large logit values were sparse. Furthermore, the maximum logit values gradually decrease as training progressed, suggesting that the optimization dynamics become healthier.\n\nRMSNorm Gamma Weight Decay\n\nIt is noteworthy that applying weight decay to the RMSNorm gamma parameter is crucial for ensuring training stability, as it effectively prevents excessively high output RMS values in each layer."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0021",
+      "title": "Appendix E Comparison with More Expensive Models",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A5",
+      "path": [
+        "Appendix E Comparison with More Expensive Models"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_c7316fae6dd62d67578a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A5.p1.1",
+          "text": "Table 10 presents a comparative analysis between our Moonlight model (optimized with Muon) and publicly available models trained with greater computational resources, including LLama3.1-8B (Grattafiori et al., 2024), Gemma-9B (Team et al., 2024a) and Qwen2.5-7B (Yang et al., 2024). Figure 8 illustrates the GSM8k performance benchmarks of Moonlight against comparable models in the field.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 389
+        },
+        {
+          "paragraph_id": "p_b9d03ad5d361009bf872",
+          "page": null,
+          "bbox": null,
+          "element_id": "A5.T10",
+          "text": "Table 10: Comparison of different models on various benchmarks.",
+          "kind": "caption",
+          "char_start": 391,
+          "char_end": 454
+        },
+        {
+          "paragraph_id": "p_f54afae334772386da35",
+          "page": null,
+          "bbox": null,
+          "element_id": "A5.T10.2",
+          "text": "| Benchmark (Metric) | Moonlight | LLAMA3.1-8B | Gemma2-9B | Qwen2.5-7B\n |  |  | Larger Training Compute Model\n | Activated Param† | 2.24B | 7.38B | 8.32B | 6.83B\n | Total Params† | 15.29B | 7.38B | 8.32B | 6.83B\n | Training Tokens | 5.7T | 15T | 8T | 18T\n | Optimizer | Muon | AdamW | Unknown | Unknown\nEnglish | MMLU | 70.0 | 66.7 | 71.3 | 74.2\nMMLU-pro | 42.4 | 37.1 | 44.7 | 45.0\n | BBH | 65.2 | 57.7 | 68.2 | 70.4\n | TriviaQA‡ | 66.3 | 70.3 | - | 60.0\nCode | HumanEval | 48.1 | 37.2 | 37.8 | 57.9\nMBPP | 63.8 | 47.6 | 62.2 | 74.9\nMath | GSM8K | 77.4 | 57.2 | 70.7 | 85.4\nMATH | 45.3 | 20.3 | 37.7 | 49.8",
+          "kind": "table",
+          "char_start": 456,
+          "char_end": 1064
+        },
+        {
+          "paragraph_id": "p_ce98162bfc1f3e162b6c",
+          "page": null,
+          "bbox": null,
+          "element_id": "A5.F8",
+          "text": "Figure 8: The GSM8k performance of our Moonlight model optimized with Muon and other comparable models.",
+          "kind": "caption",
+          "char_start": 1066,
+          "char_end": 1169
+        }
+      ],
+      "text": "Table 10 presents a comparative analysis between our Moonlight model (optimized with Muon) and publicly available models trained with greater computational resources, including LLama3.1-8B (Grattafiori et al., 2024), Gemma-9B (Team et al., 2024a) and Qwen2.5-7B (Yang et al., 2024). Figure 8 illustrates the GSM8k performance benchmarks of Moonlight against comparable models in the field.\n\nTable 10: Comparison of different models on various benchmarks.\n\n| Benchmark (Metric) | Moonlight | LLAMA3.1-8B | Gemma2-9B | Qwen2.5-7B\n |  |  | Larger Training Compute Model\n | Activated Param† | 2.24B | 7.38B | 8.32B | 6.83B\n | Total Params† | 15.29B | 7.38B | 8.32B | 6.83B\n | Training Tokens | 5.7T | 15T | 8T | 18T\n | Optimizer | Muon | AdamW | Unknown | Unknown\nEnglish | MMLU | 70.0 | 66.7 | 71.3 | 74.2\nMMLU-pro | 42.4 | 37.1 | 44.7 | 45.0\n | BBH | 65.2 | 57.7 | 68.2 | 70.4\n | TriviaQA‡ | 66.3 | 70.3 | - | 60.0\nCode | HumanEval | 48.1 | 37.2 | 37.8 | 57.9\nMBPP | 63.8 | 47.6 | 62.2 | 74.9\nMath | GSM8K | 77.4 | 57.2 | 70.7 | 85.4\nMATH | 45.3 | 20.3 | 37.7 | 49.8\n\nFigure 8: The GSM8k performance of our Moonlight model optimized with Muon and other comparable models."
+    },
+    {
+      "section_id": "arxiv_2502.16982_v1_s0022",
+      "title": "Appendix F Singular Value Distributions of Weight Matrices",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A6",
+      "path": [
+        "Appendix F Singular Value Distributions of Weight Matrices"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_fb1fdc36a84c400cf646",
+          "page": null,
+          "bbox": null,
+          "element_id": "A6.p1.1",
+          "text": "We visualize the singular value distributions of weight matrices by plotting a line graph of its singular values in descending order for each matrix, normalized by the largest one. As shown in Figures 9 and 10, we find that, for most of the weight matrices, the singular value distributions of them optimized by Muon are more flattened than that of AdamW, which further confirms the hypothesis that Muon can provide a more diverse spectrum of updates.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 451
+        },
+        {
+          "paragraph_id": "p_5d77295eeb1c3a2ac2a7",
+          "page": null,
+          "bbox": null,
+          "element_id": "A6.F9",
+          "text": "Figure 9: Distribution of singular values for each weight matrix in the attention layers. We use WC to denote the weight matrices at each layer that compress the hidden states to the shared latent spaces for keys and values, WV to denote the weight matrices up-projecting the values from the latent space, WO to denote the output projection matrices, and WKR, WKC, WQR and WQC to denote the projection matrices for the part of keys and queries with and without RoPE respectively. We set the spines of each line graph red if the corresponding weight matrix optimized by Muon has a lower singular entropy than AdamW.",
+          "kind": "caption",
+          "char_start": 453,
+          "char_end": 1067
+        },
+        {
+          "paragraph_id": "p_206f9af20d360eefe5bf",
+          "page": null,
+          "bbox": null,
+          "element_id": "A6.F10",
+          "text": "Figure 10: Distribution of singular values for each weight matrix in the feed-forward network (FFN) layers. We use WI, WV and WO to denote the weight matrices involved in the FFN layer with SwiGLU activation function, where WI represents the input projection to the Swish1 function, WV represents the extra input projection interacting with Swish1 activations, and WO represents the output projection. We use E0, E2, E3 to denote three arbitrarily selected expert models and SE to denote the weights in the shared expert model. We use RW to denote the weights in the router. We set the spines of each line graph red if the corresponding weight matrix optimized by Muon has a lower singular entropy than AdamW.",
+          "kind": "caption",
+          "char_start": 1069,
+          "char_end": 1778
+        }
+      ],
+      "text": "We visualize the singular value distributions of weight matrices by plotting a line graph of its singular values in descending order for each matrix, normalized by the largest one. As shown in Figures 9 and 10, we find that, for most of the weight matrices, the singular value distributions of them optimized by Muon are more flattened than that of AdamW, which further confirms the hypothesis that Muon can provide a more diverse spectrum of updates.\n\nFigure 9: Distribution of singular values for each weight matrix in the attention layers. We use WC to denote the weight matrices at each layer that compress the hidden states to the shared latent spaces for keys and values, WV to denote the weight matrices up-projecting the values from the latent space, WO to denote the output projection matrices, and WKR, WKC, WQR and WQC to denote the projection matrices for the part of keys and queries with and without RoPE respectively. We set the spines of each line graph red if the corresponding weight matrix optimized by Muon has a lower singular entropy than AdamW.\n\nFigure 10: Distribution of singular values for each weight matrix in the feed-forward network (FFN) layers. We use WI, WV and WO to denote the weight matrices involved in the FFN layer with SwiGLU activation function, where WI represents the input projection to the Swish1 function, WV represents the extra input projection interacting with Swish1 activations, and WO represents the output projection. We use E0, E2, E3 to denote three arbitrarily selected expert models and SE to denote the weights in the shared expert model. We use RW to denote the weights in the router. We set the spines of each line graph red if the corresponding weight matrix optimized by Muon has a lower singular entropy than AdamW."
+    }
+  ]
+}

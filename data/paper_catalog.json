@@ -1,0 +1,4140 @@
+{
+  "schema_version": "1.0",
+  "catalog_version": "candidate_2026-10-23_v1",
+  "updated_at_utc": "2026-10-24T01:44:57.342142+00:00",
+  "status": "partial_pending_user_sheet",
+  "source_status": [
+    {
+      "source_id": "cs395t_f26",
+      "url": "https://noahgol.github.io/teaching/cs395t-f26/",
+      "status": "imported",
+      "raw_entries": 101
+    },
+    {
+      "source_id": "user_sheet",
+      "url": "https://docs.google.com/spreadsheets/d/1-obHFhggS7_C5UZ5SnR8Lrv92oEFs2HG/edit?gid=2016396705",
+      "status": "blocked_authentication",
+      "raw_entries": null
+    }
+  ],
+  "documents": [
+    {
+      "paper_id": "doc_9f9c54a7dcb4",
+      "dedupe_key": "https://www.cs.toronto.edu/~hinton/absps/NatureDeepReview.pdf",
+      "title": "Deep learning",
+      "citation": "LeCun, Bengio & Hinton (2015)",
+      "year_as_listed": 2015,
+      "document_type": "research_paper",
+      "arxiv_id": null,
+      "source_url": "https://www.cs.toronto.edu/~hinton/absps/NatureDeepReview.pdf",
+      "download_url": "https://www.cs.toronto.edu/~hinton/absps/NatureDeepReview.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-24",
+          "lecture_topic": "Introduction to the course; a brief history of deep learning",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "deep_learning_background"
+        }
+      ],
+      "download": {
+        "requested_url": "https://www.cs.toronto.edu/~hinton/absps/NatureDeepReview.pdf",
+        "resolved_url": "https://www.cs.toronto.edu/~hinton/absps/NatureDeepReview.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:30.884975+00:00",
+        "bytes": 2083627,
+        "sha256": "18b910be375cd8c9358eb8868a65ff4c9cdcea643d62cefdc3d202c133ca5fc2",
+        "page_count": 9,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_9f9c54a7dcb4.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 6899
+      }
+    },
+    {
+      "paper_id": "doc_c838af983892",
+      "dedupe_key": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+      "title": "ImageNet Classification with Deep Convolutional Neural Networks",
+      "citation": "Krizhevsky, Sutskever & Hinton (2012)",
+      "year_as_listed": 2012,
+      "document_type": "research_paper",
+      "arxiv_id": null,
+      "source_url": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+      "download_url": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-24",
+          "lecture_topic": "Introduction to the course; a brief history of deep learning",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "deep_learning_background"
+        }
+      ],
+      "download": {
+        "requested_url": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+        "resolved_url": "https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:30.756355+00:00",
+        "bytes": 1418820,
+        "sha256": "90137160c57217953d5f61857e64ca58e85f06e1b13b4f475c918b1b582b9771",
+        "page_count": 9,
+        "pdf_metadata_title": "ImageNet Classification with Deep Convolutional Neural Networks",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_c838af983892.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3463
+      }
+    },
+    {
+      "paper_id": "doc_2fd2a7ad7452",
+      "dedupe_key": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+      "title": "Learning representations by back-propagating errors",
+      "citation": "Rumelhart, Hinton & Williams (1986)",
+      "year_as_listed": 1986,
+      "document_type": "research_paper",
+      "arxiv_id": null,
+      "source_url": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+      "download_url": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-24",
+          "lecture_topic": "Introduction to the course; a brief history of deep learning",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "deep_learning_background"
+        }
+      ],
+      "download": {
+        "requested_url": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+        "resolved_url": "https://www.cs.toronto.edu/~hinton/absps/naturebp.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:30.623485+00:00",
+        "bytes": 485917,
+        "sha256": "d26997baf588222109d32545604a2a2ed400dc769a21fd49a5acdc4a955396ae",
+        "page_count": 4,
+        "pdf_metadata_title": "6088 - V323.indd",
+        "title_token_coverage_first_page": 0.0,
+        "identity_review": "needs_ocr_review",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_2fd2a7ad7452.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 38,
+        "text_screening": {
+          "sampled_page_count": 3,
+          "characters_per_page": [
+            38,
+            38,
+            38
+          ]
+        }
+      }
+    },
+    {
+      "paper_id": "doc_978c610ca8a5",
+      "dedupe_key": "https://www.deeplearningbook.org/contents/TOC.html",
+      "title": "Deep Learning",
+      "citation": "Goodfellow, Bengio & Courville",
+      "year_as_listed": null,
+      "document_type": "book",
+      "arxiv_id": null,
+      "source_url": "https://www.deeplearningbook.org/contents/TOC.html",
+      "download_url": "https://www.deeplearningbook.org/contents/TOC.html",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-24",
+          "lecture_topic": "Introduction to the course; a brief history of deep learning",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "deep_learning_background"
+        }
+      ],
+      "download": {
+        "status": "manual_review_book",
+        "error": "Book/TOC retained as a candidate; not treated as a single paper PDF."
+      }
+    },
+    {
+      "paper_id": "arxiv_1702.07800",
+      "dedupe_key": "arxiv:1702.07800",
+      "title": "On the Origin of Deep Learning",
+      "citation": "Wang & Raj (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1702.07800",
+      "source_url": "https://arxiv.org/pdf/1702.07800",
+      "download_url": "https://arxiv.org/pdf/1702.07800",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-24",
+          "lecture_topic": "Introduction to the course; a brief history of deep learning",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "deep_learning_background"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1702.07800",
+        "resolved_url": "https://arxiv.org/pdf/1702.07800",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:31.026302+00:00",
+        "bytes": 5805767,
+        "sha256": "eeedae11dbe2a84f62bce6b530bd5f1ad539f7d5536b744765460bef546c0aa5",
+        "page_count": 72,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1702.07800.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1542
+      }
+    },
+    {
+      "paper_id": "arxiv_1706.03762",
+      "dedupe_key": "arxiv:1706.03762",
+      "title": "Attention Is All You Need",
+      "citation": "Vaswani et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1706.03762",
+      "source_url": "https://arxiv.org/pdf/1706.03762",
+      "download_url": "https://arxiv.org/pdf/1706.03762",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-31",
+          "lecture_topic": "Architectures I: Transformers",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1706.03762",
+        "resolved_url": "https://arxiv.org/pdf/1706.03762",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:33.783601+00:00",
+        "bytes": 2215244,
+        "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+        "page_count": 15,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1706.03762.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2860
+      }
+    },
+    {
+      "paper_id": "arxiv_2207.09238",
+      "dedupe_key": "arxiv:2207.09238",
+      "title": "Formal Algorithms for Transformers",
+      "citation": "Phuong & Hutter (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2207.09238",
+      "source_url": "https://arxiv.org/pdf/2207.09238",
+      "download_url": "https://arxiv.org/pdf/2207.09238",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-31",
+          "lecture_topic": "Architectures I: Transformers",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2207.09238",
+        "resolved_url": "https://arxiv.org/pdf/2207.09238",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:36.716638+00:00",
+        "bytes": 514843,
+        "sha256": "8f6b10db99c0487599ed88cb5a03fe2c48c13709706765ca9b72c9b23e6c1910",
+        "page_count": 16,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2207.09238.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3242
+      }
+    },
+    {
+      "paper_id": "arxiv_2410.04271",
+      "dedupe_key": "arxiv:2410.04271",
+      "title": "Fundamental Limitations on Subquadratic Alternatives to Transformers",
+      "citation": "Alman & Yu (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2410.04271",
+      "source_url": "https://arxiv.org/pdf/2410.04271",
+      "download_url": "https://arxiv.org/pdf/2410.04271",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-31",
+          "lecture_topic": "Architectures I: Transformers",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2410.04271",
+        "resolved_url": "https://arxiv.org/pdf/2410.04271",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:39.764368+00:00",
+        "bytes": 379016,
+        "sha256": "e52bb61ebe2fcbf0821ca1f24f2f7bd1a3e91934cf063bc6df52360e8a1a8bf4",
+        "page_count": 23,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2410.04271.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3209
+      }
+    },
+    {
+      "paper_id": "arxiv_1701.06538",
+      "dedupe_key": "arxiv:1701.06538",
+      "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+      "citation": "Shazeer et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1701.06538",
+      "source_url": "https://arxiv.org/pdf/1701.06538",
+      "download_url": "https://arxiv.org/pdf/1701.06538",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1701.06538",
+        "resolved_url": "https://arxiv.org/pdf/1701.06538",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:42.726523+00:00",
+        "bytes": 544288,
+        "sha256": "2567713d198a376b65b92f0c60b9f58c8c5f66755530b92203533a17c4ec4b8e",
+        "page_count": 19,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1701.06538.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3365
+      }
+    },
+    {
+      "paper_id": "arxiv_2101.03961",
+      "dedupe_key": "arxiv:2101.03961",
+      "title": "Switch Transformers",
+      "citation": "Fedus, Zoph & Shazeer (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2101.03961",
+      "source_url": "https://arxiv.org/pdf/2101.03961",
+      "download_url": "https://arxiv.org/pdf/2101.03961",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2101.03961",
+        "resolved_url": "https://arxiv.org/pdf/2101.03961",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:45.755789+00:00",
+        "bytes": 1304157,
+        "sha256": "f340f6ace31abf7d0730ef461404279f40d3c890e9cc2daeb7068b3304afdbd6",
+        "page_count": 40,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2101.03961.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2302
+      }
+    },
+    {
+      "paper_id": "arxiv_2405.21060",
+      "dedupe_key": "arxiv:2405.21060",
+      "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+      "citation": "Dao & Gu (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2405.21060",
+      "source_url": "https://arxiv.org/pdf/2405.21060",
+      "download_url": "https://arxiv.org/pdf/2405.21060",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2405.21060",
+        "resolved_url": "https://arxiv.org/pdf/2405.21060",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:48.806450+00:00",
+        "bytes": 3209170,
+        "sha256": "6fe16414fa471a5ab150cddcba5840d3a94e347e96992c50c12c1fb8b919479f",
+        "page_count": 52,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2405.21060.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3664
+      }
+    },
+    {
+      "paper_id": "arxiv_2006.16236",
+      "dedupe_key": "arxiv:2006.16236",
+      "title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+      "citation": "Katharopoulos et al. (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2006.16236",
+      "source_url": "https://arxiv.org/pdf/2006.16236",
+      "download_url": "https://arxiv.org/pdf/2006.16236",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2006.16236",
+        "resolved_url": "https://arxiv.org/pdf/2006.16236",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:51.776967+00:00",
+        "bytes": 1728131,
+        "sha256": "2e655ef4a8d85428b576c8e0827d68f1c97950318ba03c9887c5b019a9a332fd",
+        "page_count": 17,
+        "pdf_metadata_title": "Transformers are RNNs:  Fast Autoregressive Transformers with Linear Attention",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2006.16236.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4406
+      }
+    },
+    {
+      "paper_id": "arxiv_2111.00396",
+      "dedupe_key": "arxiv:2111.00396",
+      "title": "Efficiently Modeling Long Sequences with Structured State Spaces",
+      "citation": "Gu, Goel & Ré (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2111.00396",
+      "source_url": "https://arxiv.org/pdf/2111.00396",
+      "download_url": "https://arxiv.org/pdf/2111.00396",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2111.00396",
+        "resolved_url": "https://arxiv.org/pdf/2111.00396",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:54.805443+00:00",
+        "bytes": 3386172,
+        "sha256": "872b4ef302312d04ef4d55610613c0e59da32c443a2e38552d7cebb7dc3636fa",
+        "page_count": 32,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2111.00396.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3673
+      }
+    },
+    {
+      "paper_id": "arxiv_2312.00752",
+      "dedupe_key": "arxiv:2312.00752",
+      "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+      "citation": "Gu & Dao (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2312.00752",
+      "source_url": "https://arxiv.org/pdf/2312.00752",
+      "download_url": "https://arxiv.org/pdf/2312.00752",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2312.00752",
+        "resolved_url": "https://arxiv.org/pdf/2312.00752",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:57.766552+00:00",
+        "bytes": 1168615,
+        "sha256": "adf70ed1803c85b1899dec3e21f3af0b124411439e8654b840ea65f7b9f52b2e",
+        "page_count": 36,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2312.00752.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4108
+      }
+    },
+    {
+      "paper_id": "arxiv_2001.08361",
+      "dedupe_key": "arxiv:2001.08361",
+      "title": "Scaling Laws for Neural Language Models",
+      "citation": "Kaplan et al. (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2001.08361",
+      "source_url": "https://arxiv.org/pdf/2001.08361",
+      "download_url": "https://arxiv.org/pdf/2001.08361",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2001.08361",
+        "resolved_url": "https://arxiv.org/pdf/2001.08361",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:00.908801+00:00",
+        "bytes": 2493004,
+        "sha256": "a41bd7877fd1a6bcbba096b2619618bd2f90e02488f2365644903eb2f7c6a494",
+        "page_count": 30,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2001.08361.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1655
+      }
+    },
+    {
+      "paper_id": "arxiv_2203.15556",
+      "dedupe_key": "arxiv:2203.15556",
+      "title": "Training Compute-Optimal Large Language Models",
+      "citation": "Hoffmann et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2203.15556",
+      "source_url": "https://arxiv.org/pdf/2203.15556",
+      "download_url": "https://arxiv.org/pdf/2203.15556",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2203.15556",
+        "resolved_url": "https://arxiv.org/pdf/2203.15556",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:04.299316+00:00",
+        "bytes": 6004349,
+        "sha256": "3fd3632a8ef48171bd25282990221d49535d75356192f068b3b2ebe08f2aedd4",
+        "page_count": 36,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2203.15556.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3911
+      }
+    },
+    {
+      "paper_id": "doc_577fab87c756",
+      "dedupe_key": "https://www.jmlr.org/papers/volume23/20-1111/20-1111.pdf",
+      "title": "Scaling Laws from the Data Manifold Dimension",
+      "citation": "Sharma & Kaplan (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": null,
+      "source_url": "https://www.jmlr.org/papers/volume23/20-1111/20-1111.pdf",
+      "download_url": "https://www.jmlr.org/papers/volume23/20-1111/20-1111.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://www.jmlr.org/papers/volume23/20-1111/20-1111.pdf",
+        "resolved_url": "https://www.jmlr.org/papers/volume23/20-1111/20-1111.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:58.179317+00:00",
+        "bytes": 1959827,
+        "sha256": "88e703fbfa88e4816b8fc735c3406610996e76ee6416f178949d4c088cc21fdc",
+        "page_count": 34,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_577fab87c756.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2429
+      }
+    },
+    {
+      "paper_id": "arxiv_2102.06701",
+      "dedupe_key": "arxiv:2102.06701",
+      "title": "Explaining Neural Scaling Laws",
+      "citation": "Bahri et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2102.06701",
+      "source_url": "https://arxiv.org/pdf/2102.06701",
+      "download_url": "https://arxiv.org/pdf/2102.06701",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2102.06701",
+        "resolved_url": "https://arxiv.org/pdf/2102.06701",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:06.857230+00:00",
+        "bytes": 2013761,
+        "sha256": "4ec8fb5466f22e983f970ed6d6d7ab269d1bbb33c3b267ab3ffddb70d146d150",
+        "page_count": 33,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2102.06701.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3244
+      }
+    },
+    {
+      "paper_id": "arxiv_1904.09237",
+      "dedupe_key": "arxiv:1904.09237",
+      "title": "On the Convergence of Adam and Beyond",
+      "citation": "Reddi, Kale & Kumar (2019)",
+      "year_as_listed": 2019,
+      "document_type": "research_paper",
+      "arxiv_id": "1904.09237",
+      "source_url": "https://arxiv.org/abs/1904.09237",
+      "download_url": "https://arxiv.org/pdf/1904.09237",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-14",
+          "lecture_topic": "Optimization I: SGD, Adam",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1904.09237",
+        "resolved_url": "https://arxiv.org/pdf/1904.09237",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:09.755996+00:00",
+        "bytes": 602904,
+        "sha256": "75a949b0751e81c490e7eee76efadd1eb8868c64f44275d8d1542a8f42cb7c01",
+        "page_count": 23,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1904.09237.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3805
+      }
+    },
+    {
+      "paper_id": "doc_9610af534da1",
+      "dedupe_key": "https://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf",
+      "title": "Adaptive Subgradient Methods for Online Learning and Stochastic Optimization",
+      "citation": "Duchi, Hazan & Singer (2011)",
+      "year_as_listed": 2011,
+      "document_type": "research_paper",
+      "arxiv_id": null,
+      "source_url": "https://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf",
+      "download_url": "https://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-14",
+          "lecture_topic": "Optimization I: SGD, Adam",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf",
+        "resolved_url": "https://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:04.644176+00:00",
+        "bytes": 307882,
+        "sha256": "691043712c05c19c98223fba52507beff0480afb11fa17ea40a2a032d6f0bf3c",
+        "page_count": 39,
+        "pdf_metadata_title": "duchi11a.dvi",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_9610af534da1.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2511
+      }
+    },
+    {
+      "paper_id": "arxiv_1405.4980",
+      "dedupe_key": "arxiv:1405.4980",
+      "title": "Convex Optimization: Algorithms and Complexity",
+      "citation": "Bubeck (2015), Chapter 3.6",
+      "year_as_listed": 2015,
+      "document_type": "monograph",
+      "arxiv_id": "1405.4980",
+      "source_url": "https://arxiv.org/abs/1405.4980",
+      "download_url": "https://arxiv.org/pdf/1405.4980",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-14",
+          "lecture_topic": "Optimization I: SGD, Adam",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1405.4980",
+        "resolved_url": "https://arxiv.org/pdf/1405.4980",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:12.763083+00:00",
+        "bytes": 1163209,
+        "sha256": "4d5cd5428a8e627fa2b7ee80791259c2f17e6ae5bf68cf7c78aee1fcefdc05f2",
+        "page_count": 130,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1405.4980.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 279
+      }
+    },
+    {
+      "paper_id": "arxiv_1412.6980",
+      "dedupe_key": "arxiv:1412.6980",
+      "title": "Adam: A Method for Stochastic Optimization",
+      "citation": "Kingma & Ba (2014)",
+      "year_as_listed": 2014,
+      "document_type": "research_paper",
+      "arxiv_id": "1412.6980",
+      "source_url": "https://arxiv.org/abs/1412.6980",
+      "download_url": "https://arxiv.org/pdf/1412.6980",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-14",
+          "lecture_topic": "Optimization I: SGD, Adam",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1412.6980",
+        "resolved_url": "https://arxiv.org/pdf/1412.6980",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:15.776581+00:00",
+        "bytes": 584641,
+        "sha256": "eab9c73ae2ceda884b94830bda99312254bac4806f6c9f045cbab90721ecda31",
+        "page_count": 15,
+        "pdf_metadata_title": "Adam: A Method for Stochastic Optimization",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1412.6980.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4130
+      }
+    },
+    {
+      "paper_id": "arxiv_2409.11321",
+      "dedupe_key": "arxiv:2409.11321",
+      "title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+      "citation": "Vyas et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2409.11321",
+      "source_url": "https://arxiv.org/pdf/2409.11321",
+      "download_url": "https://arxiv.org/pdf/2409.11321",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-16",
+          "lecture_topic": "Optimization II: Preconditioning in modern ML optimization",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2409.11321",
+        "resolved_url": "https://arxiv.org/pdf/2409.11321",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:18.773951+00:00",
+        "bytes": 1300562,
+        "sha256": "d6f33bb71eab0f046d911b60800846fd3332f1dcf5f2f1434ab444ab89d0b22a",
+        "page_count": 20,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2409.11321.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4033
+      }
+    },
+    {
+      "paper_id": "arxiv_1802.09568",
+      "dedupe_key": "arxiv:1802.09568",
+      "title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+      "citation": "Gupta, Koren & Singer (2018)",
+      "year_as_listed": 2018,
+      "document_type": "research_paper",
+      "arxiv_id": "1802.09568",
+      "source_url": "https://arxiv.org/abs/1802.09568",
+      "download_url": "https://arxiv.org/pdf/1802.09568",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-16",
+          "lecture_topic": "Optimization II: Preconditioning in modern ML optimization",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1802.09568",
+        "resolved_url": "https://arxiv.org/pdf/1802.09568",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:21.740012+00:00",
+        "bytes": 330728,
+        "sha256": "dedd4fdb7f591342eb3bcee119d7d51f3b751d7070afc0b1ba59560ef2594d64",
+        "page_count": 21,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1802.09568.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3293
+      }
+    },
+    {
+      "paper_id": "doc_0e80befb364d",
+      "dedupe_key": "https://kellerjordan.github.io/posts/muon",
+      "title": "Muon: An Optimizer for Hidden Layers in Neural Networks (Shampoo section)",
+      "citation": "Jordan (2024)",
+      "year_as_listed": 2024,
+      "document_type": "web_article",
+      "arxiv_id": null,
+      "source_url": "https://kellerjordan.github.io/posts/muon/#shampoo",
+      "download_url": "https://kellerjordan.github.io/posts/muon/#shampoo",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-16",
+          "lecture_topic": "Optimization II: Preconditioning in modern ML optimization",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://kellerjordan.github.io/posts/muon/#shampoo",
+        "resolved_url": "https://kellerjordan.github.io/posts/muon/#shampoo",
+        "content_type": "text/html; charset=utf-8",
+        "downloaded_at_utc": "2026-10-24T01:41:15.986326+00:00",
+        "bytes": 39101,
+        "sha256": "4e94982993cf2660a47b059c46edb0729acc6198fc90f1375725b9cf3096aa76",
+        "status": "downloaded_html",
+        "local_path": "data/web_articles/doc_0e80befb364d.html",
+        "snapshot_policy": "content_sha256"
+      }
+    },
+    {
+      "paper_id": "arxiv_2510.25000",
+      "dedupe_key": "arxiv:2510.25000",
+      "title": "What Really Matters in Matrix-Whitening Optimizers?",
+      "citation": "Frans, Abbeel & Levine (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2510.25000",
+      "source_url": "https://arxiv.org/pdf/2510.25000",
+      "download_url": "https://arxiv.org/pdf/2510.25000",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2510.25000",
+        "resolved_url": "https://arxiv.org/pdf/2510.25000",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:24.746372+00:00",
+        "bytes": 543476,
+        "sha256": "6be8ca0ae177654f81d51fede5b4b73fb796d824e5107bccc900777196096083",
+        "page_count": 22,
+        "pdf_metadata_title": "What Really Matters in Matrix-Whitening Optimizers?",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2510.25000.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3890
+      }
+    },
+    {
+      "paper_id": "arxiv_2509.02046",
+      "dedupe_key": "arxiv:2509.02046",
+      "title": "Fantastic Pretraining Optimizers and Where to Find Them",
+      "citation": "Wen et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2509.02046",
+      "source_url": "https://arxiv.org/pdf/2509.02046",
+      "download_url": "https://arxiv.org/pdf/2509.02046",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2509.02046",
+        "resolved_url": "https://arxiv.org/pdf/2509.02046",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:27.845040+00:00",
+        "bytes": 2296847,
+        "sha256": "478846f2e17b3da286a5731f4640bb794d90f6bcf35f72939e1ced504ada1675",
+        "page_count": 108,
+        "pdf_metadata_title": "Fantastic Pretraining Optimizers and Where to Find Them",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2509.02046.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3316
+      }
+    },
+    {
+      "paper_id": "arxiv_2502.16982",
+      "dedupe_key": "arxiv:2502.16982",
+      "title": "Muon is Scalable for LLM Training",
+      "citation": "Liu et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2502.16982",
+      "source_url": "https://arxiv.org/pdf/2502.16982",
+      "download_url": "https://arxiv.org/pdf/2502.16982",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2502.16982",
+        "resolved_url": "https://arxiv.org/pdf/2502.16982",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:30.816798+00:00",
+        "bytes": 2077505,
+        "sha256": "6b8e3b47da4db09c952a35486c905f416c57081a32b445a36a3744c441b1c7f3",
+        "page_count": 19,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2502.16982.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2403
+      }
+    },
+    {
+      "paper_id": "arxiv_2607.04033",
+      "dedupe_key": "arxiv:2607.04033",
+      "title": "OmniOpt: Taxonomy, Geometry, and Benchmarking of Modern Optimizers",
+      "citation": "Li et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2607.04033",
+      "source_url": "https://arxiv.org/pdf/2607.04033",
+      "download_url": "https://arxiv.org/pdf/2607.04033",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2607.04033",
+        "resolved_url": "https://arxiv.org/pdf/2607.04033",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:33.879782+00:00",
+        "bytes": 5010419,
+        "sha256": "62afd6af2d5463057172ec575d129d257447803b16b0a7d39bbe872351318a00",
+        "page_count": 91,
+        "pdf_metadata_title": "OmniOpt: Taxonomy, Geometry, and Benchmarking of Modern Optimizers",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2607.04033.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3202
+      }
+    },
+    {
+      "paper_id": "arxiv_2305.14342",
+      "dedupe_key": "arxiv:2305.14342",
+      "title": "Sophia: A Scalable Stochastic Second-order Optimizer for Language Model Pre-training",
+      "citation": "Liu et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2305.14342",
+      "source_url": "https://arxiv.org/pdf/2305.14342",
+      "download_url": "https://arxiv.org/pdf/2305.14342",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2305.14342",
+        "resolved_url": "https://arxiv.org/pdf/2305.14342",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:36.860434+00:00",
+        "bytes": 3204564,
+        "sha256": "176e26b9c32bfcc36b1db9affba822d2389ee7f83d4dbea2cf2c5bfe44ca72fd",
+        "page_count": 32,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2305.14342.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3335
+      }
+    },
+    {
+      "paper_id": "arxiv_2409.20325",
+      "dedupe_key": "arxiv:2409.20325",
+      "title": "Old Optimizer, New Norm: An Anthology",
+      "citation": "Bernstein & Newhouse (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2409.20325",
+      "source_url": "https://arxiv.org/abs/2409.20325",
+      "download_url": "https://arxiv.org/pdf/2409.20325",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "additional",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2409.20325",
+        "resolved_url": "https://arxiv.org/pdf/2409.20325",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:39.761797+00:00",
+        "bytes": 556112,
+        "sha256": "75e911f6d3ab68ac04e3bfab622b32e052116cd01ca2d2b909731b1aedd7f140",
+        "page_count": 19,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2409.20325.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2932
+      }
+    },
+    {
+      "paper_id": "arxiv_2211.17192",
+      "dedupe_key": "arxiv:2211.17192",
+      "title": "Fast Inference from Transformers via Speculative Decoding",
+      "citation": "Leviathan, Kalman & Matias (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2211.17192",
+      "source_url": "https://arxiv.org/pdf/2211.17192",
+      "download_url": "https://arxiv.org/pdf/2211.17192",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2211.17192",
+        "resolved_url": "https://arxiv.org/pdf/2211.17192",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:42.758335+00:00",
+        "bytes": 574982,
+        "sha256": "8967e2daab74178b8a73a6f0b0780c5cbb40f9f6dcbd5c456b24a89c128c52ed",
+        "page_count": 13,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2211.17192.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4616
+      }
+    },
+    {
+      "paper_id": "arxiv_2302.01318",
+      "dedupe_key": "arxiv:2302.01318",
+      "title": "Accelerating Large Language Model Decoding with Speculative Sampling",
+      "citation": "Chen et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2302.01318",
+      "source_url": "https://arxiv.org/pdf/2302.01318",
+      "download_url": "https://arxiv.org/pdf/2302.01318",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2302.01318",
+        "resolved_url": "https://arxiv.org/pdf/2302.01318",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:45.742765+00:00",
+        "bytes": 349916,
+        "sha256": "ffa03c6ae46f3122570bacd7da358cae8659b6421162bbc25088622fd4889c37",
+        "page_count": 11,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2302.01318.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3163
+      }
+    },
+    {
+      "paper_id": "arxiv_2402.08164",
+      "dedupe_key": "arxiv:2402.08164",
+      "title": "On Limitations of the Transformer Architecture",
+      "citation": "Peng, Narayanan & Papadimitriou (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2402.08164",
+      "source_url": "https://arxiv.org/pdf/2402.08164",
+      "download_url": "https://arxiv.org/pdf/2402.08164",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2402.08164",
+        "resolved_url": "https://arxiv.org/pdf/2402.08164",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:48.740610+00:00",
+        "bytes": 230532,
+        "sha256": "75975fb249554f3b43ea63b2626f96bea97513b08af0204bfcbcc082dc5aad9f",
+        "page_count": 14,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2402.08164.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3895
+      }
+    },
+    {
+      "paper_id": "arxiv_2201.11903",
+      "dedupe_key": "arxiv:2201.11903",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "citation": "Wei et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2201.11903",
+      "source_url": "https://arxiv.org/pdf/2201.11903",
+      "download_url": "https://arxiv.org/pdf/2201.11903",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2201.11903",
+        "resolved_url": "https://arxiv.org/pdf/2201.11903",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:51.766472+00:00",
+        "bytes": 891773,
+        "sha256": "7d9f878c23b460e4566aa4ec9201b1abfb3b8faefb2b1356e411cb90fef72a12",
+        "page_count": 43,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2201.11903.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2306
+      }
+    },
+    {
+      "paper_id": "arxiv_2412.01951",
+      "dedupe_key": "arxiv:2412.01951",
+      "title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+      "citation": "Huang et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2412.01951",
+      "source_url": "https://arxiv.org/pdf/2412.01951",
+      "download_url": "https://arxiv.org/pdf/2412.01951",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2412.01951",
+        "resolved_url": "https://arxiv.org/pdf/2412.01951",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:54.806369+00:00",
+        "bytes": 1924304,
+        "sha256": "df66bfb7d1cc8a34033a4783da1b21d4d9854ddcd87240f7d65930c5067b81fc",
+        "page_count": 59,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2412.01951.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3719
+      }
+    },
+    {
+      "paper_id": "arxiv_2205.14135",
+      "dedupe_key": "arxiv:2205.14135",
+      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "citation": "Dao et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2205.14135",
+      "source_url": "https://arxiv.org/pdf/2205.14135",
+      "download_url": "https://arxiv.org/pdf/2205.14135",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2205.14135",
+        "resolved_url": "https://arxiv.org/pdf/2205.14135",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:57.818265+00:00",
+        "bytes": 2630825,
+        "sha256": "ca7f9fda10b90fc05dd291a3accc85e9c1a4a860b99b31928dab03ed3fcb14e4",
+        "page_count": 34,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2205.14135.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3554
+      }
+    },
+    {
+      "paper_id": "arxiv_2408.03314",
+      "dedupe_key": "arxiv:2408.03314",
+      "title": "Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters",
+      "citation": "Snell et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2408.03314",
+      "source_url": "https://arxiv.org/pdf/2408.03314",
+      "download_url": "https://arxiv.org/pdf/2408.03314",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2408.03314",
+        "resolved_url": "https://arxiv.org/pdf/2408.03314",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:00.876718+00:00",
+        "bytes": 3870997,
+        "sha256": "ded7b20b51493258c5ce2a1a024cd33dd752de1fa3373d1207620da4cfe24545",
+        "page_count": 37,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2408.03314.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3847
+      }
+    },
+    {
+      "paper_id": "doc_17223e63ad7a",
+      "dedupe_key": "https://jax-ml.github.io/scaling-book/inference",
+      "title": "All About Transformer Inference",
+      "citation": "How To Scale Your Model",
+      "year_as_listed": null,
+      "document_type": "web_article",
+      "arxiv_id": null,
+      "source_url": "https://jax-ml.github.io/scaling-book/inference/",
+      "download_url": "https://jax-ml.github.io/scaling-book/inference/",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://jax-ml.github.io/scaling-book/inference/",
+        "resolved_url": "https://jax-ml.github.io/scaling-book/inference/",
+        "content_type": "text/html; charset=utf-8",
+        "downloaded_at_utc": "2026-10-24T01:41:55.088216+00:00",
+        "bytes": 112538,
+        "sha256": "8a79888fcade6bdec1b8b860f1051b01417d48d565588e50616621d0316f9e99",
+        "status": "downloaded_html",
+        "local_path": "data/web_articles/doc_17223e63ad7a.html",
+        "snapshot_policy": "content_sha256"
+      }
+    },
+    {
+      "paper_id": "arxiv_2309.06180",
+      "dedupe_key": "arxiv:2309.06180",
+      "title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+      "citation": "Kwon et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2309.06180",
+      "source_url": "https://arxiv.org/pdf/2309.06180",
+      "download_url": "https://arxiv.org/pdf/2309.06180",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "additional",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2309.06180",
+        "resolved_url": "https://arxiv.org/pdf/2309.06180",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:03.806479+00:00",
+        "bytes": 1459631,
+        "sha256": "55b3b324d779a67c59dac2519445e3b07c14e6ff5c656fadb47a3d7b5997469e",
+        "page_count": 16,
+        "pdf_metadata_title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2309.06180.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4681
+      }
+    },
+    {
+      "paper_id": "arxiv_1908.00261",
+      "dedupe_key": "arxiv:1908.00261",
+      "title": "On the Theory of Policy Gradient Methods: Optimality, Approximation, and Distribution Shift",
+      "citation": "Agarwal et al. (2019)",
+      "year_as_listed": 2019,
+      "document_type": "research_paper",
+      "arxiv_id": "1908.00261",
+      "source_url": "https://arxiv.org/abs/1908.00261",
+      "download_url": "https://arxiv.org/pdf/1908.00261",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-30",
+          "lecture_topic": "Post-training 0: Basics of policy gradient methods",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1908.00261",
+        "resolved_url": "https://arxiv.org/pdf/1908.00261",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:06.817844+00:00",
+        "bytes": 768664,
+        "sha256": "91e0f7c19a23bfcd6af35324f496bbb21cfc1149588776fb840e1f3fae058298",
+        "page_count": 77,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1908.00261.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2620
+      }
+    },
+    {
+      "paper_id": "arxiv_1502.05477",
+      "dedupe_key": "arxiv:1502.05477",
+      "title": "Trust Region Policy Optimization",
+      "citation": "Schulman et al. (2015)",
+      "year_as_listed": 2015,
+      "document_type": "research_paper",
+      "arxiv_id": "1502.05477",
+      "source_url": "https://arxiv.org/abs/1502.05477",
+      "download_url": "https://arxiv.org/pdf/1502.05477",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-30",
+          "lecture_topic": "Post-training 0: Basics of policy gradient methods",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1502.05477",
+        "resolved_url": "https://arxiv.org/pdf/1502.05477",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:09.789527+00:00",
+        "bytes": 1026237,
+        "sha256": "c228ad36d9d46972b898c96d58b5929c51b54cc43fd42f01d751b36f434bfa4a",
+        "page_count": 16,
+        "pdf_metadata_title": "Trust Region Policy Optimization",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1502.05477.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4443
+      }
+    },
+    {
+      "paper_id": "arxiv_1707.06347",
+      "dedupe_key": "arxiv:1707.06347",
+      "title": "Proximal Policy Optimization Algorithms",
+      "citation": "Schulman et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1707.06347",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "download_url": "https://arxiv.org/pdf/1707.06347",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-30",
+          "lecture_topic": "Post-training 0: Basics of policy gradient methods",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1707.06347",
+        "resolved_url": "https://arxiv.org/pdf/1707.06347",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:12.822740+00:00",
+        "bytes": 2923532,
+        "sha256": "e78feadadbdbb0b601b3c2bcc81404722cd431a489b307545f9b7bea1e8c4f5b",
+        "page_count": 12,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1707.06347.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3336
+      }
+    },
+    {
+      "paper_id": "arxiv_2203.02155",
+      "dedupe_key": "arxiv:2203.02155",
+      "title": "Training Language Models to Follow Instructions with Human Feedback",
+      "citation": "Ouyang et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2203.02155",
+      "source_url": "https://arxiv.org/pdf/2203.02155",
+      "download_url": "https://arxiv.org/pdf/2203.02155",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-05",
+          "lecture_topic": "Post-training I (Student Presentations #1): SFT, RLHF, and DPO",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2203.02155",
+        "resolved_url": "https://arxiv.org/pdf/2203.02155",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:15.823679+00:00",
+        "bytes": 1797405,
+        "sha256": "c1984bb50a5b90fddb895fdc3a0f72e5bc977148c9f63ef6040cbe7a3e1f0d98",
+        "page_count": 68,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2203.02155.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2530
+      }
+    },
+    {
+      "paper_id": "arxiv_1706.03741",
+      "dedupe_key": "arxiv:1706.03741",
+      "title": "Deep reinforcement learning from human preferences",
+      "citation": "Christiano et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1706.03741",
+      "source_url": "https://arxiv.org/pdf/1706.03741",
+      "download_url": "https://arxiv.org/pdf/1706.03741",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-05",
+          "lecture_topic": "Post-training I (Student Presentations #1): SFT, RLHF, and DPO",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1706.03741",
+        "resolved_url": "https://arxiv.org/pdf/1706.03741",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:18.841013+00:00",
+        "bytes": 3218596,
+        "sha256": "4c2b5a0ff6f9cd6696d3e9c8263efbbe701123d4fa09f22bf28d6ef861b73a2a",
+        "page_count": 17,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1706.03741.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2960
+      }
+    },
+    {
+      "paper_id": "arxiv_2305.18290",
+      "dedupe_key": "arxiv:2305.18290",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "citation": "Rafailov et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2305.18290",
+      "source_url": "https://arxiv.org/pdf/2305.18290",
+      "download_url": "https://arxiv.org/pdf/2305.18290",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-05",
+          "lecture_topic": "Post-training I (Student Presentations #1): SFT, RLHF, and DPO",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2305.18290",
+        "resolved_url": "https://arxiv.org/pdf/2305.18290",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:21.801053+00:00",
+        "bytes": 1299212,
+        "sha256": "92cb3a2b71362acda98a789b03d88688fd33cf5fcf13f81d2b1de30ee7d3b67a",
+        "page_count": 27,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2305.18290.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3177
+      }
+    },
+    {
+      "paper_id": "arxiv_2402.03300",
+      "dedupe_key": "arxiv:2402.03300",
+      "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+      "citation": "Shao et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2402.03300",
+      "source_url": "https://arxiv.org/pdf/2402.03300",
+      "download_url": "https://arxiv.org/pdf/2402.03300",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2402.03300",
+        "resolved_url": "https://arxiv.org/pdf/2402.03300",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:24.799435+00:00",
+        "bytes": 1844642,
+        "sha256": "6cc20b3c5b8d25b8b53868fc4ec1792c144f07d67bdf7395138efd4422197e7b",
+        "page_count": 30,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2402.03300.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1725
+      }
+    },
+    {
+      "paper_id": "arxiv_2411.15124",
+      "dedupe_key": "arxiv:2411.15124",
+      "title": "Tülu 3: Pushing Frontiers in Open Language Model Post-Training",
+      "citation": "Lambert et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2411.15124",
+      "source_url": "https://arxiv.org/pdf/2411.15124",
+      "download_url": "https://arxiv.org/pdf/2411.15124",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2411.15124",
+        "resolved_url": "https://arxiv.org/pdf/2411.15124",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:27.911067+00:00",
+        "bytes": 8313277,
+        "sha256": "79bed1ef4ce4bb332f43bdc87d60709e644560f8f3bb6d14913a473cc82c251f",
+        "page_count": 82,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2411.15124.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2494
+      }
+    },
+    {
+      "paper_id": "arxiv_2501.12948",
+      "dedupe_key": "arxiv:2501.12948",
+      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "citation": "Guo et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2501.12948",
+      "source_url": "https://arxiv.org/pdf/2501.12948",
+      "download_url": "https://arxiv.org/pdf/2501.12948",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2501.12948",
+        "resolved_url": "https://arxiv.org/pdf/2501.12948",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:30.951020+00:00",
+        "bytes": 5034998,
+        "sha256": "b191b0a365a64b4ab2791d117069ed17a2933d03554a662ced58b37df52018f4",
+        "page_count": 86,
+        "pdf_metadata_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2501.12948.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2920
+      }
+    },
+    {
+      "paper_id": "arxiv_2501.12599",
+      "dedupe_key": "arxiv:2501.12599",
+      "title": "Kimi k1.5: Scaling Reinforcement Learning with LLMs",
+      "citation": "Team Kimi et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2501.12599",
+      "source_url": "https://arxiv.org/pdf/2501.12599",
+      "download_url": "https://arxiv.org/pdf/2501.12599",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2501.12599",
+        "resolved_url": "https://arxiv.org/pdf/2501.12599",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:33.796392+00:00",
+        "bytes": 926045,
+        "sha256": "1f4425ccf3cad58f2f2ce4acfeb7c85a6c5d6db3b9cdeae4bc80fa305921982d",
+        "page_count": 25,
+        "pdf_metadata_title": "Kimi k1.5: Scaling Reinforcement Learning with LLMs",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2501.12599.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1958
+      }
+    },
+    {
+      "paper_id": "arxiv_2601.18734",
+      "dedupe_key": "arxiv:2601.18734",
+      "title": "Self-Distilled Reasoner: On-Policy Self-Distillation for Large Language Models",
+      "citation": "Zhao et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2601.18734",
+      "source_url": "https://arxiv.org/pdf/2601.18734",
+      "download_url": "https://arxiv.org/pdf/2601.18734",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-12",
+          "lecture_topic": "Post-training III (Student Presentations #2): Distillation",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2601.18734",
+        "resolved_url": "https://arxiv.org/pdf/2601.18734",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:36.788572+00:00",
+        "bytes": 681639,
+        "sha256": "e521ed6c2939dc612daec5fe6fb47bef554a291228c02cafae07102b9729bad8",
+        "page_count": 15,
+        "pdf_metadata_title": "Self-Distilled Reasoner: On-Policy Self-Distillation for Large Language Models",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2601.18734.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4451
+      }
+    },
+    {
+      "paper_id": "arxiv_2306.13649",
+      "dedupe_key": "arxiv:2306.13649",
+      "title": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes",
+      "citation": "Agarwal et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2306.13649",
+      "source_url": "https://arxiv.org/abs/2306.13649",
+      "download_url": "https://arxiv.org/pdf/2306.13649",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-12",
+          "lecture_topic": "Post-training III (Student Presentations #2): Distillation",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2306.13649",
+        "resolved_url": "https://arxiv.org/pdf/2306.13649",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:39.780752+00:00",
+        "bytes": 895556,
+        "sha256": "a81c71fa0cd15506642092790d854347f030c29ee1d6aa643b55aa51348e6869",
+        "page_count": 18,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2306.13649.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3012
+      }
+    },
+    {
+      "paper_id": "arxiv_1503.02531",
+      "dedupe_key": "arxiv:1503.02531",
+      "title": "Distilling the Knowledge in a Neural Network",
+      "citation": "Hinton, Vinyals & Dean (2015)",
+      "year_as_listed": 2015,
+      "document_type": "research_paper",
+      "arxiv_id": "1503.02531",
+      "source_url": "https://arxiv.org/abs/1503.02531",
+      "download_url": "https://arxiv.org/pdf/1503.02531",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-12",
+          "lecture_topic": "Post-training III (Student Presentations #2): Distillation",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1503.02531",
+        "resolved_url": "https://arxiv.org/pdf/1503.02531",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:42.765085+00:00",
+        "bytes": 106630,
+        "sha256": "74e6689115c539db499f9d6153edecb364059926fd45402454f8210442444c5a",
+        "page_count": 9,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1503.02531.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3488
+      }
+    },
+    {
+      "paper_id": "arxiv_2505.23884",
+      "dedupe_key": "arxiv:2505.23884",
+      "title": "Test-Time Training Done Right",
+      "citation": "Zhang et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2505.23884",
+      "source_url": "https://arxiv.org/pdf/2505.23884",
+      "download_url": "https://arxiv.org/pdf/2505.23884",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2505.23884",
+        "resolved_url": "https://arxiv.org/pdf/2505.23884",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:45.896456+00:00",
+        "bytes": 3140019,
+        "sha256": "1ffb0281e9a633b1c057dd647b706b632a812dfb8e437c3fc1832518ad8c9815",
+        "page_count": 32,
+        "pdf_metadata_title": "Test-Time Training Done Right",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2505.23884.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3383
+      }
+    },
+    {
+      "paper_id": "arxiv_2407.04620",
+      "dedupe_key": "arxiv:2407.04620",
+      "title": "Learning to (Learn at Test Time): RNNs with Expressive Hidden States",
+      "citation": "Sun et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2407.04620",
+      "source_url": "https://arxiv.org/pdf/2407.04620",
+      "download_url": "https://arxiv.org/pdf/2407.04620",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2407.04620",
+        "resolved_url": "https://arxiv.org/pdf/2407.04620",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:48.834033+00:00",
+        "bytes": 1567155,
+        "sha256": "46c960fa5abc08a651d52ffba5e2e59d9b4cd2ebecda02f4fb999a1873102163",
+        "page_count": 33,
+        "pdf_metadata_title": "Learning to (Learn at Test Time): RNNs with Expressive Hidden States",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2407.04620.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2432
+      }
+    },
+    {
+      "paper_id": "arxiv_2410.21228",
+      "dedupe_key": "arxiv:2410.21228",
+      "title": "LoRA vs Full Fine-tuning: An Illusion of Equivalence",
+      "citation": "Shuttleworth et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2410.21228",
+      "source_url": "https://arxiv.org/pdf/2410.21228",
+      "download_url": "https://arxiv.org/pdf/2410.21228",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2410.21228",
+        "resolved_url": "https://arxiv.org/pdf/2410.21228",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:52.059449+00:00",
+        "bytes": 9693121,
+        "sha256": "a89c625e873cedec6dfde1c667ec3c761a6f147cbd3223bc255f59fc4513555f",
+        "page_count": 29,
+        "pdf_metadata_title": "LoRA vs Full Fine-tuning: An Illusion of Equivalence",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2410.21228.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3188
+      }
+    },
+    {
+      "paper_id": "arxiv_2106.09685",
+      "dedupe_key": "arxiv:2106.09685",
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "citation": "Hu et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2106.09685",
+      "source_url": "https://arxiv.org/abs/2106.09685",
+      "download_url": "https://arxiv.org/pdf/2106.09685",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2106.09685",
+        "resolved_url": "https://arxiv.org/pdf/2106.09685",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:54.838448+00:00",
+        "bytes": 1609513,
+        "sha256": "e9a0d3128767db616085dc0f4e6e455e672e89af823e8ed1282793682787395a",
+        "page_count": 26,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2106.09685.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3147
+      }
+    },
+    {
+      "paper_id": "arxiv_2308.08747",
+      "dedupe_key": "arxiv:2308.08747",
+      "title": "An Empirical Study of Catastrophic Forgetting in Large Language Models During Continual Fine-tuning",
+      "citation": "Luo et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2308.08747",
+      "source_url": "https://arxiv.org/abs/2308.08747",
+      "download_url": "https://arxiv.org/pdf/2308.08747",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 5,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2308.08747",
+        "resolved_url": "https://arxiv.org/pdf/2308.08747",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:57.916558+00:00",
+        "bytes": 2874585,
+        "sha256": "c536df553e61d6baa205f1b1b7f0ad669ec664f3b896e5f54cf48e1e990ec934",
+        "page_count": 15,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2308.08747.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3273
+      }
+    },
+    {
+      "paper_id": "doc_8eeab393f558",
+      "dedupe_key": "https://link.springer.com/book/10.1007/978-3-319-31089-3",
+      "title": "Brownian Motion, Martingales, and Stochastic Calculus",
+      "citation": "Le Gall (2016)",
+      "year_as_listed": 2016,
+      "document_type": "book",
+      "arxiv_id": null,
+      "source_url": "https://link.springer.com/book/10.1007/978-3-319-31089-3",
+      "download_url": "https://link.springer.com/book/10.1007/978-3-319-31089-3",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-19",
+          "lecture_topic": "Diffusion preparation: Review of stochastic calculus",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "math_background"
+        }
+      ],
+      "download": {
+        "status": "manual_review_book",
+        "error": "Book/TOC retained as a candidate; not treated as a single paper PDF."
+      }
+    },
+    {
+      "paper_id": "arxiv_1503.03585",
+      "dedupe_key": "arxiv:1503.03585",
+      "title": "Deep Unsupervised Learning using Nonequilibrium Thermodynamics",
+      "citation": "Sohl-Dickstein et al. (2015)",
+      "year_as_listed": 2015,
+      "document_type": "research_paper",
+      "arxiv_id": "1503.03585",
+      "source_url": "https://arxiv.org/pdf/1503.03585",
+      "download_url": "https://arxiv.org/pdf/1503.03585",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-21",
+          "lecture_topic": "Diffusion I: Basics of score matching & Diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1503.03585",
+        "resolved_url": "https://arxiv.org/pdf/1503.03585",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:00.890886+00:00",
+        "bytes": 4355107,
+        "sha256": "17a29449579ceb4fb906f2f3d5643eb22cea54e5975017ff8788ddf73d8b44ad",
+        "page_count": 18,
+        "pdf_metadata_title": "Deep Unsupervised Learning using Nonequilibrium Thermodynamics ",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1503.03585.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3408
+      }
+    },
+    {
+      "paper_id": "arxiv_2006.11239",
+      "dedupe_key": "arxiv:2006.11239",
+      "title": "Denoising Diffusion Probabilistic Models",
+      "citation": "Ho, Jain & Abbeel (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2006.11239",
+      "source_url": "https://arxiv.org/pdf/2006.11239",
+      "download_url": "https://arxiv.org/pdf/2006.11239",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-21",
+          "lecture_topic": "Diffusion I: Basics of score matching & Diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2006.11239",
+        "resolved_url": "https://arxiv.org/pdf/2006.11239",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:03.966712+00:00",
+        "bytes": 10267274,
+        "sha256": "aee5e07a802e8dfd2a386374c94fd61d1d056cb7e1e0fec4f28e8120ff5d8505",
+        "page_count": 25,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2006.11239.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1706
+      }
+    },
+    {
+      "paper_id": "arxiv_2011.13456",
+      "dedupe_key": "arxiv:2011.13456",
+      "title": "Score-Based Generative Modeling through Stochastic Differential Equations",
+      "citation": "Song et al. (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2011.13456",
+      "source_url": "https://arxiv.org/pdf/2011.13456",
+      "download_url": "https://arxiv.org/pdf/2011.13456",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-21",
+          "lecture_topic": "Diffusion I: Basics of score matching & Diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2011.13456",
+        "resolved_url": "https://arxiv.org/pdf/2011.13456",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:07.336467+00:00",
+        "bytes": 26918820,
+        "sha256": "b244b740e60628d01bc3d4b98d721c2343be1fb9b67ad22593c8555e66f4d4a6",
+        "page_count": 36,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2011.13456.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3573
+      }
+    },
+    {
+      "paper_id": "arxiv_2209.11215",
+      "dedupe_key": "arxiv:2209.11215",
+      "title": "Sampling is as Easy as Learning the Score: Theory for Diffusion Models with Minimal Data Assumptions",
+      "citation": "Chen et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2209.11215",
+      "source_url": "https://arxiv.org/pdf/2209.11215",
+      "download_url": "https://arxiv.org/pdf/2209.11215",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-21",
+          "lecture_topic": "Diffusion I: Basics of score matching & Diffusion models",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2209.11215",
+        "resolved_url": "https://arxiv.org/pdf/2209.11215",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:09.796496+00:00",
+        "bytes": 445635,
+        "sha256": "03f7c302ef183407843dee3bbe90b7f10afcb3b7cde8c6ac8171caa6e9784111",
+        "page_count": 29,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2209.11215.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3834
+      }
+    },
+    {
+      "paper_id": "arxiv_2210.02747",
+      "dedupe_key": "arxiv:2210.02747",
+      "title": "Flow Matching for Generative Modeling",
+      "citation": "Lipman et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2210.02747",
+      "source_url": "https://arxiv.org/pdf/2210.02747",
+      "download_url": "https://arxiv.org/pdf/2210.02747",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-26",
+          "lecture_topic": "Diffusion II: Flow matching and few-step samplers",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2210.02747",
+        "resolved_url": "https://arxiv.org/pdf/2210.02747",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:13.308714+00:00",
+        "bytes": 25147129,
+        "sha256": "5eeb39ba516396924aba4787452f9d0abdee88467a4d0c264d9f66cad0c5ee14",
+        "page_count": 28,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2210.02747.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3427
+      }
+    },
+    {
+      "paper_id": "arxiv_2202.00512",
+      "dedupe_key": "arxiv:2202.00512",
+      "title": "Progressive Distillation for Fast Sampling of Diffusion Models",
+      "citation": "Salimans & Ho (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2202.00512",
+      "source_url": "https://arxiv.org/pdf/2202.00512",
+      "download_url": "https://arxiv.org/pdf/2202.00512",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-26",
+          "lecture_topic": "Diffusion II: Flow matching and few-step samplers",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2202.00512",
+        "resolved_url": "https://arxiv.org/pdf/2202.00512",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:15.893842+00:00",
+        "bytes": 3488589,
+        "sha256": "cff438be94fd82afe02aaee34b2fb984c92861755128259ffc136a855ef60100",
+        "page_count": 21,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2202.00512.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3909
+      }
+    },
+    {
+      "paper_id": "arxiv_2303.01469",
+      "dedupe_key": "arxiv:2303.01469",
+      "title": "Consistency Models",
+      "citation": "Song et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2303.01469",
+      "source_url": "https://arxiv.org/pdf/2303.01469",
+      "download_url": "https://arxiv.org/pdf/2303.01469",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-26",
+          "lecture_topic": "Diffusion II: Flow matching and few-step samplers",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2303.01469",
+        "resolved_url": "https://arxiv.org/pdf/2303.01469",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:21.225067+00:00",
+        "bytes": 31529980,
+        "sha256": "b36df36eb96abcad5ad67173952258c34f2ba0624c15acaaf38bebf855074043",
+        "page_count": 42,
+        "pdf_metadata_title": "Consistency Models",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2303.01469.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4111
+      }
+    },
+    {
+      "paper_id": "arxiv_2206.00927",
+      "dedupe_key": "arxiv:2206.00927",
+      "title": "DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Model Sampling in Around 10 Steps",
+      "citation": "Lu et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2206.00927",
+      "source_url": "https://arxiv.org/pdf/2206.00927",
+      "download_url": "https://arxiv.org/pdf/2206.00927",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-26",
+          "lecture_topic": "Diffusion II: Flow matching and few-step samplers",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2206.00927",
+        "resolved_url": "https://arxiv.org/pdf/2206.00927",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:22.780831+00:00",
+        "bytes": 15918595,
+        "sha256": "4a14cb652bb4996c6bfdd717b0bf71d6a5c92cf9e09abdc3173106213f4fd671",
+        "page_count": 31,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2206.00927.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3295
+      }
+    },
+    {
+      "paper_id": "arxiv_2105.05233",
+      "dedupe_key": "arxiv:2105.05233",
+      "title": "Diffusion Models Beat GANs on Image Synthesis",
+      "citation": "Dhariwal & Nichol (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2105.05233",
+      "source_url": "https://arxiv.org/pdf/2105.05233",
+      "download_url": "https://arxiv.org/pdf/2105.05233",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-28",
+          "lecture_topic": "Diffusion III (Student Presentations #4): Conditional generation and Classifier-free guidance",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2105.05233",
+        "resolved_url": "https://arxiv.org/pdf/2105.05233",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:25.784111+00:00",
+        "bytes": 39795106,
+        "sha256": "f3e66af0c1b698250d3f286dbd4641f91fce661d8af4f5b26ecdc427015b7ab6",
+        "page_count": 44,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2105.05233.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1597
+      }
+    },
+    {
+      "paper_id": "arxiv_2207.12598",
+      "dedupe_key": "arxiv:2207.12598",
+      "title": "Classifier-Free Diffusion Guidance",
+      "citation": "Ho & Salimans (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2207.12598",
+      "source_url": "https://arxiv.org/pdf/2207.12598",
+      "download_url": "https://arxiv.org/pdf/2207.12598",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-28",
+          "lecture_topic": "Diffusion III (Student Presentations #4): Conditional generation and Classifier-free guidance",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2207.12598",
+        "resolved_url": "https://arxiv.org/pdf/2207.12598",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:27.888309+00:00",
+        "bytes": 3773509,
+        "sha256": "ccbdf2da65903ed579d35240165aba2d0e9ad6f015ade81af6e30823eb0a7f24",
+        "page_count": 14,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2207.12598.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2883
+      }
+    },
+    {
+      "paper_id": "arxiv_2112.10752",
+      "dedupe_key": "arxiv:2112.10752",
+      "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
+      "citation": "Rombach et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2112.10752",
+      "source_url": "https://arxiv.org/pdf/2112.10752",
+      "download_url": "https://arxiv.org/pdf/2112.10752",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-28",
+          "lecture_topic": "Diffusion III (Student Presentations #4): Conditional generation and Classifier-free guidance",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2112.10752",
+        "resolved_url": "https://arxiv.org/pdf/2112.10752",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:31.693677+00:00",
+        "bytes": 40842586,
+        "sha256": "46ede043a8dc07ca1f0f445620523fe1ad8b2436bd83856a3835612a47e9f79e",
+        "page_count": 45,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2112.10752.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4826
+      }
+    },
+    {
+      "paper_id": "arxiv_2205.11487",
+      "dedupe_key": "arxiv:2205.11487",
+      "title": "Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding",
+      "citation": "Saharia et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2205.11487",
+      "source_url": "https://arxiv.org/pdf/2205.11487",
+      "download_url": "https://arxiv.org/pdf/2205.11487",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-28",
+          "lecture_topic": "Diffusion III (Student Presentations #4): Conditional generation and Classifier-free guidance",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2205.11487",
+        "resolved_url": "https://arxiv.org/pdf/2205.11487",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:34.091148+00:00",
+        "bytes": 11365725,
+        "sha256": "0c168c11ddb3757d82a8f45355118df679bbd254364cc3370dfb3034b396c53a",
+        "page_count": 46,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2205.11487.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3049
+      }
+    },
+    {
+      "paper_id": "arxiv_2209.03003",
+      "dedupe_key": "arxiv:2209.03003",
+      "title": "Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow",
+      "citation": "Liu, Gong & Liu (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2209.03003",
+      "source_url": "https://arxiv.org/pdf/2209.03003",
+      "download_url": "https://arxiv.org/pdf/2209.03003",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-02",
+          "lecture_topic": "Diffusion IV (Student Presentations #5): Rectified flows",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2209.03003",
+        "resolved_url": "https://arxiv.org/pdf/2209.03003",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:37.233491+00:00",
+        "bytes": 18024983,
+        "sha256": "d81790cb6988ef480002adcc84000d4f44855b11fb868001fd53aad133bc3a74",
+        "page_count": 41,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2209.03003.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2725
+      }
+    },
+    {
+      "paper_id": "arxiv_2403.03206",
+      "dedupe_key": "arxiv:2403.03206",
+      "title": "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis",
+      "citation": "Esser et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2403.03206",
+      "source_url": "https://arxiv.org/pdf/2403.03206",
+      "download_url": "https://arxiv.org/pdf/2403.03206",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-02",
+          "lecture_topic": "Diffusion IV (Student Presentations #5): Rectified flows",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2403.03206",
+        "resolved_url": "https://arxiv.org/pdf/2403.03206",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:40.559061+00:00",
+        "bytes": 33973124,
+        "sha256": "7ba352b6ded12859cda4d47df203d5fe38ee884c45f3b67ff227549d82db1487",
+        "page_count": 28,
+        "pdf_metadata_title": "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2403.03206.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2096
+      }
+    },
+    {
+      "paper_id": "arxiv_2309.06380",
+      "dedupe_key": "arxiv:2309.06380",
+      "title": "InstaFlow: One Step is Enough for High-Quality Diffusion-Based Text-to-Image Generation",
+      "citation": "Liu et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2309.06380",
+      "source_url": "https://arxiv.org/pdf/2309.06380",
+      "download_url": "https://arxiv.org/pdf/2309.06380",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-02",
+          "lecture_topic": "Diffusion IV (Student Presentations #5): Rectified flows",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2309.06380",
+        "resolved_url": "https://arxiv.org/pdf/2309.06380",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:47.548681+00:00",
+        "bytes": 50270246,
+        "sha256": "a3dcea6ded67aac088bdbf1d80c84ba4f388825f1fb7ba69bedefdcb460b41ca",
+        "page_count": 30,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2309.06380.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2953
+      }
+    },
+    {
+      "paper_id": "arxiv_2303.08797",
+      "dedupe_key": "arxiv:2303.08797",
+      "title": "Building Normalizing Flows with Stochastic Interpolants",
+      "citation": "Albergo & Vanden-Eijnden (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2303.08797",
+      "source_url": "https://arxiv.org/pdf/2303.08797",
+      "download_url": "https://arxiv.org/pdf/2303.08797",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-02",
+          "lecture_topic": "Diffusion IV (Student Presentations #5): Rectified flows",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2303.08797",
+        "resolved_url": "https://arxiv.org/pdf/2303.08797",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:46.741166+00:00",
+        "bytes": 14140000,
+        "sha256": "729e445e5498c97a87a925ff08f084f741eef2cd4e018e83b898fdea7f19bdef",
+        "page_count": 80,
+        "pdf_metadata_title": "Stochastic Interpolants: A Unifying Framework for Flows and Diffusions",
+        "title_token_coverage_first_page": 0.667,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2303.08797.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2909
+      }
+    },
+    {
+      "paper_id": "arxiv_2107.03006",
+      "dedupe_key": "arxiv:2107.03006",
+      "title": "Structured Denoising Diffusion Models in Discrete State-Spaces",
+      "citation": "Austin et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2107.03006",
+      "source_url": "https://arxiv.org/pdf/2107.03006",
+      "download_url": "https://arxiv.org/pdf/2107.03006",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-04",
+          "lecture_topic": "Diffusion V (Student Presentations #6): Discrete diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2107.03006",
+        "resolved_url": "https://arxiv.org/pdf/2107.03006",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:48.936941+00:00",
+        "bytes": 4561360,
+        "sha256": "80406c2c520bac1e202013aca713f0ed7d90d85ea5057165361f02ef4727d14b",
+        "page_count": 33,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2107.03006.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3433
+      }
+    },
+    {
+      "paper_id": "arxiv_2102.05379",
+      "dedupe_key": "arxiv:2102.05379",
+      "title": "Argmax Flows and Multinomial Diffusion",
+      "citation": "Hoogeboom et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2102.05379",
+      "source_url": "https://arxiv.org/pdf/2102.05379",
+      "download_url": "https://arxiv.org/pdf/2102.05379",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-04",
+          "lecture_topic": "Diffusion V (Student Presentations #6): Discrete diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2102.05379",
+        "resolved_url": "https://arxiv.org/pdf/2102.05379",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:51.846959+00:00",
+        "bytes": 865438,
+        "sha256": "fb15bb185d0803da9bd49ca2e478cff4c22ab3104ea88bff7acf35246942df8a",
+        "page_count": 20,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2102.05379.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2858
+      }
+    },
+    {
+      "paper_id": "arxiv_2310.16834",
+      "dedupe_key": "arxiv:2310.16834",
+      "title": "Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution",
+      "citation": "Lou, Meng & Ermon (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2310.16834",
+      "source_url": "https://arxiv.org/pdf/2310.16834",
+      "download_url": "https://arxiv.org/pdf/2310.16834",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-04",
+          "lecture_topic": "Diffusion V (Student Presentations #6): Discrete diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2310.16834",
+        "resolved_url": "https://arxiv.org/pdf/2310.16834",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:54.896621+00:00",
+        "bytes": 1069705,
+        "sha256": "1f3a135a52346270ef4b0872d52f17954af7ea0fa53d0a0b31a9183599ec976e",
+        "page_count": 30,
+        "pdf_metadata_title": "Discrete Diffusion Modeling by Estimating the Ratios of the Data Distribution",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2310.16834.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4504
+      }
+    },
+    {
+      "paper_id": "arxiv_2406.07524",
+      "dedupe_key": "arxiv:2406.07524",
+      "title": "Simple and Effective Masked Diffusion Language Models",
+      "citation": "Sahoo et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2406.07524",
+      "source_url": "https://arxiv.org/pdf/2406.07524",
+      "download_url": "https://arxiv.org/pdf/2406.07524",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-04",
+          "lecture_topic": "Diffusion V (Student Presentations #6): Discrete diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "diffusion_and_flow_models"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2406.07524",
+        "resolved_url": "https://arxiv.org/pdf/2406.07524",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:57.807204+00:00",
+        "bytes": 1034628,
+        "sha256": "d3f6e01211777db2145d55fb51826eff0f9c1bfe315b142540973f35b626be35",
+        "page_count": 49,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2406.07524.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2903
+      }
+    },
+    {
+      "paper_id": "arxiv_2301.10226",
+      "dedupe_key": "arxiv:2301.10226",
+      "title": "A Watermark for Large Language Models",
+      "citation": "Kirchenbauer et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2301.10226",
+      "source_url": "https://arxiv.org/pdf/2301.10226",
+      "download_url": "https://arxiv.org/pdf/2301.10226",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-09",
+          "lecture_topic": "Alignment I (Student Presentations #7): Watermarking and Backdoors",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2301.10226",
+        "resolved_url": "https://arxiv.org/pdf/2301.10226",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:00.823575+00:00",
+        "bytes": 1461511,
+        "sha256": "7690ccaa0ff7038219c966d8466b63d5d241e30beff9aeb2860e205ab392fc20",
+        "page_count": 26,
+        "pdf_metadata_title": "A Watermark for Large Language Models",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2301.10226.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4339
+      }
+    },
+    {
+      "paper_id": "arxiv_2306.09194",
+      "dedupe_key": "arxiv:2306.09194",
+      "title": "Undetectable Watermarks for Language Models",
+      "citation": "Christ, Gunn & Zamir (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2306.09194",
+      "source_url": "https://arxiv.org/pdf/2306.09194",
+      "download_url": "https://arxiv.org/pdf/2306.09194",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-09",
+          "lecture_topic": "Alignment I (Student Presentations #7): Watermarking and Backdoors",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2306.09194",
+        "resolved_url": "https://arxiv.org/pdf/2306.09194",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:03.792485+00:00",
+        "bytes": 441998,
+        "sha256": "26ef7ee75b24d4c440e2f52159915253a01f8a3da5397b9f11bb240e2e6f283c",
+        "page_count": 32,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2306.09194.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1338
+      }
+    },
+    {
+      "paper_id": "arxiv_2204.06974",
+      "dedupe_key": "arxiv:2204.06974",
+      "title": "Planting Undetectable Backdoors in Machine Learning Models",
+      "citation": "Goldwasser et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2204.06974",
+      "source_url": "https://arxiv.org/abs/2204.06974",
+      "download_url": "https://arxiv.org/pdf/2204.06974",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-09",
+          "lecture_topic": "Alignment I (Student Presentations #7): Watermarking and Backdoors",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2204.06974",
+        "resolved_url": "https://arxiv.org/pdf/2204.06974",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:06.817789+00:00",
+        "bytes": 1066129,
+        "sha256": "76d2c81d1d8b176ae7c6f6dbc2325f60f9d7b6bb00502b2608bf493cce3987f9",
+        "page_count": 53,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2204.06974.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2959
+      }
+    },
+    {
+      "paper_id": "arxiv_2607.09532",
+      "dedupe_key": "arxiv:2607.09532",
+      "title": "Statistically Undetectable Backdoors in Deep Neural Networks",
+      "citation": "Bogdanov, Rosen & Vafa (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2607.09532",
+      "source_url": "https://arxiv.org/pdf/2607.09532",
+      "download_url": "https://arxiv.org/pdf/2607.09532",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-09",
+          "lecture_topic": "Alignment I (Student Presentations #7): Watermarking and Backdoors",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2607.09532",
+        "resolved_url": "https://arxiv.org/pdf/2607.09532",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:09.872810+00:00",
+        "bytes": 560623,
+        "sha256": "ad9b92ce20d8bfd11847b4858950355b4154a0860efbbd6f78493633e5fd56ce",
+        "page_count": 41,
+        "pdf_metadata_title": "Statistically Undetectable Backdoors in Deep Neural Networks",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2607.09532.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1094
+      }
+    },
+    {
+      "paper_id": "arxiv_2401.05566",
+      "dedupe_key": "arxiv:2401.05566",
+      "title": "Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training",
+      "citation": "Hubinger et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2401.05566",
+      "source_url": "https://arxiv.org/pdf/2401.05566",
+      "download_url": "https://arxiv.org/pdf/2401.05566",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-11",
+          "lecture_topic": "Alignment II (Student Presentations #8): Multi-agent aspects of AI safety",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2401.05566",
+        "resolved_url": "https://arxiv.org/pdf/2401.05566",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:12.906528+00:00",
+        "bytes": 3696766,
+        "sha256": "988e62785a47533775a543c78415dd0994341987f3124d57a81f46c931227bed",
+        "page_count": 71,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2401.05566.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3016
+      }
+    },
+    {
+      "paper_id": "doc_5b18db4042ee",
+      "dedupe_key": "https://www.anthropic.com/research/agentic-misalignment",
+      "title": "Agentic misalignment: How LLMs could be insider threats",
+      "citation": "Lynch et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "web_article",
+      "arxiv_id": null,
+      "source_url": "https://www.anthropic.com/research/agentic-misalignment",
+      "download_url": "https://www.anthropic.com/research/agentic-misalignment",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-11",
+          "lecture_topic": "Alignment II (Student Presentations #8): Multi-agent aspects of AI safety",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://www.anthropic.com/research/agentic-misalignment",
+        "resolved_url": "https://www.anthropic.com/research/agentic-misalignment",
+        "content_type": "text/html; charset=utf-8",
+        "downloaded_at_utc": "2026-10-24T01:44:07.096834+00:00",
+        "bytes": 380737,
+        "sha256": "f3f8e590a486c611ffd9f5cd714c01e7bfc42f9fcf6f9861629c44e3ec709441",
+        "status": "downloaded_html",
+        "local_path": "data/web_articles/doc_5b18db4042ee.html",
+        "snapshot_policy": "content_sha256"
+      }
+    },
+    {
+      "paper_id": "doc_9d4c214942a2",
+      "dedupe_key": "https://alignment.anthropic.com/2026/agentic-misalignment-summer-2026",
+      "title": "Agentic Misalignment in Summer 2026",
+      "citation": "Lynch et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "web_article",
+      "arxiv_id": null,
+      "source_url": "https://alignment.anthropic.com/2026/agentic-misalignment-summer-2026/",
+      "download_url": "https://alignment.anthropic.com/2026/agentic-misalignment-summer-2026/",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-11",
+          "lecture_topic": "Alignment II (Student Presentations #8): Multi-agent aspects of AI safety",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://alignment.anthropic.com/2026/agentic-misalignment-summer-2026/",
+        "resolved_url": "https://alignment.anthropic.com/2026/agentic-misalignment-summer-2026/",
+        "content_type": "text/html; charset=utf-8",
+        "downloaded_at_utc": "2026-10-24T01:44:07.358247+00:00",
+        "bytes": 119073,
+        "sha256": "9d08e4a578585468f56eb07ea1a2de68397670875cf47705e71c70d58cc95312",
+        "status": "downloaded_html",
+        "local_path": "data/web_articles/doc_9d4c214942a2.html",
+        "snapshot_policy": "content_sha256"
+      }
+    },
+    {
+      "paper_id": "doc_f0fb4c936449",
+      "dedupe_key": "https://alignment.anthropic.com/2026/ai-organizations",
+      "title": "AI Organizations Can Be More Effective but Less Aligned than Individual Agents",
+      "citation": "Shen et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "web_article",
+      "arxiv_id": null,
+      "source_url": "https://alignment.anthropic.com/2026/ai-organizations/",
+      "download_url": "https://alignment.anthropic.com/2026/ai-organizations/",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-11",
+          "lecture_topic": "Alignment II (Student Presentations #8): Multi-agent aspects of AI safety",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://alignment.anthropic.com/2026/ai-organizations/",
+        "resolved_url": "https://alignment.anthropic.com/2026/ai-organizations/",
+        "content_type": "text/html; charset=utf-8",
+        "downloaded_at_utc": "2026-10-24T01:44:07.496546+00:00",
+        "bytes": 38817,
+        "sha256": "53b0b5cab1f4b5960d7880f1ed1015b2886a4c58b788d3ee99b449d64b74fc98",
+        "status": "downloaded_html",
+        "local_path": "data/web_articles/doc_f0fb4c936449.html",
+        "snapshot_policy": "content_sha256"
+      }
+    },
+    {
+      "paper_id": "doc_2869273e2d01",
+      "dedupe_key": "https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf",
+      "title": "OpenAI – Hugging Face Incident Technical Report",
+      "citation": "OpenAI (2026)",
+      "year_as_listed": 2026,
+      "document_type": "technical_report",
+      "arxiv_id": null,
+      "source_url": "https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf",
+      "download_url": "https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-11",
+          "lecture_topic": "Alignment II (Student Presentations #8): Multi-agent aspects of AI safety",
+          "reading_group": "suggested",
+          "item_in_group": 5,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf",
+        "resolved_url": "https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:07.857117+00:00",
+        "bytes": 521159,
+        "sha256": "dd635cf6e5f39f0e1f646f08c36549090d77156ed89cbd3d733ed496648cae9c",
+        "page_count": 38,
+        "pdf_metadata_title": "OpenAI – Hugging Face Incident Technical Report",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found_after_cover",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_2869273e2d01.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 47,
+        "text_screening": {
+          "sampled_page_count": 3,
+          "characters_per_page": [
+            47,
+            1642,
+            1173
+          ]
+        }
+      }
+    },
+    {
+      "paper_id": "arxiv_2406.04093",
+      "dedupe_key": "arxiv:2406.04093",
+      "title": "Scaling and Evaluating Sparse Autoencoders",
+      "citation": "Gao et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2406.04093",
+      "source_url": "https://arxiv.org/pdf/2406.04093",
+      "download_url": "https://arxiv.org/pdf/2406.04093",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2406.04093",
+        "resolved_url": "https://arxiv.org/pdf/2406.04093",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:15.863417+00:00",
+        "bytes": 3224040,
+        "sha256": "af4f4901be724a4f1874b1dda311ecaea3c38dba3586bc61aec4b207b08a3352",
+        "page_count": 34,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2406.04093.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2975
+      }
+    },
+    {
+      "paper_id": "arxiv_2604.16812",
+      "dedupe_key": "arxiv:2604.16812",
+      "title": "Introspection Adapters: Training LLMs to Report Their Learned Behaviors",
+      "citation": "Shenoy et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2604.16812",
+      "source_url": "https://arxiv.org/pdf/2604.16812",
+      "download_url": "https://arxiv.org/pdf/2604.16812",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2604.16812",
+        "resolved_url": "https://arxiv.org/pdf/2604.16812",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:19.119375+00:00",
+        "bytes": 5657467,
+        "sha256": "133b6399d6481f3def6c3f40dc09e059becf907e41c738fbb71f561a7105519a",
+        "page_count": 32,
+        "pdf_metadata_title": "Introspection Adapters: Training LLMs to Report Their Learned Behaviors",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2604.16812.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4367
+      }
+    },
+    {
+      "paper_id": "arxiv_2512.15674",
+      "dedupe_key": "arxiv:2512.15674",
+      "title": "Activation Oracles: Training and Evaluating LLMs as General-Purpose Activation Explainers",
+      "citation": "Karvonen et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2512.15674",
+      "source_url": "https://arxiv.org/pdf/2512.15674",
+      "download_url": "https://arxiv.org/pdf/2512.15674",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2512.15674",
+        "resolved_url": "https://arxiv.org/pdf/2512.15674",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:21.810931+00:00",
+        "bytes": 1337804,
+        "sha256": "735c75c9361da456e1c16ef2be69d596392e5d898a003ee4cef7c9ed99252bca",
+        "page_count": 38,
+        "pdf_metadata_title": "Activation Oracles: Training and Evaluating LLMs as General-Purpose Activation Explainers",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2512.15674.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2978
+      }
+    },
+    {
+      "paper_id": "arxiv_2212.03827",
+      "dedupe_key": "arxiv:2212.03827",
+      "title": "Discovering Latent Knowledge in Language Models Without Supervision",
+      "citation": "Burns et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2212.03827",
+      "source_url": "https://arxiv.org/pdf/2212.03827",
+      "download_url": "https://arxiv.org/pdf/2212.03827",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2212.03827",
+        "resolved_url": "https://arxiv.org/pdf/2212.03827",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:24.896567+00:00",
+        "bytes": 2032858,
+        "sha256": "20062bccb4769416c800ede71f4660f3fe2ad9921a7e1964604cd1048efd3d7a",
+        "page_count": 28,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2212.03827.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3840
+      }
+    },
+    {
+      "paper_id": "arxiv_2507.11473",
+      "dedupe_key": "arxiv:2507.11473",
+      "title": "Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety",
+      "citation": "Korbak et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2507.11473",
+      "source_url": "https://arxiv.org/pdf/2507.11473",
+      "download_url": "https://arxiv.org/pdf/2507.11473",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2507.11473",
+        "resolved_url": "https://arxiv.org/pdf/2507.11473",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:27.794813+00:00",
+        "bytes": 416330,
+        "sha256": "420d2c12a787b6903242b4369d3b6c5c7949e27fdfa62dd4c2dc5b4e2f399307",
+        "page_count": 11,
+        "pdf_metadata_title": "Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2507.11473.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2247
+      }
+    },
+    {
+      "paper_id": "arxiv_2602.22755",
+      "dedupe_key": "arxiv:2602.22755",
+      "title": "AuditBench: Evaluating Alignment Auditing Techniques on Models with Hidden Behaviors",
+      "citation": "Sheshadri et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2602.22755",
+      "source_url": "https://arxiv.org/abs/2602.22755",
+      "download_url": "https://arxiv.org/pdf/2602.22755",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-16",
+          "lecture_topic": "Alignment III (Student Presentations #9): Monitoring and Interpretability",
+          "reading_group": "additional",
+          "item_in_group": 3,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2602.22755",
+        "resolved_url": "https://arxiv.org/pdf/2602.22755",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:30.896688+00:00",
+        "bytes": 2166132,
+        "sha256": "1d123f568cb93028d9af6d3829ba8403836c678d07aa0d2e80dfdc8e3b28a80d",
+        "page_count": 58,
+        "pdf_metadata_title": "AuditBench: Evaluating Alignment Auditing Techniques on Models with Hidden Behaviors",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2602.22755.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3764
+      }
+    },
+    {
+      "paper_id": "arxiv_2606.19348",
+      "dedupe_key": "arxiv:2606.19348",
+      "title": "DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence",
+      "citation": "DeepSeek-AI (2026)",
+      "year_as_listed": 2026,
+      "document_type": "technical_report",
+      "arxiv_id": "2606.19348",
+      "source_url": "https://arxiv.org/abs/2606.19348",
+      "download_url": "https://arxiv.org/pdf/2606.19348",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2606.19348",
+        "resolved_url": "https://arxiv.org/pdf/2606.19348",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:33.957235+00:00",
+        "bytes": 4713349,
+        "sha256": "55b2d72f772ac00de2e470b3ee08443c648d971c7f57c52d6202895665e5978d",
+        "page_count": 58,
+        "pdf_metadata_title": "DeepSeek-V4: Towards Highly Efficient Million-Token Context Intelligence",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2606.19348.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2611
+      }
+    },
+    {
+      "paper_id": "arxiv_2507.20534",
+      "dedupe_key": "arxiv:2507.20534",
+      "title": "Kimi K2: Open Agentic Intelligence",
+      "citation": "Kimi Team (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2507.20534",
+      "source_url": "https://arxiv.org/abs/2507.20534",
+      "download_url": "https://arxiv.org/pdf/2507.20534",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2507.20534",
+        "resolved_url": "https://arxiv.org/pdf/2507.20534",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:36.934007+00:00",
+        "bytes": 5872335,
+        "sha256": "035062b5e1ab865ffad9f90f81d6c8332f8af805063fac54cc6f2cca1fe608b5",
+        "page_count": 32,
+        "pdf_metadata_title": "Kimi K2: Open Agentic Intelligence",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2507.20534.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3187
+      }
+    },
+    {
+      "paper_id": "arxiv_2505.09388",
+      "dedupe_key": "arxiv:2505.09388",
+      "title": "Qwen3 Technical Report",
+      "citation": "Yang et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2505.09388",
+      "source_url": "https://arxiv.org/abs/2505.09388",
+      "download_url": "https://arxiv.org/pdf/2505.09388",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2505.09388",
+        "resolved_url": "https://arxiv.org/pdf/2505.09388",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:39.854865+00:00",
+        "bytes": 779424,
+        "sha256": "84a5e2b1fa04bb774bf12ae606d1e6d9dd2147ed2ebe78a4cfeb91ba380ffdd5",
+        "page_count": 35,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2505.09388.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1980
+      }
+    },
+    {
+      "paper_id": "arxiv_2602.15763",
+      "dedupe_key": "arxiv:2602.15763",
+      "title": "GLM-5: From Vibe Coding to Agentic Engineering",
+      "citation": "GLM-5 Team (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2602.15763",
+      "source_url": "https://arxiv.org/abs/2602.15763",
+      "download_url": "https://arxiv.org/pdf/2602.15763",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2602.15763",
+        "resolved_url": "https://arxiv.org/pdf/2602.15763",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:42.988961+00:00",
+        "bytes": 6177650,
+        "sha256": "e20742ff36e08dc361de6973f7f72ad38e107edf8fd92d2a777a8428fc9b8f0e",
+        "page_count": 40,
+        "pdf_metadata_title": "GLM-5: from Vibe Coding to Agentic Engineering",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2602.15763.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2044
+      }
+    },
+    {
+      "paper_id": "arxiv_2605.26494",
+      "dedupe_key": "arxiv:2605.26494",
+      "title": "The MiniMax-M2 Series: Mini Activations Unleashing Max Real-World Intelligence",
+      "citation": "Chen et al. (2026)",
+      "year_as_listed": 2026,
+      "document_type": "research_paper",
+      "arxiv_id": "2605.26494",
+      "source_url": "https://arxiv.org/abs/2605.26494",
+      "download_url": "https://arxiv.org/pdf/2605.26494",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 5,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2605.26494",
+        "resolved_url": "https://arxiv.org/pdf/2605.26494",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:45.907060+00:00",
+        "bytes": 3025414,
+        "sha256": "866e92e58242b520f25a8a19107e5c54d73d9effcf9e11e02c6b651782dc6b08",
+        "page_count": 35,
+        "pdf_metadata_title": "The MiniMax-M2 Series: Mini Activations Unleashing Max Real-World Intelligence",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2605.26494.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2734
+      }
+    },
+    {
+      "paper_id": "arxiv_2512.13961",
+      "dedupe_key": "arxiv:2512.13961",
+      "title": "Olmo 3",
+      "citation": "Team Olmo (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2512.13961",
+      "source_url": "https://arxiv.org/abs/2512.13961",
+      "download_url": "https://arxiv.org/pdf/2512.13961",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 6,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2512.13961",
+        "resolved_url": "https://arxiv.org/pdf/2512.13961",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:55.532776+00:00",
+        "bytes": 6817890,
+        "sha256": "f75208766c58a7eec434be61c93b5f7d904f2d2de31c02fca98dc9db0980fcae",
+        "page_count": 118,
+        "pdf_metadata_title": "Olmo 3",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2512.13961.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2910
+      }
+    },
+    {
+      "paper_id": "doc_1b4125b5ee25",
+      "dedupe_key": "https://microsoft.ai/pdf/mai-thinking-1.pdf",
+      "title": "MAI-Thinking-1: Building a Hill-Climbing Machine",
+      "citation": "Microsoft AI Team",
+      "year_as_listed": null,
+      "document_type": "technical_report",
+      "arxiv_id": null,
+      "source_url": "https://microsoft.ai/pdf/mai-thinking-1.pdf",
+      "download_url": "https://microsoft.ai/pdf/mai-thinking-1.pdf",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-18",
+          "lecture_topic": "Deep dive into a recent open-weight model I",
+          "reading_group": "suggested",
+          "item_in_group": 7,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://microsoft.ai/pdf/mai-thinking-1.pdf",
+        "resolved_url": "https://microsoft.ai/pdf/mai-thinking-1.pdf",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:44.082437+00:00",
+        "bytes": 3317663,
+        "sha256": "a267d745b1eb3792a8abf58e71e204a6f44f9c18eeb5ad8671320deae71986bd",
+        "page_count": 109,
+        "pdf_metadata_title": "MAI-Thinking-1: Building a Hill-Climbing Machine",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/doc_1b4125b5ee25.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2438
+      }
+    }
+  ],
+  "source_snapshots": [
+    {
+      "local_path": "data/sources/cs395t-f26.html",
+      "sha256": "eff5d8a6e4064c053ec3db8899b10d8682408e91bbbe61ce4445fa18ead52c29"
+    },
+    {
+      "local_path": "data/sources/cs395t-f26-readings.json",
+      "sha256": "e8d2b862322baf170d2f879265125ec33cff16c014936efcb8a995748127fd09"
+    }
+  ]
+}

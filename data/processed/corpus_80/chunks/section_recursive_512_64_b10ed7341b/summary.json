@@ -1,0 +1,42 @@
+{
+  "run_id": "section_recursive_512_64_b10ed7341b",
+  "status": "complete",
+  "created_at_utc": "2026-10-27T00:17:03.677732+00:00",
+  "collection_id": "llm_papers_80_20261026_v1",
+  "input_manifest": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\corpus_80\\manifest.json",
+  "config": {
+    "max_tokens": 512,
+    "overlap_tokens": 64,
+    "tokenizer_name": "cl100k_base",
+    "include_references": false,
+    "include_front_matter": false
+  },
+  "parser_version": "section-layout-v2",
+  "chunker_version": "recursive-spans-v1",
+  "packages": {
+    "PyMuPDF": "1.28.2",
+    "tiktoken": "0.14.0"
+  },
+  "selected_papers": 3,
+  "completed_papers": 3,
+  "failed_papers": 0,
+  "papers_needing_review": 0,
+  "total_chunks": 72,
+  "token_statistics": {
+    "min": 10,
+    "max": 512,
+    "mean": 360.68,
+    "median": 396.5,
+    "chunks_under_64_tokens": 1
+  },
+  "output_dir": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\chunks\\section_recursive_512_64_b10ed7341b",
+  "chunks_file": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\chunks\\section_recursive_512_64_b10ed7341b\\chunks.jsonl",
+  "parsed_dir": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\parsed",
+  "elapsed_seconds": 0.62,
+  "limitations": [
+    "PDF heading and column detection are heuristic; inspect representative parsed documents.",
+    "Tables, equations and figures retain extracted text/captions but are not structurally reconstructed or OCRed.",
+    "cl100k_base is a baseline tokenizer, not an assertion about the future embedding model.",
+    "max_tokens applies to chunk text only; account for any added metadata prefix when embedding."
+  ]
+}

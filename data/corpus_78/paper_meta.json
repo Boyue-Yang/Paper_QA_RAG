@@ -1,0 +1,314 @@
+{
+ "arxiv_1706.03762": {
+  "citation": "Vaswani et al. (2017)",
+  "source": "manifest"
+ },
+ "arxiv_2207.09238": {
+  "citation": "Phuong & Hutter (2022)",
+  "source": "manifest"
+ },
+ "arxiv_1701.06538": {
+  "citation": "Shazeer et al. (2017)",
+  "source": "manifest"
+ },
+ "arxiv_2101.03961": {
+  "citation": "Fedus, Zoph & Shazeer (2021)",
+  "source": "manifest"
+ },
+ "arxiv_2405.21060": {
+  "citation": "Dao & Gu (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2006.16236": {
+  "citation": "Katharopoulos et al. (2020)",
+  "source": "manifest"
+ },
+ "arxiv_2111.00396": {
+  "citation": "Gu, Goel & Ré (2021)",
+  "source": "manifest"
+ },
+ "arxiv_2312.00752": {
+  "citation": "Gu & Dao (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2001.08361": {
+  "citation": "Kaplan et al. (2020)",
+  "source": "manifest"
+ },
+ "arxiv_2203.15556": {
+  "citation": "Hoffmann et al. (2022)",
+  "source": "manifest"
+ },
+ "arxiv_1904.09237": {
+  "citation": "Reddi, Kale & Kumar (2019)",
+  "source": "manifest"
+ },
+ "arxiv_2409.11321": {
+  "citation": "Vyas et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_1802.09568": {
+  "citation": "Gupta, Koren & Singer (2018)",
+  "source": "manifest"
+ },
+ "arxiv_2502.16982": {
+  "citation": "Liu et al. (2025)",
+  "source": "manifest"
+ },
+ "arxiv_2305.14342": {
+  "citation": "Liu et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2409.20325": {
+  "citation": "Bernstein & Newhouse (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2211.17192": {
+  "citation": "Leviathan, Kalman & Matias (2022)",
+  "source": "manifest"
+ },
+ "arxiv_2402.08164": {
+  "citation": "Peng, Narayanan & Papadimitriou (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2201.11903": {
+  "citation": "Wei et al. (2022)",
+  "source": "manifest"
+ },
+ "arxiv_2412.01951": {
+  "citation": "Huang et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2205.14135": {
+  "citation": "Dao et al. (2022)",
+  "source": "manifest"
+ },
+ "arxiv_2408.03314": {
+  "citation": "Snell et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2309.06180": {
+  "citation": "Kwon et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2203.02155": {
+  "citation": "Ouyang et al. (2022)",
+  "source": "manifest"
+ },
+ "arxiv_2305.18290": {
+  "citation": "Rafailov et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2402.03300": {
+  "citation": "Shao et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2411.15124": {
+  "citation": "Lambert et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2501.12948": {
+  "citation": "Guo et al. (2025)",
+  "source": "manifest"
+ },
+ "arxiv_2501.12599": {
+  "citation": "Team Kimi et al. (2025)",
+  "source": "manifest"
+ },
+ "arxiv_2601.18734": {
+  "citation": "Zhao et al. (2026)",
+  "source": "manifest"
+ },
+ "arxiv_2306.13649": {
+  "citation": "Agarwal et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_1503.02531": {
+  "citation": "Hinton, Vinyals & Dean (2015)",
+  "source": "manifest"
+ },
+ "arxiv_2505.23884": {
+  "citation": "Zhang et al. (2025)",
+  "source": "manifest"
+ },
+ "arxiv_2407.04620": {
+  "citation": "Sun et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2410.21228": {
+  "citation": "Shuttleworth et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2106.09685": {
+  "citation": "Hu et al. (2021)",
+  "source": "manifest"
+ },
+ "arxiv_2308.08747": {
+  "citation": "Luo et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2406.07524": {
+  "citation": "Sahoo et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2301.10226": {
+  "citation": "Kirchenbauer et al. (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2306.09194": {
+  "citation": "Christ, Gunn & Zamir (2023)",
+  "source": "manifest"
+ },
+ "arxiv_2401.05566": {
+  "citation": "Hubinger et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2406.04093": {
+  "citation": "Gao et al. (2024)",
+  "source": "manifest"
+ },
+ "arxiv_2507.11473": {
+  "citation": "Korbak et al. (2025)",
+  "source": "manifest"
+ },
+ "arxiv_2401.04088": {
+  "citation": "arXiv:2401.04088 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2404.19737": {
+  "citation": "arXiv:2404.19737 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2104.09864": {
+  "citation": "arXiv:2104.09864 (2021)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2402.13753": {
+  "citation": "arXiv:2402.13753 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2309.00071": {
+  "citation": "arXiv:2309.00071 (2023)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_1711.05101": {
+  "citation": "arXiv:1711.05101 (2017)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2302.06675": {
+  "citation": "arXiv:2302.06675 (2023)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2101.00190": {
+  "citation": "arXiv:2101.00190 (2021)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2104.08691": {
+  "citation": "arXiv:2104.08691 (2021)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2205.11916": {
+  "citation": "arXiv:2205.11916 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2203.11171": {
+  "citation": "arXiv:2203.11171 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2208.07339": {
+  "citation": "arXiv:2208.07339 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2210.17323": {
+  "citation": "arXiv:2210.17323 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2306.00978": {
+  "citation": "arXiv:2306.00978 (2023)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2305.14314": {
+  "citation": "arXiv:2305.14314 (2023)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2210.03629": {
+  "citation": "arXiv:2210.03629 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2302.04761": {
+  "citation": "arXiv:2302.04761 (2023)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2406.11794": {
+  "citation": "arXiv:2406.11794 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2402.16827": {
+  "citation": "arXiv:2402.16827 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2501.00656": {
+  "citation": "arXiv:2501.00656 (2025)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2506.04178": {
+  "citation": "arXiv:2506.04178 (2025)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2205.14217": {
+  "citation": "arXiv:2205.14217 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2508.02193": {
+  "citation": "arXiv:2508.02193 (2025)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_1607.06450": {
+  "citation": "arXiv:1607.06450 (2016)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2002.05202": {
+  "citation": "arXiv:2002.05202 (2020)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_1910.07467": {
+  "citation": "arXiv:1910.07467 (2019)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_1508.07909": {
+  "citation": "arXiv:1508.07909 (2015)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2401.06066": {
+  "citation": "arXiv:2401.06066 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2406.08466": {
+  "citation": "arXiv:2406.08466 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2402.16788": {
+  "citation": "arXiv:2402.16788 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2203.14465": {
+  "citation": "arXiv:2203.14465 (2022)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2503.14476": {
+  "citation": "arXiv:2503.14476 (2025)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2402.14740": {
+  "citation": "arXiv:2402.14740 (2024)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2503.20783": {
+  "citation": "arXiv:2503.20783 (2025)",
+  "source": "fallback_arxiv_id"
+ },
+ "arxiv_2602.02710": {
+  "citation": "arXiv:2602.02710 (2026)",
+  "source": "fallback_arxiv_id"
+ }
+}

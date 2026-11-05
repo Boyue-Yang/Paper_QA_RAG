@@ -1,0 +1,1641 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2402.08164",
+  "version": "v2",
+  "title": "On Limitations of the Transformer Architecture",
+  "source_format": "html",
+  "source_sha256": "7d237cf0426db44499086b9197abdfc42f90cc3762e66b296782b385e83e489f",
+  "source_url": "https://arxiv.org/html/2402.08164v2",
+  "source_path": "data/corpus_78/html/arxiv_2402.08164v2.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2402.08164_v2_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5f2173b2340dbc8a6c86",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "What are the root causes of hallucinations in large language models (LLMs)? We use Communication Complexity to prove that the Transformer layer is incapable of composing functions (e.g., identify a grandparent of a person in a genealogy) if the domains of the functions are large enough; we show through examples that this inability is already empirically present when the domains are quite small. We also point out that several mathematical tasks that are at the core of the so-called compositional tasks thought to be hard for LLMs are unlikely to be solvable by Transformers, for large enough instances and assuming that certain well accepted conjectures in the field of Computational Complexity are true.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 708
+        }
+      ],
+      "text": "What are the root causes of hallucinations in large language models (LLMs)? We use Communication Complexity to prove that the Transformer layer is incapable of composing functions (e.g., identify a grandparent of a person in a genealogy) if the domains of the functions are large enough; we show through examples that this inability is already empirically present when the domains are quite small. We also point out that several mathematical tasks that are at the core of the so-called compositional tasks thought to be hard for LLMs are unlikely to be solvable by Transformers, for large enough instances and assuming that certain well accepted conjectures in the field of Computational Complexity are true."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_4b9e27e86d79499c49f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "The Transformer architecture [VSP+17], an otherwise singularly promising approach to AI, is known to be plagued by the problem of hallucinations: an answer to a user prompt is too often incompatible with the device’s training data and prompt. There is now a vast literature on hallucinations and their nature, typology, and remedies, see for example the survey [JLF+23].",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 370
+        },
+        {
+          "paragraph_id": "p_f6e33af8b083c77683b0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "Are there root causes of the hallucination phenomenon that can be imputed to the Transformer architecture? Theoretical limitations of Transformers have been pointed out in the past, starting with Hahn’s 2020 paper [Hah20], where it was proved that Transformers cannot recognize simple patterns such as parity (e.g., whether a phrase contains an even number of negations) or balanced parentheses. However, the elegant proofs in [Hah20], inspired by Complexity Theory, are asymptotic in nature, and it appears that the proven limitations take hold only for unrealistically large inputs; in fact, it has been demonstrated that there are Transformers on which these functions can be computed reliably for all practical purposes [EGZ20, YPPN21]. Transformers have also been studied through Complexity Theory — an important lens for understanding the limitations of computational systems — culminating to [MS23b], where it was shown that, computationally, Transformers belong to a rather weak complexity class, namely logspace-uniform TC0; we elaborate on this point of view in Section 4. Also recently, Sanford, Hsu, and Telgarsky [SHT23] identified a particular mathematical problem called 3-Matching, which cannot be computed by single-layer multi-head Transformers: Given a sequence of integers, identify three numbers in the sequence that add up to zero modulo a given large number. Very interestingly, (a) the easier problem of 2-Matching can be solved by Transformers, but cannot be solved by feed-forward deep nets, establishing a kind of supremacy of Transformers over the rest of ML; and (b) these negative results manifest themselves for rather small prompt sizes. Note that, the conceptual contribution of this result notwithstanding, the 3-matching function identified in [SHT23] is not a compelling example of the kinds of problems that Transformers are meant to solve. The question arises, can we identify impossible tasks that are closer to the intended use of the architecture? This is our focus here. We point out a new fundamental limitation of the Transformer architecture, namely that it has serious difficulties computing a very simple, and practically important, semantic operation we call function composition, explained next.",
+          "kind": "text",
+          "char_start": 372,
+          "char_end": 2616
+        },
+        {
+          "paragraph_id": "p_ef9ca8c143d70ababb52",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "In a recent paper on the topic of hallucinations [GLL+24], the opening example is a wrong answer to the question what is the birthday of Frédéric Chopin’s father?, when these two facts were included in the prompt: (a) the father of Frédéric Chopin was Nicolas Chopin and (b) Nicolas Chopin was born on April 15, 1771. This is an example of function composition, where the functions to be composed are birthday-of and father-of. Interestingly, the aforementioned paper [GLL+24] goes on to propose retrofitting Transformers with Knowledge Graphs — precisely the right tool for performing function composition — in order to mitigate hallucinations. Another example of function composition would be, given the facts London is in the UK, Alan Turing was born in London, among other such facts, to ask: In which country was Turing born? Or, presented with Matthew’s genealogy [Mat]: Abraham was the father of Isaac, Isaac was the the father of Jacob, ... and so on with 39 more sentences of this type, to ask: Did Isaac have any grandchildren?",
+          "kind": "text",
+          "char_start": 2618,
+          "char_end": 3655
+        },
+        {
+          "paragraph_id": "p_69a149535845fa4dba0c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "Footnote: 1 1 It is a tragic coincidence that the great romantic composer Frédéric Chopin was tormented by hallucinatory episodes throughout his brief life…",
+          "kind": "footnote",
+          "char_start": 3657,
+          "char_end": 3813
+        },
+        {
+          "paragraph_id": "p_85d5b5770801f6cf8970",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "Besides its critical role in combining relational information in the data, function composition is also an important ingredient of language understanding, the core competence of Transformers. In the field of pragmatics, indexicals are words referring to entities in the context in which the utterance occurs. For example his in the sentence I have a brother and his name is John, or this in the sentence this dog has style are indexicals. Now, when in an utterance one indexical refers to another, understanding the utterance entails function composition. Consider this:",
+          "kind": "text",
+          "char_start": 3815,
+          "char_end": 4385
+        },
+        {
+          "paragraph_id": "p_58b6ac3c94fff1fba262",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1.1",
+          "text": "Transformers occasionally hallucinate, that is, they generate output inconsistent with the training data and prompt. However, this deficiency is rather rare, and techniques such as post-filtering can alleviate it.",
+          "kind": "text",
+          "char_start": 4387,
+          "char_end": 4600
+        },
+        {
+          "paragraph_id": "p_c4d6c69ad19ad6794f1d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p6.1",
+          "text": "Understanding what is meant by the last word it of this utterance, one needs to compose two indexicals: First one has to recognize that the indexical it points to this deficiency, and then that this deficiency refers to the particular deficiency that Transformers occasionally hallucinate. It appears that humans have little difficulty composing idexicals — but how about Transformers?",
+          "kind": "text",
+          "char_start": 4602,
+          "char_end": 4987
+        },
+        {
+          "paragraph_id": "p_eef88ed93c48bb48c261",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p7.1",
+          "text": "So it seems desirable — indeed important — that LLMs perform function composition reliably. In this paper we prove that they cannot: function composition is an inherent weakness of the Transformer architecture. In particular, we show that a single Transformer attention layer cannot compute the answer to a function composition query correctly with significant probability of success, as long as the size $n$ of the domain of the function satisfies $n\\log n>H(d+1)p$, where $d$ is the embedding dimension, $p$ is the precision, in bits, required for the calculation, and $H$ is the number of attention heads. In fact, the proof of our impossibility theorem suggests that this weakness has its roots in the nature of the softmax computation that allows the next embedding of a token to be computed with very scant non-local information.",
+          "kind": "text",
+          "char_start": 4989,
+          "char_end": 5824
+        },
+        {
+          "paragraph_id": "p_7d7b97f0a67d3fcd4ff8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p8.1",
+          "text": "Our impossibility result holds for a single, multi-headed attention layer; however, we suspect that the weakness that it exposes also burdens multi-layer Transformers, and in Appendix A we see anecdotal evidence that LLMs appear unable to reliably compose functions with domains that are far smaller.",
+          "kind": "text",
+          "char_start": 5826,
+          "char_end": 6126
+        },
+        {
+          "paragraph_id": "p_2df75137b60cc54dac9e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p9.1",
+          "text": "The chain of thought maneuver (CoT) [WWS+22] is known to help with the problem of hallucinations by inducing the LLM to generate prompts which break down the task in hand into smaller steps eventually leading to the correct answer. Indeed, a simple CoT scheme can plausibly mitigate our impossibility result on composition by generating a short prompt. However, we also prove a theorem implying that a Transformer layer with CoT needs far more tokens in the generated CoT prompt to solve the composition problem for a cascade of many compositions (Theorem 2)",
+          "kind": "text",
+          "char_start": 6128,
+          "char_end": 6686
+        },
+        {
+          "paragraph_id": "p_ee3c65ed44ded69dc102",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p10.1",
+          "text": "We also provide a different impossibility argument that holds for any number of layers, and concerns a different genre of hallucinations: wrong answers to compositionality tasks. In [DLS+23], it is demonstrated through extensive experimentation that Transformers have trouble carrying out tasks that require sequential composition of elementary tasks, such as multiplying multi-digit integers and solving logical puzzles, and in fact this failure grows quickly with the required depth of composition. We point out (Theorem 3) that, under a widely accepted complexity assumption — akin to P $\\neq$ NP albeit in the domain of memory — multi-layer Transformers are incapable of performing several elementary computations that are crucial in carrying out compositionality tasks such as those discussed in [DLS+23].",
+          "kind": "text",
+          "char_start": 6688,
+          "char_end": 7498
+        },
+        {
+          "paragraph_id": "p_57c995de42116de99919",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p11.1",
+          "text": "Finally, it has been often pointed out that it is the very nature of Transformers as probabilistic language generators that renders them likely to veer off their grounding on the training data and prompt — see for example [MYF+23], where it is demonstrated through extensive experimentation that low-probability answers (as well as low-probability inputs, or low-probability tasks) are harder for transformers to get right. In general, LLM models maximize the probability of generating the next token given the context in an auto-regressive manner, and this must continue even when there is no clear winner. That is, the LLM generates outputs even when the probability of the predicted token is low. When this intensifies, the model will generate a low-likelihood series of tokens, resulting in an unreliable output.",
+          "kind": "text",
+          "char_start": 7500,
+          "char_end": 8316
+        },
+        {
+          "paragraph_id": "p_06f22161ea114834d8bc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p12.1",
+          "text": "There are many situations when this could happen. First, as [MYF+23] point out, LLM are particularly bad when there is a low probability of the input, task, or output, even if the underlying training sequence is deterministic. Yet another case is one where the input context is under-specified or ambiguous. When the input context does not provide sufficient information for a clear and optimal token choice, the estimated probabilities obtained from applying the logit function to the softmax output of the transformer are distributed such that the difference between the highest and subsequent probabilities is relatively small, there is a higher chance that in the auto-regressive model, the incorrect token will be picked. This situation is also correlated to the case where the conditional entropy is likely high. In all these cases, the generation of the incorrect token is more likely; and once the sequence has an incorrect next token, there is a significant chance that this error cascades into a hallucination. In a recent paper [KV23], this phenomenon is studied more formally by considering the statistics of very rare patterns in the training data.",
+          "kind": "text",
+          "char_start": 8318,
+          "char_end": 9479
+        }
+      ],
+      "text": "The Transformer architecture [VSP+17], an otherwise singularly promising approach to AI, is known to be plagued by the problem of hallucinations: an answer to a user prompt is too often incompatible with the device’s training data and prompt. There is now a vast literature on hallucinations and their nature, typology, and remedies, see for example the survey [JLF+23].\n\nAre there root causes of the hallucination phenomenon that can be imputed to the Transformer architecture? Theoretical limitations of Transformers have been pointed out in the past, starting with Hahn’s 2020 paper [Hah20], where it was proved that Transformers cannot recognize simple patterns such as parity (e.g., whether a phrase contains an even number of negations) or balanced parentheses. However, the elegant proofs in [Hah20], inspired by Complexity Theory, are asymptotic in nature, and it appears that the proven limitations take hold only for unrealistically large inputs; in fact, it has been demonstrated that there are Transformers on which these functions can be computed reliably for all practical purposes [EGZ20, YPPN21]. Transformers have also been studied through Complexity Theory — an important lens for understanding the limitations of computational systems — culminating to [MS23b], where it was shown that, computationally, Transformers belong to a rather weak complexity class, namely logspace-uniform TC0; we elaborate on this point of view in Section 4. Also recently, Sanford, Hsu, and Telgarsky [SHT23] identified a particular mathematical problem called 3-Matching, which cannot be computed by single-layer multi-head Transformers: Given a sequence of integers, identify three numbers in the sequence that add up to zero modulo a given large number. Very interestingly, (a) the easier problem of 2-Matching can be solved by Transformers, but cannot be solved by feed-forward deep nets, establishing a kind of supremacy of Transformers over the rest of ML; and (b) these negative results manifest themselves for rather small prompt sizes. Note that, the conceptual contribution of this result notwithstanding, the 3-matching function identified in [SHT23] is not a compelling example of the kinds of problems that Transformers are meant to solve. The question arises, can we identify impossible tasks that are closer to the intended use of the architecture? This is our focus here. We point out a new fundamental limitation of the Transformer architecture, namely that it has serious difficulties computing a very simple, and practically important, semantic operation we call function composition, explained next.\n\nIn a recent paper on the topic of hallucinations [GLL+24], the opening example is a wrong answer to the question what is the birthday of Frédéric Chopin’s father?, when these two facts were included in the prompt: (a) the father of Frédéric Chopin was Nicolas Chopin and (b) Nicolas Chopin was born on April 15, 1771. This is an example of function composition, where the functions to be composed are birthday-of and father-of. Interestingly, the aforementioned paper [GLL+24] goes on to propose retrofitting Transformers with Knowledge Graphs — precisely the right tool for performing function composition — in order to mitigate hallucinations. Another example of function composition would be, given the facts London is in the UK, Alan Turing was born in London, among other such facts, to ask: In which country was Turing born? Or, presented with Matthew’s genealogy [Mat]: Abraham was the father of Isaac, Isaac was the the father of Jacob, ... and so on with 39 more sentences of this type, to ask: Did Isaac have any grandchildren?\n\nFootnote: 1 1 It is a tragic coincidence that the great romantic composer Frédéric Chopin was tormented by hallucinatory episodes throughout his brief life…\n\nBesides its critical role in combining relational information in the data, function composition is also an important ingredient of language understanding, the core competence of Transformers. In the field of pragmatics, indexicals are words referring to entities in the context in which the utterance occurs. For example his in the sentence I have a brother and his name is John, or this in the sentence this dog has style are indexicals. Now, when in an utterance one indexical refers to another, understanding the utterance entails function composition. Consider this:\n\nTransformers occasionally hallucinate, that is, they generate output inconsistent with the training data and prompt. However, this deficiency is rather rare, and techniques such as post-filtering can alleviate it.\n\nUnderstanding what is meant by the last word it of this utterance, one needs to compose two indexicals: First one has to recognize that the indexical it points to this deficiency, and then that this deficiency refers to the particular deficiency that Transformers occasionally hallucinate. It appears that humans have little difficulty composing idexicals — but how about Transformers?\n\nSo it seems desirable — indeed important — that LLMs perform function composition reliably. In this paper we prove that they cannot: function composition is an inherent weakness of the Transformer architecture. In particular, we show that a single Transformer attention layer cannot compute the answer to a function composition query correctly with significant probability of success, as long as the size $n$ of the domain of the function satisfies $n\\log n>H(d+1)p$, where $d$ is the embedding dimension, $p$ is the precision, in bits, required for the calculation, and $H$ is the number of attention heads. In fact, the proof of our impossibility theorem suggests that this weakness has its roots in the nature of the softmax computation that allows the next embedding of a token to be computed with very scant non-local information.\n\nOur impossibility result holds for a single, multi-headed attention layer; however, we suspect that the weakness that it exposes also burdens multi-layer Transformers, and in Appendix A we see anecdotal evidence that LLMs appear unable to reliably compose functions with domains that are far smaller.\n\nThe chain of thought maneuver (CoT) [WWS+22] is known to help with the problem of hallucinations by inducing the LLM to generate prompts which break down the task in hand into smaller steps eventually leading to the correct answer. Indeed, a simple CoT scheme can plausibly mitigate our impossibility result on composition by generating a short prompt. However, we also prove a theorem implying that a Transformer layer with CoT needs far more tokens in the generated CoT prompt to solve the composition problem for a cascade of many compositions (Theorem 2)\n\nWe also provide a different impossibility argument that holds for any number of layers, and concerns a different genre of hallucinations: wrong answers to compositionality tasks. In [DLS+23], it is demonstrated through extensive experimentation that Transformers have trouble carrying out tasks that require sequential composition of elementary tasks, such as multiplying multi-digit integers and solving logical puzzles, and in fact this failure grows quickly with the required depth of composition. We point out (Theorem 3) that, under a widely accepted complexity assumption — akin to P $\\neq$ NP albeit in the domain of memory — multi-layer Transformers are incapable of performing several elementary computations that are crucial in carrying out compositionality tasks such as those discussed in [DLS+23].\n\nFinally, it has been often pointed out that it is the very nature of Transformers as probabilistic language generators that renders them likely to veer off their grounding on the training data and prompt — see for example [MYF+23], where it is demonstrated through extensive experimentation that low-probability answers (as well as low-probability inputs, or low-probability tasks) are harder for transformers to get right. In general, LLM models maximize the probability of generating the next token given the context in an auto-regressive manner, and this must continue even when there is no clear winner. That is, the LLM generates outputs even when the probability of the predicted token is low. When this intensifies, the model will generate a low-likelihood series of tokens, resulting in an unreliable output.\n\nThere are many situations when this could happen. First, as [MYF+23] point out, LLM are particularly bad when there is a low probability of the input, task, or output, even if the underlying training sequence is deterministic. Yet another case is one where the input context is under-specified or ambiguous. When the input context does not provide sufficient information for a clear and optimal token choice, the estimated probabilities obtained from applying the logit function to the softmax output of the transformer are distributed such that the difference between the highest and subsequent probabilities is relatively small, there is a higher chance that in the auto-regressive model, the incorrect token will be picked. This situation is also correlated to the case where the conditional entropy is likely high. In all these cases, the generation of the incorrect token is more likely; and once the sequence has an incorrect next token, there is a significant chance that this error cascades into a hallucination. In a recent paper [KV23], this phenomenon is studied more formally by considering the statistics of very rare patterns in the training data."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0002",
+      "title": "2 Preliminary definitions",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Preliminary definitions"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_59942a11131b271fdb00",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1",
+          "text": "Transformer.",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 12
+        },
+        {
+          "paragraph_id": "p_df817f0c20b3f0441f4e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p1.1",
+          "text": "To model mathematically computation by Transformers, we adapt slightly the formal model of [SHT23]. A self-attention unit is a function ${\\cal A}:(\\mathbb{R}^{D})^{N}\\mapsto(\\mathbb{R}^{d})^{N}$, where $N$ is the sequence length, $D$ is the embedding dimension, and $d$ is the output dimension. ${\\cal A}$ is defined in terms of three real matrices $K,Q,V\\in\\mathbb{R}^{d\\times D}$. For simplicity, we assume that the key, query, value matrices $K,Q,V$ share the same dimension. On input $X=(x_{1},\\ldots,x_{N})\\in(\\mathbb{R}^{D})^{N}$, the attention unit ${\\cal A}$ calculates, for each $i=1,\\ldots,N$, the output",
+          "kind": "text",
+          "char_start": 14,
+          "char_end": 628
+        },
+        {
+          "paragraph_id": "p_67164918df738c1f3898",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx1",
+          "text": "\\displaystyle y_{i}=\\sum_{j\\in[N]}r_{i,j}Vx_{j}\\in\\mathbb{R}^{d}",
+          "kind": "equation",
+          "char_start": 630,
+          "char_end": 694
+        },
+        {
+          "paragraph_id": "p_b4e691f586b3aef3be0f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p1.2",
+          "text": "where the attention probability",
+          "kind": "text",
+          "char_start": 696,
+          "char_end": 727
+        },
+        {
+          "paragraph_id": "p_4ed9e83c568ab57a7f94",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx2",
+          "text": "\\displaystyle(r_{i,1},\\ldots,r_{i,N})= \\displaystyle\\penalty\\ \\softmax(x_{i}^{\\top}Q^{\\top}Kx_{1},\\ldots,x_{i}^{\\top}Q^{\\top}Kx_{N}) \\displaystyle= \\displaystyle\\penalty\\ \\left(\\frac{\\exp(x_{i}^{\\top}Q^{\\top}Kx_{1})}{\\sum_{j\\in[N]}\\exp(x_{i}^{\\top}Q^{\\top}Kx_{j})},\\ldots,\\frac{\\exp(x_{i}^{\\top}Q^{\\top}Kx_{N})}{\\sum_{j\\in[N]}\\exp(x_{i}^{\\top}Q^{\\top}Kx_{j})}\\right).",
+          "kind": "equation",
+          "char_start": 729,
+          "char_end": 1096
+        },
+        {
+          "paragraph_id": "p_49dbc4cb5456c8c42bec",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p1.3",
+          "text": "We assume that the computations of the self-attention unit are carried out with a precision of $p$ bits.",
+          "kind": "text",
+          "char_start": 1098,
+          "char_end": 1202
+        },
+        {
+          "paragraph_id": "p_992ca46dadd56fcbb41b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p2.1",
+          "text": "An $H$-headed transformer layer ${\\cal L}$ consists of $H$ self-attention units sharing the same input, together with a combining function $\\Phi$ which maps, for each $i$, the $H$ outputs of the layer to an output token in $\\mathbb{R}^{d}$. Finally, a Transformer ${\\cal T}$ is the cascade of several transformer layers.",
+          "kind": "text",
+          "char_start": 1204,
+          "char_end": 1524
+        },
+        {
+          "paragraph_id": "p_90ff3696ab835be885c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px1.p3.1",
+          "text": "Notice that our definition ignores certain features of the Transformer architecture, such as input embedding and pre- and post-processing of individual tokens by feed-forward networks; however, it is easy to see that input embedding and the pre-processing can be absorbed in the input tokens, while post-processing can be incorporated into the combining function $\\Phi$, and therefore, this omission does not affect the validity of our argument.",
+          "kind": "text",
+          "char_start": 1526,
+          "char_end": 1971
+        },
+        {
+          "paragraph_id": "p_b831722c56cfcc460df8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2",
+          "text": "Function composition.",
+          "kind": "heading",
+          "char_start": 1973,
+          "char_end": 1994
+        },
+        {
+          "paragraph_id": "p_7c7bd4f81f0d1b5087cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2.p1.1",
+          "text": "We next define the function composition problem. Consider two functions, $g$ mapping a domain $A$ to a domain $B$, and $f$ mapping $B$ to another domain $C$ — for example, $g(a)$ could be the mother of person $a\\in A$, and $f(b)$ is the profession of person $b\\in B$. These functions will be described in a prompt $X$. The $N$ tokens of $X$ are divided into three parts:",
+          "kind": "text",
+          "char_start": 1996,
+          "char_end": 2366
+        },
+        {
+          "paragraph_id": "p_1d128647704fa3c8ca56",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i1",
+          "text": "• Part 1. The first part describes the function $g$ through $|A|$ sentences in simple, unambiguous language separated by punctuation, e.g. the mother of John is Helen; the mother of Charlotte is Eve; etc.;",
+          "kind": "list_item",
+          "char_start": 2368,
+          "char_end": 2573
+        },
+        {
+          "paragraph_id": "p_e207db2741fc6bc8f133",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i2",
+          "text": "• Part 2. Similarly, the second part consists of $|B|$ sentences describing the function $f$, e.g. Helen is a doctor; Jane is a teacher; etc. and",
+          "kind": "list_item",
+          "char_start": 2575,
+          "char_end": 2720
+        },
+        {
+          "paragraph_id": "p_e64ccc1ef4c6c81d6b03",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i3",
+          "text": "• Part 3. The query, e.g. what is the profession of John’s mother?",
+          "kind": "list_item",
+          "char_start": 2722,
+          "char_end": 2788
+        },
+        {
+          "paragraph_id": "p_cd02c0c30f1f65748d19",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.I1.i3",
+          "text": "Footnote: 2 2 It is fine to think that these sentences come in this order, but the proof does not require it.",
+          "kind": "footnote",
+          "char_start": 2790,
+          "char_end": 2899
+        },
+        {
+          "paragraph_id": "p_83c43011c90b0dfe0a37",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2.p2.1",
+          "text": "Notice that the number $N$ of input tokens is a small multiple of the domain size of the functions. We say that an $H$-headed Transformer layer ${\\cal L}$ computes the function composition correctly if, for any input prompt in the correct format, the output of the layer corresponding to the token of the query (to the token John in this example) is the correct answer of the composition query.",
+          "kind": "text",
+          "char_start": 2901,
+          "char_end": 3295
+        },
+        {
+          "paragraph_id": "p_cf4f182e78ae219cb19c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px2.p3.1",
+          "text": "In the body of the paper we also introduce similar tasks, such as iterated function composition and reachability, whose definitions are simple extensions of the above.",
+          "kind": "text",
+          "char_start": 3297,
+          "char_end": 3464
+        },
+        {
+          "paragraph_id": "p_3d9fea1abc124870ae61",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px3",
+          "text": "Information theory.",
+          "kind": "heading",
+          "char_start": 3466,
+          "char_end": 3485
+        },
+        {
+          "paragraph_id": "p_d86922b930ab9f634ef0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS0.SSS0.Px3.p1.1",
+          "text": "We use standard notation from information theory. If $X,Y,Z$ are random variables, $H(X)$ is the entropy of $X$ and $I(X;Y)$ is the mutual information between $X$ and $Y$. We write $\\ln(\\cdot)$ for the natural logarithm and $\\log(\\cdot)$ for base two.",
+          "kind": "text",
+          "char_start": 3487,
+          "char_end": 3738
+        }
+      ],
+      "text": "Transformer.\n\nTo model mathematically computation by Transformers, we adapt slightly the formal model of [SHT23]. A self-attention unit is a function ${\\cal A}:(\\mathbb{R}^{D})^{N}\\mapsto(\\mathbb{R}^{d})^{N}$, where $N$ is the sequence length, $D$ is the embedding dimension, and $d$ is the output dimension. ${\\cal A}$ is defined in terms of three real matrices $K,Q,V\\in\\mathbb{R}^{d\\times D}$. For simplicity, we assume that the key, query, value matrices $K,Q,V$ share the same dimension. On input $X=(x_{1},\\ldots,x_{N})\\in(\\mathbb{R}^{D})^{N}$, the attention unit ${\\cal A}$ calculates, for each $i=1,\\ldots,N$, the output\n\n\\displaystyle y_{i}=\\sum_{j\\in[N]}r_{i,j}Vx_{j}\\in\\mathbb{R}^{d}\n\nwhere the attention probability\n\n\\displaystyle(r_{i,1},\\ldots,r_{i,N})= \\displaystyle\\penalty\\ \\softmax(x_{i}^{\\top}Q^{\\top}Kx_{1},\\ldots,x_{i}^{\\top}Q^{\\top}Kx_{N}) \\displaystyle= \\displaystyle\\penalty\\ \\left(\\frac{\\exp(x_{i}^{\\top}Q^{\\top}Kx_{1})}{\\sum_{j\\in[N]}\\exp(x_{i}^{\\top}Q^{\\top}Kx_{j})},\\ldots,\\frac{\\exp(x_{i}^{\\top}Q^{\\top}Kx_{N})}{\\sum_{j\\in[N]}\\exp(x_{i}^{\\top}Q^{\\top}Kx_{j})}\\right).\n\nWe assume that the computations of the self-attention unit are carried out with a precision of $p$ bits.\n\nAn $H$-headed transformer layer ${\\cal L}$ consists of $H$ self-attention units sharing the same input, together with a combining function $\\Phi$ which maps, for each $i$, the $H$ outputs of the layer to an output token in $\\mathbb{R}^{d}$. Finally, a Transformer ${\\cal T}$ is the cascade of several transformer layers.\n\nNotice that our definition ignores certain features of the Transformer architecture, such as input embedding and pre- and post-processing of individual tokens by feed-forward networks; however, it is easy to see that input embedding and the pre-processing can be absorbed in the input tokens, while post-processing can be incorporated into the combining function $\\Phi$, and therefore, this omission does not affect the validity of our argument.\n\nFunction composition.\n\nWe next define the function composition problem. Consider two functions, $g$ mapping a domain $A$ to a domain $B$, and $f$ mapping $B$ to another domain $C$ — for example, $g(a)$ could be the mother of person $a\\in A$, and $f(b)$ is the profession of person $b\\in B$. These functions will be described in a prompt $X$. The $N$ tokens of $X$ are divided into three parts:\n\n• Part 1. The first part describes the function $g$ through $|A|$ sentences in simple, unambiguous language separated by punctuation, e.g. the mother of John is Helen; the mother of Charlotte is Eve; etc.;\n\n• Part 2. Similarly, the second part consists of $|B|$ sentences describing the function $f$, e.g. Helen is a doctor; Jane is a teacher; etc. and\n\n• Part 3. The query, e.g. what is the profession of John’s mother?\n\nFootnote: 2 2 It is fine to think that these sentences come in this order, but the proof does not require it.\n\nNotice that the number $N$ of input tokens is a small multiple of the domain size of the functions. We say that an $H$-headed Transformer layer ${\\cal L}$ computes the function composition correctly if, for any input prompt in the correct format, the output of the layer corresponding to the token of the query (to the token John in this example) is the correct answer of the composition query.\n\nIn the body of the paper we also introduce similar tasks, such as iterated function composition and reachability, whose definitions are simple extensions of the above.\n\nInformation theory.\n\nWe use standard notation from information theory. If $X,Y,Z$ are random variables, $H(X)$ is the entropy of $X$ and $I(X;Y)$ is the mutual information between $X$ and $Y$. We write $\\ln(\\cdot)$ for the natural logarithm and $\\log(\\cdot)$ for base two."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0003",
+      "title": "3 The Impossibility of Composition",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 The Impossibility of Composition"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5c2dffbf78de5bc6d040",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "We prove the following:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 23
+        },
+        {
+          "paragraph_id": "p_e925af14348fce9d2be5",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem1",
+          "text": "Theorem 1.",
+          "kind": "heading",
+          "char_start": 25,
+          "char_end": 35
+        },
+        {
+          "paragraph_id": "p_96dc80f95ea10d3ac368",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem1.p1.1",
+          "text": "Consider a function composition problem with input domain size $|A|=|B|=|C|=n$, and an $H$-headed transformer layer ${\\cal L}$ with embedding dimension $d$ and computation precision $p$, and assume that $H(d+1)p<n\\log n$. Then ${\\cal L}$ cannot solve correctly the function composition problem. In particular, if $R=n\\log n-H(d+1)p>0$, then the probability, over all possible functions and queries, that ${\\cal L}$ answers the query incorrectly is at least ${R\\over 3n\\log n}$.",
+          "kind": "text",
+          "char_start": 37,
+          "char_end": 514
+        },
+        {
+          "paragraph_id": "p_28416fb64b69ced6841a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.1",
+          "text": "The proof relies on Communication Complexity [KN96], a subfield of Complexity Theory in which one measures the number of bits that need to be exchanged between distributed computational agents possessing different parts of the input, in order for one of them to obtain the result of the computation. The agents are assumed to have unbounded computational capabilities, and to be restricted only in terms of their communication. One important classical result in Communication Complexity is the communication difficulty of the set disjointness problem: If Bob and Alice are each given a vector of $n$ bits and they want to compute the Boolean inner product of these bit vectors — that is, to tell if there is an index $i$ such that the $i$th bit of both Bob and Alice is a 1 — then they must communicate $n$ bits. In fact, this result used is in the impossibility proofs in [SHT23]. Another classical problem in this field is pointer chasing: Alice and Bob are given two functions $A$ and $B$, respectively, from $[n]$ to $[n]$, and they need to compute a composition of these functions, say $A(B(A(B(A(0)))))$. Compositions can obviously be computed by the agents alternatingly communicating $\\log n$ bits to each other: in this example, Alice communicates to Bob the value of $A(0)$, then Bob tells Alice the value of $B(A(0))$, and so on. But what if one less rounds of communication is allowed? Or, if the same number of rounds is allowed, but Bob must start? Over the four decades since this problem was first posed [PS82], it has been shown that, if one less round of communication is desired, or if Bob has to start the communication, then exponentially more bits must be exchanged. These lower bounds have been used to inform many fields of Complexity, including lower bounds of bounded-depth circuits, see for example [KN96], and even the complexity of Machine Learning [CPP22].",
+          "kind": "text",
+          "char_start": 516,
+          "char_end": 2402
+        },
+        {
+          "paragraph_id": "p_6bf4ab3e267aa9be1713",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.1",
+          "text": "Here we use a slight variant of this classical framework. We assume three agents, whom we call Faye, Grace, and Xavier. Faye knows a function $f$ from $[n]$ to $[n]$, Grace knows another such function $g$, and Xavier knows a number $x\\in[n]$. We can actually assume that Faye and Grace both know Xavier’s value $x$. The only communication allowed is from Faye and Grace to Xavier — not between Faye and Grace. Our goal is for Xavier to know the value $f(g(x))$ so that Faye communicates to Xavier as few bits as possible. Notice that we do not restrict the number of bits Grace can communicate to Xavier.",
+          "kind": "text",
+          "char_start": 2404,
+          "char_end": 3008
+        },
+        {
+          "paragraph_id": "p_9e82bdd22b0008266384",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma1",
+          "text": "Lemma 1.",
+          "kind": "heading",
+          "char_start": 3010,
+          "char_end": 3018
+        },
+        {
+          "paragraph_id": "p_5c2a6fc9e452ed5e6cac",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma1.p1.1",
+          "text": "If fewer than $n\\log n$ bits are communicated by Faye to Xavier, then Xavier cannot know the value $f(g(x))$. In particular, if only $n\\log n-R$ bits are communicated from Faye to Xavier for some $R>0$, then the probability, over all pairs of functions, that the composition is computed incorrectly is at least ${R\\over 3n\\log n}$.",
+          "kind": "text",
+          "char_start": 3020,
+          "char_end": 3351
+        },
+        {
+          "paragraph_id": "p_9db4f8f7f02dc122f334",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.2",
+          "text": "Proof.",
+          "kind": "heading",
+          "char_start": 3353,
+          "char_end": 3359
+        },
+        {
+          "paragraph_id": "p_b9305f44eec686f852d2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.1",
+          "text": "The proof of the first statement of the lemma is elementary. Since Faye and Grace cannot communicate, and communication from Grace to Xavier is free, we may assume that Grace communicates to Xavier the value of $g(x)$ — intuitively, the only information he needs from her. Even though progress seems to have been made, Xavier must now apply $f$ to $g(x)$, and he knows nothing about $f$. This difficulty must be solved through communication from Faye to Xavier, as further communication from Grace obviously cannot help. There are $n^{n}$ possible functions $f$, and to describe the actual one completely Faye needs to send Xavier at least $n\\log n$ bits, the logarithm base two of $n^{n}$ — in fact $n\\lceil\\log n\\rceil$ bits suffice, because Faye can send to Xavier the values $f(0),f(1),...$ in this order. If Faye sends to Xavier fewer than $n\\log n$ bits, say $B$ bits, the precise bitstring she sends is determined by the function $f$ she knows, and thus this communication subdivides the $n^{n}$ candidates for the $f$ function into $2^{B}$ categories — one for each value of the $B$ bits sent by Faye to Xavier. Since $B<n\\log n$, we have that $2^{B}<n^{n}$, and hence, by the pigeonhole principle, at least two different candidate functions $f$ and $f^{\\prime}$ result in the same communication from Faye to Xavier, and Xavier has no way of knowing which of the two functions is the correct one. These two functions must differ in at least one value, say $f(z)\\neq f^{\\prime}(z)$. But what if it so happens that $g(x)=z$? In this case, Xavier has no way of knowing the correct answer to the problem he is supposed to solve, completing the proof of the first statement.",
+          "kind": "text",
+          "char_start": 3361,
+          "char_end": 5038
+        },
+        {
+          "paragraph_id": "p_bf3b5348b99f7c5e8b92",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p5.1",
+          "text": "The proof of the second, quantitative, statement is more technical and relies on Information Theory and mutual information. Recall the input of Grace is a random mapping $g:[n]\\mapsto[n]$, for any fixed input of Xavier $x\\in[n]$. Let $i^{*}=g(x)\\in[n]$, then we know that $i^{*}$ is uniform over $[n]$. Let $\\Pi$ be the message sent from Faye to Xavier, it has $n\\log(n)-R$ bits. We first bound the mutual information between $\\Pi$ and $f(i^{*})=f(g(x))$:",
+          "kind": "text",
+          "char_start": 5040,
+          "char_end": 5495
+        },
+        {
+          "paragraph_id": "p_91c8436dbd568cdc81a3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p5.1",
+          "text": "Footnote: 3 3 Strictly speaking, the second statement implies the first; however, the simple proof of the first statement is included for reasons of exposition.",
+          "kind": "footnote",
+          "char_start": 5497,
+          "char_end": 5657
+        },
+        {
+          "paragraph_id": "p_8ea2e56933497e2c36a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx3",
+          "text": "\\displaystyle I(\\Pi;f(i^{*})|i^{*})= \\displaystyle\\penalty\\ \\sum_{i=1}^{n}\\Pr[i^{*}=i]\\cdot I(\\Pi;f(i^{*})|i^{*}=i) \\displaystyle= \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(i)) \\displaystyle\\leq \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(i)|(f(j))_{j<i}) \\displaystyle= \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(1),\\ldots,f(n)) \\displaystyle\\leq \\displaystyle\\penalty\\ \\frac{|\\Pi|}{n}=\\log n-\\frac{R}{n}.",
+          "kind": "equation",
+          "char_start": 5659,
+          "char_end": 6104
+        },
+        {
+          "paragraph_id": "p_1d1e4293ed617ae5e7cd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p5.2",
+          "text": "The first step follows from the definition of conditional mutual information. The second step follows from the facts that $i^{*}$ is uniform over $[n]$ and $\\Pi$ is independent of $i^{*}$. The third step follows from $(f(j))_{j<i}$ are independent of $f(i)$, and the fourth step is the chain rule.",
+          "kind": "text",
+          "char_start": 6106,
+          "char_end": 6403
+        },
+        {
+          "paragraph_id": "p_7bf9732d285ada85ae03",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p6.1",
+          "text": "Notice that Xavier’s output is just a post-processing of $\\Pi$ and $i^{*}$, and denote by $\\delta$ its error probability. Then by Fano’s Inequality, we have",
+          "kind": "text",
+          "char_start": 6405,
+          "char_end": 6561
+        },
+        {
+          "paragraph_id": "p_e54bbd52b6c1c9fa11d6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx4",
+          "text": "\\displaystyle H(\\delta)+\\delta\\log(n)\\geq H(f(i^{*})|\\Pi,i^{*})=H(f(i^{*})|i^{*})-I(\\Pi;f(i^{*})|i^{*})\\geq\\log n-(\\log n-\\frac{R}{n})=\\frac{R}{n}.",
+          "kind": "equation",
+          "char_start": 6563,
+          "char_end": 6710
+        },
+        {
+          "paragraph_id": "p_62d607a3cbd1726c8f5e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p6.2",
+          "text": "Here the first step follows from Fano’s inequality, the third step follows from Eq. (2).",
+          "kind": "text",
+          "char_start": 6712,
+          "char_end": 6800
+        },
+        {
+          "paragraph_id": "p_319753e5f044a81e7571",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p7.1",
+          "text": "From Eq. (3), we can derive that $\\delta\\geq\\frac{R}{3n\\log n}$. ∎",
+          "kind": "text",
+          "char_start": 6802,
+          "char_end": 6868
+        },
+        {
+          "paragraph_id": "p_faa1cbf334cbdd2554ed",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark1",
+          "text": "Remark 1.",
+          "kind": "heading",
+          "char_start": 6870,
+          "char_end": 6879
+        },
+        {
+          "paragraph_id": "p_404e79c2ad81b269f9a6",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark1.p1.1",
+          "text": "The lower bound on the error probability in the statement of the Lemma, $R\\over 3n\\log n$, is optimal within a small constant factor. In proof, an upper bound of ${1\\over n}\\lceil{R\\over\\log n}\\rceil$ is possible, by the following construction (we assume $n$ is a power of $2$ for simplicity): Faye sends to Xavier $n\\log n-R$ bits, by which she encodes the the first $n-\\lceil{R\\over\\log n}\\rceil$ values of the function. With this scheme, an error happens if one of the last $\\lceil{R\\over\\log n}\\rceil$ values of the function is queried, and answered the wrong way. This probability is at most ${1\\over n}\\lceil{R\\over\\log n}\\rceil$, which is just a factor of three greater than the lower bound.",
+          "kind": "text",
+          "char_start": 6881,
+          "char_end": 7579
+        },
+        {
+          "paragraph_id": "p_9693375cab144ad2ff8b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p8.1",
+          "text": "We now turn to the proof of the theorem.",
+          "kind": "text",
+          "char_start": 7581,
+          "char_end": 7621
+        },
+        {
+          "paragraph_id": "p_1e06a1c6f89bcf5edc1f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.3",
+          "text": "Proof.",
+          "kind": "heading",
+          "char_start": 7623,
+          "char_end": 7629
+        },
+        {
+          "paragraph_id": "p_b6afc79c00f7ecc1e344",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p9.1",
+          "text": "For the purposes of contradiction, suppose that there is a self-attention layer ${\\cal L}$ that can reliably combine any two functions $f$ and $g$ on any domains $A,B,C$ of size $n$, such that $n\\log n>H(d+1)p$. We will show that this contradicts Lemma 1.",
+          "kind": "text",
+          "char_start": 7631,
+          "char_end": 7886
+        },
+        {
+          "paragraph_id": "p_78d8579d325ca05c5804",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p10.1",
+          "text": "Suppose that the three agents Faye, Grace, and Xavier are as in the lemma, and they wish to compute $f(g(x))$; we claim that they could do so by using ${\\cal L}$ as follows: They put together the prompt of a function composition problem to be solved by ${\\cal L}$, where Faye supplies the token strings associated with function $f$ — say, the value of f applied to 0 is 3, etc. Grace supplies similarly the tokens associated with function $g$, and Xavier supplies the query part: what is the result of f applied to g applied to 23? — recall that Xavier knows $x$, and it happens to be 23. We assume the token corresponding to 23 is token $t$, that is, $x_{t}={\\tt 23}$. Then the three agents compute the result of the computation of ${\\cal L}$ that corresponds to the token $t$, as explained below. Recall that, by our assumption that ${\\cal L}$ performs function composition, this result must be the required answer $f(g(x))$.",
+          "kind": "text",
+          "char_start": 7888,
+          "char_end": 8815
+        },
+        {
+          "paragraph_id": "p_0f71eddd6d20f1c6c4e1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p11.1",
+          "text": "The three agents communicate to compute, for each head, the final embedding that corresponds to the token $t$, and then Xavier applies the finishing function $\\Phi$ to compute the final result, which will be the answer of the composition problem. For each head, the result at token $N$ can be written as",
+          "kind": "text",
+          "char_start": 8817,
+          "char_end": 9120
+        },
+        {
+          "paragraph_id": "p_b7b78893fc035d8e7f0c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Ex7",
+          "text": "y_{t}={\\sum_{j=1}^{N}r_{t,j}Vx_{j}\\over\\sum_{j=1}^{N}r_{t,j}},{\\rm where}\\ r_{t,j}=\\exp(x_{t}^{\\top}Q^{\\top}Kx_{j}). (4)",
+          "kind": "equation",
+          "char_start": 9122,
+          "char_end": 9242
+        },
+        {
+          "paragraph_id": "p_20c30e1ad98f6766254d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p11.2",
+          "text": "The key observation now is that this expression can be written as $y_{t}={F+G+X\\over F^{\\prime}+G^{\\prime}+X^{\\prime}}$, where $F$ is the part of the numerator that corresponds to Faye’s tokens $x_{j}$ , similarly $G$ corresponds to Grace’s tokens, $X$ corresponds to Xavier’s tokens, and similarly for the denominator. Hence, Faye can compute and communicate to Xavier quantities $F$ and $F^{\\prime}$, and similarly for Grace and $G,G^{\\prime}$; then Xavier can add to these the terms $X$ and $X^{\\prime}$, divide, and thus compute $y_{N}$. Repeating for all heads and combining with $\\Phi$, Xavier can compute $f(g(x))$ and obtain the desired answer to the composition problem. But now notice that this was accomplished through a communication of only $H(d+1)p$ bits from Faye to Xavier — $dp$ bits for $F$ and $p$ bits for $F^{\\prime}$ for each of the $H$ heads. By hypothesis, this quantity is less than $n\\log n$, contradicting Lemma 1. The second part on error probability follows from the same reduction, completing the proof. ∎",
+          "kind": "text",
+          "char_start": 9244,
+          "char_end": 10279
+        },
+        {
+          "paragraph_id": "p_73a3bc7da0002b61e820",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark2",
+          "text": "Remark 2.",
+          "kind": "heading",
+          "char_start": 10281,
+          "char_end": 10290
+        },
+        {
+          "paragraph_id": "p_1e754a8453db49f1407a",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark2.p1.1",
+          "text": "The proof of the probabilistic statement assumes that $f$ is a uniformly random function from $[n]$ to $[n]$. To prove a negative result, some probabilistic assumption is necessary; for example, if $f(x)$ happens to be $a$ for all $x$, far fewer bits need be communicated from Faye to Xavier. The statement can be extended to cover more general distributions, but then the entropy of $f$ would replace $n\\log n$ in the denominator of the statement.",
+          "kind": "text",
+          "char_start": 10292,
+          "char_end": 10740
+        },
+        {
+          "paragraph_id": "p_bbf510e222624766189c",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark3",
+          "text": "Remark 3.",
+          "kind": "heading",
+          "char_start": 10742,
+          "char_end": 10751
+        },
+        {
+          "paragraph_id": "p_8b0c441432ebc19cf6a4",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmremark3.p1.1",
+          "text": "It is clear from the proof that function $g$ plays a minimal role in the lower bound, since its value on $x$ is communicated for free to Xavier. Indeed, one can argue that what is proved impossible for the Transformer layer is the evaluation of a function $f$. The reasoning in the proof of the Theorem can be repeated for prompts which, after listing the birthplaces of many luminaries end like this: ‘‘...where was Einstein born?’’, as long as the answer must appear at the position of the last token.",
+          "kind": "text",
+          "char_start": 10753,
+          "char_end": 11256
+        }
+      ],
+      "text": "We prove the following:\n\nTheorem 1.\n\nConsider a function composition problem with input domain size $|A|=|B|=|C|=n$, and an $H$-headed transformer layer ${\\cal L}$ with embedding dimension $d$ and computation precision $p$, and assume that $H(d+1)p<n\\log n$. Then ${\\cal L}$ cannot solve correctly the function composition problem. In particular, if $R=n\\log n-H(d+1)p>0$, then the probability, over all possible functions and queries, that ${\\cal L}$ answers the query incorrectly is at least ${R\\over 3n\\log n}$.\n\nThe proof relies on Communication Complexity [KN96], a subfield of Complexity Theory in which one measures the number of bits that need to be exchanged between distributed computational agents possessing different parts of the input, in order for one of them to obtain the result of the computation. The agents are assumed to have unbounded computational capabilities, and to be restricted only in terms of their communication. One important classical result in Communication Complexity is the communication difficulty of the set disjointness problem: If Bob and Alice are each given a vector of $n$ bits and they want to compute the Boolean inner product of these bit vectors — that is, to tell if there is an index $i$ such that the $i$th bit of both Bob and Alice is a 1 — then they must communicate $n$ bits. In fact, this result used is in the impossibility proofs in [SHT23]. Another classical problem in this field is pointer chasing: Alice and Bob are given two functions $A$ and $B$, respectively, from $[n]$ to $[n]$, and they need to compute a composition of these functions, say $A(B(A(B(A(0)))))$. Compositions can obviously be computed by the agents alternatingly communicating $\\log n$ bits to each other: in this example, Alice communicates to Bob the value of $A(0)$, then Bob tells Alice the value of $B(A(0))$, and so on. But what if one less rounds of communication is allowed? Or, if the same number of rounds is allowed, but Bob must start? Over the four decades since this problem was first posed [PS82], it has been shown that, if one less round of communication is desired, or if Bob has to start the communication, then exponentially more bits must be exchanged. These lower bounds have been used to inform many fields of Complexity, including lower bounds of bounded-depth circuits, see for example [KN96], and even the complexity of Machine Learning [CPP22].\n\nHere we use a slight variant of this classical framework. We assume three agents, whom we call Faye, Grace, and Xavier. Faye knows a function $f$ from $[n]$ to $[n]$, Grace knows another such function $g$, and Xavier knows a number $x\\in[n]$. We can actually assume that Faye and Grace both know Xavier’s value $x$. The only communication allowed is from Faye and Grace to Xavier — not between Faye and Grace. Our goal is for Xavier to know the value $f(g(x))$ so that Faye communicates to Xavier as few bits as possible. Notice that we do not restrict the number of bits Grace can communicate to Xavier.\n\nLemma 1.\n\nIf fewer than $n\\log n$ bits are communicated by Faye to Xavier, then Xavier cannot know the value $f(g(x))$. In particular, if only $n\\log n-R$ bits are communicated from Faye to Xavier for some $R>0$, then the probability, over all pairs of functions, that the composition is computed incorrectly is at least ${R\\over 3n\\log n}$.\n\nProof.\n\nThe proof of the first statement of the lemma is elementary. Since Faye and Grace cannot communicate, and communication from Grace to Xavier is free, we may assume that Grace communicates to Xavier the value of $g(x)$ — intuitively, the only information he needs from her. Even though progress seems to have been made, Xavier must now apply $f$ to $g(x)$, and he knows nothing about $f$. This difficulty must be solved through communication from Faye to Xavier, as further communication from Grace obviously cannot help. There are $n^{n}$ possible functions $f$, and to describe the actual one completely Faye needs to send Xavier at least $n\\log n$ bits, the logarithm base two of $n^{n}$ — in fact $n\\lceil\\log n\\rceil$ bits suffice, because Faye can send to Xavier the values $f(0),f(1),...$ in this order. If Faye sends to Xavier fewer than $n\\log n$ bits, say $B$ bits, the precise bitstring she sends is determined by the function $f$ she knows, and thus this communication subdivides the $n^{n}$ candidates for the $f$ function into $2^{B}$ categories — one for each value of the $B$ bits sent by Faye to Xavier. Since $B<n\\log n$, we have that $2^{B}<n^{n}$, and hence, by the pigeonhole principle, at least two different candidate functions $f$ and $f^{\\prime}$ result in the same communication from Faye to Xavier, and Xavier has no way of knowing which of the two functions is the correct one. These two functions must differ in at least one value, say $f(z)\\neq f^{\\prime}(z)$. But what if it so happens that $g(x)=z$? In this case, Xavier has no way of knowing the correct answer to the problem he is supposed to solve, completing the proof of the first statement.\n\nThe proof of the second, quantitative, statement is more technical and relies on Information Theory and mutual information. Recall the input of Grace is a random mapping $g:[n]\\mapsto[n]$, for any fixed input of Xavier $x\\in[n]$. Let $i^{*}=g(x)\\in[n]$, then we know that $i^{*}$ is uniform over $[n]$. Let $\\Pi$ be the message sent from Faye to Xavier, it has $n\\log(n)-R$ bits. We first bound the mutual information between $\\Pi$ and $f(i^{*})=f(g(x))$:\n\nFootnote: 3 3 Strictly speaking, the second statement implies the first; however, the simple proof of the first statement is included for reasons of exposition.\n\n\\displaystyle I(\\Pi;f(i^{*})|i^{*})= \\displaystyle\\penalty\\ \\sum_{i=1}^{n}\\Pr[i^{*}=i]\\cdot I(\\Pi;f(i^{*})|i^{*}=i) \\displaystyle= \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(i)) \\displaystyle\\leq \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(i)|(f(j))_{j<i}) \\displaystyle= \\displaystyle\\penalty\\ \\frac{1}{n}\\sum_{i=1}^{n}I(\\Pi;f(1),\\ldots,f(n)) \\displaystyle\\leq \\displaystyle\\penalty\\ \\frac{|\\Pi|}{n}=\\log n-\\frac{R}{n}.\n\nThe first step follows from the definition of conditional mutual information. The second step follows from the facts that $i^{*}$ is uniform over $[n]$ and $\\Pi$ is independent of $i^{*}$. The third step follows from $(f(j))_{j<i}$ are independent of $f(i)$, and the fourth step is the chain rule.\n\nNotice that Xavier’s output is just a post-processing of $\\Pi$ and $i^{*}$, and denote by $\\delta$ its error probability. Then by Fano’s Inequality, we have\n\n\\displaystyle H(\\delta)+\\delta\\log(n)\\geq H(f(i^{*})|\\Pi,i^{*})=H(f(i^{*})|i^{*})-I(\\Pi;f(i^{*})|i^{*})\\geq\\log n-(\\log n-\\frac{R}{n})=\\frac{R}{n}.\n\nHere the first step follows from Fano’s inequality, the third step follows from Eq. (2).\n\nFrom Eq. (3), we can derive that $\\delta\\geq\\frac{R}{3n\\log n}$. ∎\n\nRemark 1.\n\nThe lower bound on the error probability in the statement of the Lemma, $R\\over 3n\\log n$, is optimal within a small constant factor. In proof, an upper bound of ${1\\over n}\\lceil{R\\over\\log n}\\rceil$ is possible, by the following construction (we assume $n$ is a power of $2$ for simplicity): Faye sends to Xavier $n\\log n-R$ bits, by which she encodes the the first $n-\\lceil{R\\over\\log n}\\rceil$ values of the function. With this scheme, an error happens if one of the last $\\lceil{R\\over\\log n}\\rceil$ values of the function is queried, and answered the wrong way. This probability is at most ${1\\over n}\\lceil{R\\over\\log n}\\rceil$, which is just a factor of three greater than the lower bound.\n\nWe now turn to the proof of the theorem.\n\nProof.\n\nFor the purposes of contradiction, suppose that there is a self-attention layer ${\\cal L}$ that can reliably combine any two functions $f$ and $g$ on any domains $A,B,C$ of size $n$, such that $n\\log n>H(d+1)p$. We will show that this contradicts Lemma 1.\n\nSuppose that the three agents Faye, Grace, and Xavier are as in the lemma, and they wish to compute $f(g(x))$; we claim that they could do so by using ${\\cal L}$ as follows: They put together the prompt of a function composition problem to be solved by ${\\cal L}$, where Faye supplies the token strings associated with function $f$ — say, the value of f applied to 0 is 3, etc. Grace supplies similarly the tokens associated with function $g$, and Xavier supplies the query part: what is the result of f applied to g applied to 23? — recall that Xavier knows $x$, and it happens to be 23. We assume the token corresponding to 23 is token $t$, that is, $x_{t}={\\tt 23}$. Then the three agents compute the result of the computation of ${\\cal L}$ that corresponds to the token $t$, as explained below. Recall that, by our assumption that ${\\cal L}$ performs function composition, this result must be the required answer $f(g(x))$.\n\nThe three agents communicate to compute, for each head, the final embedding that corresponds to the token $t$, and then Xavier applies the finishing function $\\Phi$ to compute the final result, which will be the answer of the composition problem. For each head, the result at token $N$ can be written as\n\ny_{t}={\\sum_{j=1}^{N}r_{t,j}Vx_{j}\\over\\sum_{j=1}^{N}r_{t,j}},{\\rm where}\\ r_{t,j}=\\exp(x_{t}^{\\top}Q^{\\top}Kx_{j}). (4)\n\nThe key observation now is that this expression can be written as $y_{t}={F+G+X\\over F^{\\prime}+G^{\\prime}+X^{\\prime}}$, where $F$ is the part of the numerator that corresponds to Faye’s tokens $x_{j}$ , similarly $G$ corresponds to Grace’s tokens, $X$ corresponds to Xavier’s tokens, and similarly for the denominator. Hence, Faye can compute and communicate to Xavier quantities $F$ and $F^{\\prime}$, and similarly for Grace and $G,G^{\\prime}$; then Xavier can add to these the terms $X$ and $X^{\\prime}$, divide, and thus compute $y_{N}$. Repeating for all heads and combining with $\\Phi$, Xavier can compute $f(g(x))$ and obtain the desired answer to the composition problem. But now notice that this was accomplished through a communication of only $H(d+1)p$ bits from Faye to Xavier — $dp$ bits for $F$ and $p$ bits for $F^{\\prime}$ for each of the $H$ heads. By hypothesis, this quantity is less than $n\\log n$, contradicting Lemma 1. The second part on error probability follows from the same reduction, completing the proof. ∎\n\nRemark 2.\n\nThe proof of the probabilistic statement assumes that $f$ is a uniformly random function from $[n]$ to $[n]$. To prove a negative result, some probabilistic assumption is necessary; for example, if $f(x)$ happens to be $a$ for all $x$, far fewer bits need be communicated from Faye to Xavier. The statement can be extended to cover more general distributions, but then the entropy of $f$ would replace $n\\log n$ in the denominator of the statement.\n\nRemark 3.\n\nIt is clear from the proof that function $g$ plays a minimal role in the lower bound, since its value on $x$ is communicated for free to Xavier. Indeed, one can argue that what is proved impossible for the Transformer layer is the evaluation of a function $f$. The reasoning in the proof of the Theorem can be repeated for prompts which, after listing the birthplaces of many luminaries end like this: ‘‘...where was Einstein born?’’, as long as the answer must appear at the position of the last token."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0004",
+      "title": "Chain of Thought",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SSx1",
+      "path": [
+        "3 The Impossibility of Composition",
+        "Chain of Thought"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f39dde05cf3d040d60f2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p1.1",
+          "text": "Can CoT help solve the composition problem? Intuitively, the answer is “yes.” For any composition problem — for example, the prompt about Turing, London, and England in the introduction — we can help the LLM successfully answer the question ‘‘In which country was Turing born?’’ by generating a short CoT prompt that breaks the question into simpler ones, e.g. ‘‘Let’s see, Turing was born in generate, and generate is in the country of generate, so Turing was born in generate.’’ However, we prove below that an arbitrarily large number of CoT steps are needed to solve the generalization of composition to many function applications. In the iterated function composition problem we are given $K$ functions $f_{1},f_{2},\\ldots,f_{K}$, and we need to calculate $f_{K}(f_{k-1}(\\ldots(f_{1}(x))))$ for $x\\in[n]$. In fact, in our proof we shall consider $f^{(K)}(x)=f(f(\\ldots f(x)))$ — that is, we shall take $f_{1}=\\cdots=f_{K}$.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 928
+        },
+        {
+          "paragraph_id": "p_cdcd4a2954a2a085007a",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem2",
+          "text": "Theorem 2.",
+          "kind": "heading",
+          "char_start": 930,
+          "char_end": 940
+        },
+        {
+          "paragraph_id": "p_bb90a0422238777659ee",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem2.p1.1",
+          "text": "Let $H$ be the number of attention heads, $d$ the embedding dimension, $p$ the computation precision, and $n$ be the domain size of the iterated composition problem. A Transformer layer requires $\\Omega(\\sqrt{\\frac{n}{Hdp}})$ CoT steps for answering correctly iterated function composition prompts.",
+          "kind": "text",
+          "char_start": 942,
+          "char_end": 1240
+        },
+        {
+          "paragraph_id": "p_08df144cc9f21a8f0267",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.1",
+          "text": "Proof.",
+          "kind": "heading",
+          "char_start": 1242,
+          "char_end": 1248
+        },
+        {
+          "paragraph_id": "p_6a2b44cc18756e18ce9d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p2.1",
+          "text": "We reduce from another classical problem in Communication Complexity called pointer chasing. Let $n$ and $c$ be two positive integers. In the $(n,c)$-pointer chasing problem, Alice knows a function $f_{A}:[n]\\rightarrow[n]$ and Bob knows another function $f_{B}:[n]\\rightarrow[n]$. The pointers $w^{(1)},w^{(2)},\\ldots$ are recursively defined as",
+          "kind": "text",
+          "char_start": 1250,
+          "char_end": 1596
+        },
+        {
+          "paragraph_id": "p_01f254ad2c054fd1257d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx5",
+          "text": "\\displaystyle w^{(1)}=1,\\penalty\\ \\penalty\\ w^{(2)}=f_{A}(w^{(1)}),\\penalty\\ \\penalty\\ w^{(3)}=f_{B}(w^{(2)}),\\penalty\\ \\penalty\\ w^{(4)}=f_{A}(w^{(3)}),\\penalty\\ \\penalty\\ w^{(5)}=f_{B}(w^{(4)}),\\penalty\\ \\penalty\\ \\ldots",
+          "kind": "equation",
+          "char_start": 1598,
+          "char_end": 1820
+        },
+        {
+          "paragraph_id": "p_664da475de16563b1959",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p3.1",
+          "text": "The communication proceeds for $2r$ rounds, with Alice starting. The goal is for Bob to output the binary value of $w^{(2r+2)}\\pmod{2}$. The following summarizes what is known about this problem:",
+          "kind": "text",
+          "char_start": 1822,
+          "char_end": 2017
+        },
+        {
+          "paragraph_id": "p_ba5ef0149a5dadade79b",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma2",
+          "text": "Lemma 2 ([NW91, Kla00, Yeh20]).",
+          "kind": "heading",
+          "char_start": 2019,
+          "char_end": 2050
+        },
+        {
+          "paragraph_id": "p_2bdd39bb66ee3040db68",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma2.p1.1",
+          "text": "Any randomized protocol for the pointer chasing problem with error probability at most $1/3$ under the uniform distribution must involve the transmission of at least $n/(2000c)-2c\\log n$.",
+          "kind": "text",
+          "char_start": 2052,
+          "char_end": 2239
+        },
+        {
+          "paragraph_id": "p_66c236dfac38a1104fc0",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma3",
+          "text": "Lemma 3.",
+          "kind": "heading",
+          "char_start": 2241,
+          "char_end": 2249
+        },
+        {
+          "paragraph_id": "p_0a76d27c80cf252f1b7c",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmlemma3.p1.1",
+          "text": "For any $K\\geq 1$, suppose there is a Transformer layer ${\\cal L}$ with $H$ attention heads, dimension $d$, and precision $p$ that solves the $K$-iterated function composition within $R$ CoT steps, then there is a communication protocol for $(n,K-1)$-pointer chasing, communicates in $2R$ rounds and exchanges $2RH(d+1)p$ bits.",
+          "kind": "text",
+          "char_start": 2251,
+          "char_end": 2578
+        },
+        {
+          "paragraph_id": "p_ce5a845622f95b92bd4c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.1.1",
+          "text": "Proof.",
+          "kind": "heading",
+          "char_start": 2580,
+          "char_end": 2586
+        },
+        {
+          "paragraph_id": "p_1ce7dfb203077504b17f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p4.1",
+          "text": "Recall that in the pointer chasing problem, Alice receives a function $f_{A}:[n]\\mapsto[n]$ and Bob receives a function $f_{B}:[n]\\mapsto[n]$. Define a single mapping $f:[2n]\\rightarrow[2n]$ such that",
+          "kind": "text",
+          "char_start": 2588,
+          "char_end": 2788
+        },
+        {
+          "paragraph_id": "p_665abf9e6c13fd785403",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Ex9",
+          "text": "f(i)=\\left\\{\\begin{matrix}f_{A}(i)+n&i\\in[n]\\\\ f_{B}(i-n)&i\\in[n+1:2n]\\end{matrix}\\right.",
+          "kind": "equation",
+          "char_start": 2790,
+          "char_end": 2879
+        },
+        {
+          "paragraph_id": "p_8dad0f59625edfe03758",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p4.2",
+          "text": "For any $i\\in[n]$, we have that $f^{(k)}(i)=(f_{B}\\circ f_{A})^{(k)}(i)$ holds for any integer $k\\geq 1$.",
+          "kind": "text",
+          "char_start": 2881,
+          "char_end": 2986
+        },
+        {
+          "paragraph_id": "p_1f52143799a1d8647703",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p5.1",
+          "text": "Suppose there is a Transformer layer ${\\cal L}$ that solves the $K$-iterated function composition problem using $R$ CoT steps; we shall construct a communication protocol for pointer chasing based on it. Alice and Bob put together the function composition task for ${\\cal L}$, where Alice supplies the description of $f(1),\\ldots,f(n)$, using her knowledge of $f_{A}$, and Bob supplies the description of $f(n+1),\\ldots,f(2n)$, using his knowledge of $f_{B}$. For simplicity, we assume the $i$-th input token, $x_{i}$, contains the information of $f(i)$, for any $i\\in[2n]$; the query $x_{2n+1}$ appears at position $2n+1$ and it asks for $f^{(K)}(1)$. Let $K_{h},Q_{h},V_{h}$ be the key, query, value matrices of the $h$-th attention head.",
+          "kind": "text",
+          "char_start": 2988,
+          "char_end": 3728
+        },
+        {
+          "paragraph_id": "p_707bbcdcc5bcb300e725",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p6.1",
+          "text": "The communication protocol proceeds in $2R$ rounds, where the $2r-1,2r$ rounds simulate the $r$-th step of CoT. Formally, for $r=1,2,\\ldots,R$, the protocol proceeds as follows:",
+          "kind": "text",
+          "char_start": 3730,
+          "char_end": 3907
+        },
+        {
+          "paragraph_id": "p_2a8ed29649cbba23410c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i1",
+          "text": "• At round $2r-1$, for each attention head $h\\in[H]$, Alice computes $\\sum_{i\\in[n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})\\in\\mathbb{R}$ and $\\sum_{i\\in[n]}(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}\\in\\mathbb{R}^{d}$, and sends them to Bob;",
+          "kind": "list_item",
+          "char_start": 3909,
+          "char_end": 4161
+        },
+        {
+          "paragraph_id": "p_3cbbcbe7ede87baf5919",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i2",
+          "text": "• At round $2r$, for each attention head $h\\in[H]$, Bob computes $\\sum_{i\\in[n+1:2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})\\in\\mathbb{R}$, $\\sum_{i\\in[n+1:2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}\\in\\mathbb{R}^{d}$ and sends them to Alice;",
+          "kind": "list_item",
+          "char_start": 4163,
+          "char_end": 4423
+        },
+        {
+          "paragraph_id": "p_ced653232191fb71a9b0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i3",
+          "text": "• Alice and Bob compute, locally, the output $y_{2n+r,h}$ ($h\\in[H]$) as $y_{2n+r,h}=\\frac{\\sum_{i\\in[2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}+\\sum_{i\\in[r]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{2n+i})V_{h}x_{2n+i}}{\\sum_{i\\in[2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})+\\sum_{i\\in[r]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{2n+i})}$ and the next token $x_{2n+r+1}=\\Phi(y_{2n+r,1},\\ldots,y_{2n+r,H})$",
+          "kind": "list_item",
+          "char_start": 4425,
+          "char_end": 4848
+        },
+        {
+          "paragraph_id": "p_69aae43ecfe600973adf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p6.2",
+          "text": "After $2R$ rounds, Bob knows the output of $R$-fold CoT, and can compute $f^{(K)}(1)=(f_{B}\\circ f_{A})^{(K)}(1)$, this resolves the $(n,K-1)$-pointer chasing task. The total number of bits communicated are $2R\\cdot H(d+1)p$, as required by the lemma. ∎",
+          "kind": "text",
+          "char_start": 4850,
+          "char_end": 5103
+        },
+        {
+          "paragraph_id": "p_e1b312cf730bcfce3beb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SSx1.p7.1",
+          "text": "Combining Lemma 2 and Lemma 3, and taking $K=\\frac{1}{100}\\sqrt{\\frac{n}{Hdp}}$, we complete the proof of theorem. ∎",
+          "kind": "text",
+          "char_start": 5105,
+          "char_end": 5221
+        }
+      ],
+      "text": "Can CoT help solve the composition problem? Intuitively, the answer is “yes.” For any composition problem — for example, the prompt about Turing, London, and England in the introduction — we can help the LLM successfully answer the question ‘‘In which country was Turing born?’’ by generating a short CoT prompt that breaks the question into simpler ones, e.g. ‘‘Let’s see, Turing was born in generate, and generate is in the country of generate, so Turing was born in generate.’’ However, we prove below that an arbitrarily large number of CoT steps are needed to solve the generalization of composition to many function applications. In the iterated function composition problem we are given $K$ functions $f_{1},f_{2},\\ldots,f_{K}$, and we need to calculate $f_{K}(f_{k-1}(\\ldots(f_{1}(x))))$ for $x\\in[n]$. In fact, in our proof we shall consider $f^{(K)}(x)=f(f(\\ldots f(x)))$ — that is, we shall take $f_{1}=\\cdots=f_{K}$.\n\nTheorem 2.\n\nLet $H$ be the number of attention heads, $d$ the embedding dimension, $p$ the computation precision, and $n$ be the domain size of the iterated composition problem. A Transformer layer requires $\\Omega(\\sqrt{\\frac{n}{Hdp}})$ CoT steps for answering correctly iterated function composition prompts.\n\nProof.\n\nWe reduce from another classical problem in Communication Complexity called pointer chasing. Let $n$ and $c$ be two positive integers. In the $(n,c)$-pointer chasing problem, Alice knows a function $f_{A}:[n]\\rightarrow[n]$ and Bob knows another function $f_{B}:[n]\\rightarrow[n]$. The pointers $w^{(1)},w^{(2)},\\ldots$ are recursively defined as\n\n\\displaystyle w^{(1)}=1,\\penalty\\ \\penalty\\ w^{(2)}=f_{A}(w^{(1)}),\\penalty\\ \\penalty\\ w^{(3)}=f_{B}(w^{(2)}),\\penalty\\ \\penalty\\ w^{(4)}=f_{A}(w^{(3)}),\\penalty\\ \\penalty\\ w^{(5)}=f_{B}(w^{(4)}),\\penalty\\ \\penalty\\ \\ldots\n\nThe communication proceeds for $2r$ rounds, with Alice starting. The goal is for Bob to output the binary value of $w^{(2r+2)}\\pmod{2}$. The following summarizes what is known about this problem:\n\nLemma 2 ([NW91, Kla00, Yeh20]).\n\nAny randomized protocol for the pointer chasing problem with error probability at most $1/3$ under the uniform distribution must involve the transmission of at least $n/(2000c)-2c\\log n$.\n\nLemma 3.\n\nFor any $K\\geq 1$, suppose there is a Transformer layer ${\\cal L}$ with $H$ attention heads, dimension $d$, and precision $p$ that solves the $K$-iterated function composition within $R$ CoT steps, then there is a communication protocol for $(n,K-1)$-pointer chasing, communicates in $2R$ rounds and exchanges $2RH(d+1)p$ bits.\n\nProof.\n\nRecall that in the pointer chasing problem, Alice receives a function $f_{A}:[n]\\mapsto[n]$ and Bob receives a function $f_{B}:[n]\\mapsto[n]$. Define a single mapping $f:[2n]\\rightarrow[2n]$ such that\n\nf(i)=\\left\\{\\begin{matrix}f_{A}(i)+n&i\\in[n]\\\\ f_{B}(i-n)&i\\in[n+1:2n]\\end{matrix}\\right.\n\nFor any $i\\in[n]$, we have that $f^{(k)}(i)=(f_{B}\\circ f_{A})^{(k)}(i)$ holds for any integer $k\\geq 1$.\n\nSuppose there is a Transformer layer ${\\cal L}$ that solves the $K$-iterated function composition problem using $R$ CoT steps; we shall construct a communication protocol for pointer chasing based on it. Alice and Bob put together the function composition task for ${\\cal L}$, where Alice supplies the description of $f(1),\\ldots,f(n)$, using her knowledge of $f_{A}$, and Bob supplies the description of $f(n+1),\\ldots,f(2n)$, using his knowledge of $f_{B}$. For simplicity, we assume the $i$-th input token, $x_{i}$, contains the information of $f(i)$, for any $i\\in[2n]$; the query $x_{2n+1}$ appears at position $2n+1$ and it asks for $f^{(K)}(1)$. Let $K_{h},Q_{h},V_{h}$ be the key, query, value matrices of the $h$-th attention head.\n\nThe communication protocol proceeds in $2R$ rounds, where the $2r-1,2r$ rounds simulate the $r$-th step of CoT. Formally, for $r=1,2,\\ldots,R$, the protocol proceeds as follows:\n\n• At round $2r-1$, for each attention head $h\\in[H]$, Alice computes $\\sum_{i\\in[n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})\\in\\mathbb{R}$ and $\\sum_{i\\in[n]}(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}\\in\\mathbb{R}^{d}$, and sends them to Bob;\n\n• At round $2r$, for each attention head $h\\in[H]$, Bob computes $\\sum_{i\\in[n+1:2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})\\in\\mathbb{R}$, $\\sum_{i\\in[n+1:2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}\\in\\mathbb{R}^{d}$ and sends them to Alice;\n\n• Alice and Bob compute, locally, the output $y_{2n+r,h}$ ($h\\in[H]$) as $y_{2n+r,h}=\\frac{\\sum_{i\\in[2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})V_{h}x_{i}+\\sum_{i\\in[r]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{2n+i})V_{h}x_{2n+i}}{\\sum_{i\\in[2n]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{i})+\\sum_{i\\in[r]}\\exp(x_{2n+r}^{\\top}Q_{h}^{\\top}K_{h}x_{2n+i})}$ and the next token $x_{2n+r+1}=\\Phi(y_{2n+r,1},\\ldots,y_{2n+r,H})$\n\nAfter $2R$ rounds, Bob knows the output of $R$-fold CoT, and can compute $f^{(K)}(1)=(f_{B}\\circ f_{A})^{(K)}(1)$, this resolves the $(n,K-1)$-pointer chasing task. The total number of bits communicated are $2R\\cdot H(d+1)p$, as required by the lemma. ∎\n\nCombining Lemma 2 and Lemma 3, and taking $K=\\frac{1}{100}\\sqrt{\\frac{n}{Hdp}}$, we complete the proof of theorem. ∎"
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0005",
+      "title": "4 Compositionality and Logarithmic Space",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Compositionality and Logarithmic Space"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_48ce97ffa2514ace6bec",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "In a recent paper [DLS+23] a novel genre of hallucinations was identified: extensive experimental evidence is presented that Transformers perform poorly on compositional tasks, that is, tasks requiring the repeated iteration of elementary tasks; similar phenomena have been observed elsewhere [MS23b, FGZ+23, MS23a]. The main examples of compositional tasks explored in [DLS+23] are:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 383
+        },
+        {
+          "paragraph_id": "p_cece7159d2ab7f9b1f32",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "Footnote: 4 4 We note here that, despite the obvious linguistic affinity of the two terms “composition” studied in the previous section and the “compositionality” of [DLS+23], the two terms are further than they seem. Compositionality is an informal category that is vastly more general than composition, which is a specific mathematical concept.",
+          "kind": "footnote",
+          "char_start": 385,
+          "char_end": 731
+        },
+        {
+          "paragraph_id": "p_31476bc7a0c7b74284a0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i1",
+          "text": "• multiplication of multi-digit integers modeled as an arithmetic circuit with single-digit values and inputs;",
+          "kind": "list_item",
+          "char_start": 733,
+          "char_end": 843
+        },
+        {
+          "paragraph_id": "p_e595c5cef1a480784472",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i2",
+          "text": "• a simple sum maximization problem over a sequence of integers under the restriction that two successive integers cannot be both added to the sum; this again can be reduced through dynamic programming to an arithmetic circuit with plus and max gates; and",
+          "kind": "list_item",
+          "char_start": 845,
+          "char_end": 1100
+        },
+        {
+          "paragraph_id": "p_85f2402aaa02ed080ac2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i3",
+          "text": "• Logic puzzles such as ‘‘Einstein’s Riddle”",
+          "kind": "list_item",
+          "char_start": 1102,
+          "char_end": 1146
+        },
+        {
+          "paragraph_id": "p_90f1799c46d206ac2542",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.I1.i3",
+          "text": "Footnote: 5 5 https://en.wikipedia.org/wiki/Zebra_Puzzle",
+          "kind": "footnote",
+          "char_start": 1148,
+          "char_end": 1204
+        },
+        {
+          "paragraph_id": "p_e67216bd35f0d37eadc5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p3.1",
+          "text": "Wrong answers to large families of simple questions such as these constitute a special category of hallucinations, and it is of interest to explore its causes. It turns out that, to do so, we must turn the page of our negative results of the previous section and Communication Complexity arguments, and employ the theory of Computational Complexity [Pap93, AB09] to study certain basic computational problems underlying the tasks studied in [DLS+23]:",
+          "kind": "text",
+          "char_start": 1206,
+          "char_end": 1656
+        },
+        {
+          "paragraph_id": "p_8603ce800592fa928452",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1",
+          "text": "Circuit evaluation:",
+          "kind": "heading",
+          "char_start": 1658,
+          "char_end": 1677
+        },
+        {
+          "paragraph_id": "p_26e4abf6d5b3ef97bbb4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px1.p1.1",
+          "text": "Given the description of a circuit with gates, which can be either Boolean or arithmetic operations, as well as the values of all input gates of the circuit, evaluate the output(s) of the circuit. Multiplying decimal integers with multiple digits is an example of such a circuit; solving the adjacency-restricted largest sum problem of [DLS+23] is also the evaluation of a circuit, this time with $+$ and max gates.",
+          "kind": "text",
+          "char_start": 1679,
+          "char_end": 2094
+        },
+        {
+          "paragraph_id": "p_7ca904d0f7e3644727db",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2",
+          "text": "Derivability​​",
+          "kind": "heading",
+          "char_start": 2096,
+          "char_end": 2110
+        },
+        {
+          "paragraph_id": "p_3e71cf95764a1c7db340",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px2.p1.1",
+          "text": "is yet another generalization of our composition task of the previous section which we believe captures many aspects of the informal notion of compositionality. We are given a finite domain $S$ — intuitively, the partial solutions of the problem in hand — and a relation $D\\subseteq S\\times S$ — intuitively, legal one-step derivations. We are also given two subsets of $S$, $I$ (for initial partial solutions) and $F$ (for final partial solutions). The question is: are there elements $a_{1},a_{2},\\ldots,a_{k}\\in S$ such that (a) $a_{0}\\in I$; (b) $a_{k}\\in F$, and (c) for all $j$ such that $0<j\\leq k$, $D(a_{j-1},a_{j})$?",
+          "kind": "text",
+          "char_start": 2112,
+          "char_end": 2738
+        },
+        {
+          "paragraph_id": "p_81e1d9d6deed2dbbd1dc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3",
+          "text": "Logical reasoning:",
+          "kind": "heading",
+          "char_start": 2740,
+          "char_end": 2758
+        },
+        {
+          "paragraph_id": "p_0399d3d768acf617d5ef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p1.1",
+          "text": "Logic puzzles can be typically formulated as instances of satisfiability (or SAT). This problem is NP-complete and, even though large instances arising in practice can be solved by sophisticated techniques developed over decades of research, it would not be surprising if LLMs may have problems in dealing with arbitrary logical expressions. There are, however, three tractable special cases of SAT that underlie much of tractable common-sense reasoning: 2-SAT, the satisfiability of CNF formulas with two literals in each clause; Horn SAT, the corresponding problem for Horn clauses, that is, clauses with at most one positive literal; and Mod 2 SAT, the solution of a system of linear equations modulo 2. Note that these are the only nontrivial tractable special cases of SAT. Can we expect LLMs to handle them?",
+          "kind": "text",
+          "char_start": 2760,
+          "char_end": 3573
+        },
+        {
+          "paragraph_id": "p_4403579964c8aca3d26b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p2.1",
+          "text": "We point out below that, assuming certain well accepted conjectures in Computational Complexity, all of these tasks are impossible for a multi-layer Transformer to perform reliably and for large enough prompts. We start with the following:",
+          "kind": "text",
+          "char_start": 3575,
+          "char_end": 3814
+        },
+        {
+          "paragraph_id": "p_4b9fe9b929a0de4273f1",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmobservation1",
+          "text": "Observation 1.",
+          "kind": "heading",
+          "char_start": 3816,
+          "char_end": 3830
+        },
+        {
+          "paragraph_id": "p_9778a0bcf6d1b6355b46",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmobservation1.p1.1",
+          "text": "The computation of a multi-layer Transformer on a prompt of length $N$ can be carried out with $O(\\log N)$ bits of memory.",
+          "kind": "text",
+          "char_start": 3832,
+          "char_end": 3954
+        },
+        {
+          "paragraph_id": "p_46830225696c24b309b6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p3.1",
+          "text": "This is not a new result; it has been recently established in [MS23b] that the computation of Transformers lies in the complexity class log-uniform TC0, which is more restrictive than logarithmic memory; in fact, the implications of this result for the capabilities of Transformers are also briefly discussed in [MS23b]. However, we feel that the simple arguments we present here, both for proving the Observation and point out its connections to compositionality tasks, are simple, intuitive and useful.",
+          "kind": "text",
+          "char_start": 3956,
+          "char_end": 4460
+        },
+        {
+          "paragraph_id": "p_4e1664ddd4ba4a10dc31",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p4.1",
+          "text": "The Observation is not hard to verify for a single Transformer layer: In each head of each layer of a Transformer, one only has to compute the next layer embedding $y_{i}$ for each token, through the formula in Equation (1). This formula can be computed by a program with two loops over $i$ and $j$, both ranging over all $N$ tokens. These loops nest three more loops over $d,D$ and the Taylor iteration for computing the exponentiation function. Since the precision of all numbers involved is logarithmic with respect to the problem size $N$ (the prompt length), everything else, including arithmetic operations, can be carried out with $\\log(N)$ memory.",
+          "kind": "text",
+          "char_start": 4462,
+          "char_end": 5117
+        },
+        {
+          "paragraph_id": "p_18882c331fe469095c0f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p5.1",
+          "text": "This observation can be made more formal by defining a Turing machine with an input tape containing the data of the computation (the $N$ tokens and the entries of the matrices $Q,K,V$), as well as six work tapes: Two for maintaining the indices $i$ and $j$, three for the indices ranging over $[d]$ and $[D]$ and one for the partial results of the arithmetic operations; the work tapes, taken together, use a total number of bits that is $O(\\log N)$. When there are multiple attention heads, as long as the combination function $\\Phi$ can be carried out also in log-space (which is true for both finite-depth neural networks as well as matrix-vector multiplication), the output at each token can be computed in logarithmic space.",
+          "kind": "text",
+          "char_start": 5119,
+          "char_end": 5848
+        },
+        {
+          "paragraph_id": "p_a4d981f7cb19f38b560d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p6.1",
+          "text": "So far we have argued that, given access to the input tokens and the attention matrices, the computation of the first layer can be carried out in logarithmic space. To extend this to two layers, recall that the computation of the second layer is just like that of the first, except that access to the outputs $y_{i}$ of the first layer is needed, instead of the input tokens. This can also be performed in $O(\\log N)$ space by recomputing, in a separate set of tapes, the $y_{i}$ values one by one as needed by the computation of the second layer — incidentally, this recomputation maneuver is a common way of saving memory by exploiting a memory-time trade-off. In the same way, any constant number of layers can be computed in logarithmic space, through nested loops. The number of layers will appear as a multiplicative constant of the space requirement of the computation, as well as in the exponent of the time requirement.",
+          "kind": "text",
+          "char_start": 5850,
+          "char_end": 6778
+        },
+        {
+          "paragraph_id": "p_d096c3a7e601b209fc28",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p7.1",
+          "text": "It follows that the computation of a multi-layer Transformer belongs in the complexity class L standing for logarithmic space [Pap93, AB09].",
+          "kind": "text",
+          "char_start": 6780,
+          "char_end": 6920
+        },
+        {
+          "paragraph_id": "p_b148eff4d9c15be61bf4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p8.1",
+          "text": "Now, next to the paramount P $\\neq$ NP conjecture about time complexity, there is another important, classical, and also broadly accepted analogous conjecture about memory: L $\\neq$ NL. It states that nondeterministic logarithmic memory is more powerful than its deterministic counterpart [Pap93, AB09]. Just as NP has complete problems, such as SAT, which witness its conjectured difference from P, there are NL-complete problems, and two of the best known among them are 2-SAT and Derivability (classically known as Reachability). Circuit evaluation and Horn-SAT are even harder: they are both complete for P, which includes NL.",
+          "kind": "text",
+          "char_start": 6922,
+          "char_end": 7552
+        },
+        {
+          "paragraph_id": "p_4fb1c6f7de15c25cc850",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p9.1",
+          "text": "We summarize the previous discussion as follows:",
+          "kind": "text",
+          "char_start": 7554,
+          "char_end": 7602
+        },
+        {
+          "paragraph_id": "p_193c5cfc88d84e674ada",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem3",
+          "text": "Theorem 3.",
+          "kind": "heading",
+          "char_start": 7604,
+          "char_end": 7614
+        },
+        {
+          "paragraph_id": "p_b050527a62437fe647ac",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmtheorem3.p1.1",
+          "text": "The four problems of Derivability, 2-SAT, Horn SAT, and Circuit evaluation cannot be solved by multi-layer Transformers unless L $=$ NL. In fact, for the latter two problems the result is true unless the stronger statement L $=$ P holds. For Mod 2 SAT, the result is true unless the weaker statement L $=$ Mod 2 L holds.",
+          "kind": "text",
+          "char_start": 7616,
+          "char_end": 7936
+        },
+        {
+          "paragraph_id": "p_aa0ed022ead8f885141c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.SS0.SSS0.Px3.p10.1",
+          "text": "We believe that this theorem goes a long way towards explaining the shortcomings of Transformers identified in [DLS+23], given the affinity between the problems proved impossible above and the tasks studied in that paper. Importantly, it is demonstrated experimentally in [DLS+23] that the performance of Transformers on these tasks deteriorates rapidly as the depth of the task increases. This is in good agreement with our complexity explanation, because the relevant complexity results kick in only when the depth is larger than $\\log N$ — for compositional tasks of depth smaller than that, it is not hard to see that logarithmic memory is enough.",
+          "kind": "text",
+          "char_start": 7938,
+          "char_end": 8589
+        }
+      ],
+      "text": "In a recent paper [DLS+23] a novel genre of hallucinations was identified: extensive experimental evidence is presented that Transformers perform poorly on compositional tasks, that is, tasks requiring the repeated iteration of elementary tasks; similar phenomena have been observed elsewhere [MS23b, FGZ+23, MS23a]. The main examples of compositional tasks explored in [DLS+23] are:\n\nFootnote: 4 4 We note here that, despite the obvious linguistic affinity of the two terms “composition” studied in the previous section and the “compositionality” of [DLS+23], the two terms are further than they seem. Compositionality is an informal category that is vastly more general than composition, which is a specific mathematical concept.\n\n• multiplication of multi-digit integers modeled as an arithmetic circuit with single-digit values and inputs;\n\n• a simple sum maximization problem over a sequence of integers under the restriction that two successive integers cannot be both added to the sum; this again can be reduced through dynamic programming to an arithmetic circuit with plus and max gates; and\n\n• Logic puzzles such as ‘‘Einstein’s Riddle”\n\nFootnote: 5 5 https://en.wikipedia.org/wiki/Zebra_Puzzle\n\nWrong answers to large families of simple questions such as these constitute a special category of hallucinations, and it is of interest to explore its causes. It turns out that, to do so, we must turn the page of our negative results of the previous section and Communication Complexity arguments, and employ the theory of Computational Complexity [Pap93, AB09] to study certain basic computational problems underlying the tasks studied in [DLS+23]:\n\nCircuit evaluation:\n\nGiven the description of a circuit with gates, which can be either Boolean or arithmetic operations, as well as the values of all input gates of the circuit, evaluate the output(s) of the circuit. Multiplying decimal integers with multiple digits is an example of such a circuit; solving the adjacency-restricted largest sum problem of [DLS+23] is also the evaluation of a circuit, this time with $+$ and max gates.\n\nDerivability​​\n\nis yet another generalization of our composition task of the previous section which we believe captures many aspects of the informal notion of compositionality. We are given a finite domain $S$ — intuitively, the partial solutions of the problem in hand — and a relation $D\\subseteq S\\times S$ — intuitively, legal one-step derivations. We are also given two subsets of $S$, $I$ (for initial partial solutions) and $F$ (for final partial solutions). The question is: are there elements $a_{1},a_{2},\\ldots,a_{k}\\in S$ such that (a) $a_{0}\\in I$; (b) $a_{k}\\in F$, and (c) for all $j$ such that $0<j\\leq k$, $D(a_{j-1},a_{j})$?\n\nLogical reasoning:\n\nLogic puzzles can be typically formulated as instances of satisfiability (or SAT). This problem is NP-complete and, even though large instances arising in practice can be solved by sophisticated techniques developed over decades of research, it would not be surprising if LLMs may have problems in dealing with arbitrary logical expressions. There are, however, three tractable special cases of SAT that underlie much of tractable common-sense reasoning: 2-SAT, the satisfiability of CNF formulas with two literals in each clause; Horn SAT, the corresponding problem for Horn clauses, that is, clauses with at most one positive literal; and Mod 2 SAT, the solution of a system of linear equations modulo 2. Note that these are the only nontrivial tractable special cases of SAT. Can we expect LLMs to handle them?\n\nWe point out below that, assuming certain well accepted conjectures in Computational Complexity, all of these tasks are impossible for a multi-layer Transformer to perform reliably and for large enough prompts. We start with the following:\n\nObservation 1.\n\nThe computation of a multi-layer Transformer on a prompt of length $N$ can be carried out with $O(\\log N)$ bits of memory.\n\nThis is not a new result; it has been recently established in [MS23b] that the computation of Transformers lies in the complexity class log-uniform TC0, which is more restrictive than logarithmic memory; in fact, the implications of this result for the capabilities of Transformers are also briefly discussed in [MS23b]. However, we feel that the simple arguments we present here, both for proving the Observation and point out its connections to compositionality tasks, are simple, intuitive and useful.\n\nThe Observation is not hard to verify for a single Transformer layer: In each head of each layer of a Transformer, one only has to compute the next layer embedding $y_{i}$ for each token, through the formula in Equation (1). This formula can be computed by a program with two loops over $i$ and $j$, both ranging over all $N$ tokens. These loops nest three more loops over $d,D$ and the Taylor iteration for computing the exponentiation function. Since the precision of all numbers involved is logarithmic with respect to the problem size $N$ (the prompt length), everything else, including arithmetic operations, can be carried out with $\\log(N)$ memory.\n\nThis observation can be made more formal by defining a Turing machine with an input tape containing the data of the computation (the $N$ tokens and the entries of the matrices $Q,K,V$), as well as six work tapes: Two for maintaining the indices $i$ and $j$, three for the indices ranging over $[d]$ and $[D]$ and one for the partial results of the arithmetic operations; the work tapes, taken together, use a total number of bits that is $O(\\log N)$. When there are multiple attention heads, as long as the combination function $\\Phi$ can be carried out also in log-space (which is true for both finite-depth neural networks as well as matrix-vector multiplication), the output at each token can be computed in logarithmic space.\n\nSo far we have argued that, given access to the input tokens and the attention matrices, the computation of the first layer can be carried out in logarithmic space. To extend this to two layers, recall that the computation of the second layer is just like that of the first, except that access to the outputs $y_{i}$ of the first layer is needed, instead of the input tokens. This can also be performed in $O(\\log N)$ space by recomputing, in a separate set of tapes, the $y_{i}$ values one by one as needed by the computation of the second layer — incidentally, this recomputation maneuver is a common way of saving memory by exploiting a memory-time trade-off. In the same way, any constant number of layers can be computed in logarithmic space, through nested loops. The number of layers will appear as a multiplicative constant of the space requirement of the computation, as well as in the exponent of the time requirement.\n\nIt follows that the computation of a multi-layer Transformer belongs in the complexity class L standing for logarithmic space [Pap93, AB09].\n\nNow, next to the paramount P $\\neq$ NP conjecture about time complexity, there is another important, classical, and also broadly accepted analogous conjecture about memory: L $\\neq$ NL. It states that nondeterministic logarithmic memory is more powerful than its deterministic counterpart [Pap93, AB09]. Just as NP has complete problems, such as SAT, which witness its conjectured difference from P, there are NL-complete problems, and two of the best known among them are 2-SAT and Derivability (classically known as Reachability). Circuit evaluation and Horn-SAT are even harder: they are both complete for P, which includes NL.\n\nWe summarize the previous discussion as follows:\n\nTheorem 3.\n\nThe four problems of Derivability, 2-SAT, Horn SAT, and Circuit evaluation cannot be solved by multi-layer Transformers unless L $=$ NL. In fact, for the latter two problems the result is true unless the stronger statement L $=$ P holds. For Mod 2 SAT, the result is true unless the weaker statement L $=$ Mod 2 L holds.\n\nWe believe that this theorem goes a long way towards explaining the shortcomings of Transformers identified in [DLS+23], given the affinity between the problems proved impossible above and the tasks studied in that paper. Importantly, it is demonstrated experimentally in [DLS+23] that the performance of Transformers on these tasks deteriorates rapidly as the depth of the task increases. This is in good agreement with our complexity explanation, because the relevant complexity results kick in only when the depth is larger than $\\log N$ — for compositional tasks of depth smaller than that, it is not hard to see that logarithmic memory is enough."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0006",
+      "title": "5 Discussion",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Discussion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_fd6306126509bd4e8f8f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "We used complexity arguments of two different genres — Communication Complexity and Computational Complexity — in order to elucidate certain shortcomings of the transformer architecture, namely an information bottleneck as well as difficulties in dealing with depth. We showed that the elementary function composition problem cannot be solved by a single Transformer layer, and that CoT can solve the iterated composition problem only by generating a prompt that has length $\\Omega(\\sqrt{N})$. These mathematical results are limited in two ways: (a) they take hold when the domain size is larger than the dimension parameters (which are typically in the hundreds), and (b) they break down for multiple layers. We also provide evidence from Complexity Theory — of the classical Turing machine variety — that the compositionality tasks known empirically to be hard for Transformers contain computational ingredients and primitives that are impossible for Transformers to deal with.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 979
+        },
+        {
+          "paragraph_id": "p_b5365cbd75f491baef42",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p2.1",
+          "text": "The reader is reminded that the complexity arguments we employ here come with caveats. The impossibility result for composition holds for a single layer, in a probabilistic way (the error probability is nonzero but not one), and only when the domain of the functions is larger than the parameters of the Transformer layer. The results based on Computational Complexity come with a different set of caveats: They hold only if certain yet unproven, if widely accepted, conjectures are true, and even then they are asymptotic, holding for instances larger than an unknown size, for which the assumed asymptotic conjectures take effect. Complexity results such as these are mere warnings that these problems have a fundamental incompatibility with with the Transformer architecture, and therefore one should not expect that these problems to be solvable in practice ad infinitum. However, as with other complexity conjectures such as P $\\neq$ NP, it is often the case that computational difficulties start happening for instances of reasonably small size. For example, we already know [DLS+23] that Transformers have difficulties with compositionality tasks of rather small sizes, and in Appendix A we present anecdotal evidence that LLMs often respond erroneously to prompts of small sizes related to function composition. Naturally, the opposite phenomenon is also common: some NP-complete problems such as 3SAT seem to be amenable to efficient solutions in practice for very large instances; however, this is typically accomplished by extensive exploration over decades of a large arsenal of algorithmic techniques relying on the kinds of instances that appear in practice, and not through a fixed algorithmic architecture.",
+          "kind": "text",
+          "char_start": 981,
+          "char_end": 2703
+        },
+        {
+          "paragraph_id": "p_c798ce1a1a83f78f61cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p3.1",
+          "text": "The real tragedy of complexity lower bounds is not their tentative and asymptotic nature; it is that (a) they are rare and hard to come by, and they come in very few known kinds; and (b) they tend to be overly conservative, in that they often vastly overestimate the capabilities of the computational agents they are trying to delimit. Lemma 1 is a good example: it is designed to hold even if Grace uses the most sophisticated math to encode her input into her message. But when the lemma is applied in Theorem 1, Grace is very restricted, in that her message to Xavier is not a clever coding of her tokens, but the two particular simple numerical expressions that we call $G$ and $G^{\\prime}$ in the proof. It is intuitively clear that this computation — the token values projected, exponentiated, and then cross-multiplied and averaged — is a very poor way to encode the $n$ values of function $g$ so that Xavier can recover each one of them readily. This observation highlights an interesting open problem, the opportunity to develop a more sophisticated variant of Communication Complexity for computationally restricted agents in order to study the limitations of devices such as the Transformer.",
+          "kind": "text",
+          "char_start": 2705,
+          "char_end": 3907
+        },
+        {
+          "paragraph_id": "p_3645464ebd84e9e752e3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p4.1",
+          "text": "Finally, our two genres of negative results suggest an intriguing challenge: What would it take to design a different attention layer that is immune to these two lower bound techniques, while maintaining the architecture’s efficiency and effectiveness in practice? Our proof suggests a version of the softmax computation in the attention layer that is either not commutative or not associative, or one that requires more than logarithmic space. But, of course, simply evading a lower bound technique does not guarantee a tangible improvement in performance…",
+          "kind": "text",
+          "char_start": 3909,
+          "char_end": 4466
+        },
+        {
+          "paragraph_id": "p_9bb4bafa78d5f2817944",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px1",
+          "text": "Acknowledgment:",
+          "kind": "heading",
+          "char_start": 4468,
+          "char_end": 4483
+        },
+        {
+          "paragraph_id": "p_705bc9487471ae0db3b1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.SS0.SSS0.Px1.p1.1",
+          "text": "We are grateful to Fernando Pereira for his insights, engagement, and constructive critiques throughout this project. Thanks also to Olivier Bousquet for many insightful comments on an earlier draft. This work was done when the third author was a visiting scientist at Google DeepMind in Zurich. The work of the first and third authors was partially supported by an NSF grant.",
+          "kind": "text",
+          "char_start": 4485,
+          "char_end": 4861
+        }
+      ],
+      "text": "We used complexity arguments of two different genres — Communication Complexity and Computational Complexity — in order to elucidate certain shortcomings of the transformer architecture, namely an information bottleneck as well as difficulties in dealing with depth. We showed that the elementary function composition problem cannot be solved by a single Transformer layer, and that CoT can solve the iterated composition problem only by generating a prompt that has length $\\Omega(\\sqrt{N})$. These mathematical results are limited in two ways: (a) they take hold when the domain size is larger than the dimension parameters (which are typically in the hundreds), and (b) they break down for multiple layers. We also provide evidence from Complexity Theory — of the classical Turing machine variety — that the compositionality tasks known empirically to be hard for Transformers contain computational ingredients and primitives that are impossible for Transformers to deal with.\n\nThe reader is reminded that the complexity arguments we employ here come with caveats. The impossibility result for composition holds for a single layer, in a probabilistic way (the error probability is nonzero but not one), and only when the domain of the functions is larger than the parameters of the Transformer layer. The results based on Computational Complexity come with a different set of caveats: They hold only if certain yet unproven, if widely accepted, conjectures are true, and even then they are asymptotic, holding for instances larger than an unknown size, for which the assumed asymptotic conjectures take effect. Complexity results such as these are mere warnings that these problems have a fundamental incompatibility with with the Transformer architecture, and therefore one should not expect that these problems to be solvable in practice ad infinitum. However, as with other complexity conjectures such as P $\\neq$ NP, it is often the case that computational difficulties start happening for instances of reasonably small size. For example, we already know [DLS+23] that Transformers have difficulties with compositionality tasks of rather small sizes, and in Appendix A we present anecdotal evidence that LLMs often respond erroneously to prompts of small sizes related to function composition. Naturally, the opposite phenomenon is also common: some NP-complete problems such as 3SAT seem to be amenable to efficient solutions in practice for very large instances; however, this is typically accomplished by extensive exploration over decades of a large arsenal of algorithmic techniques relying on the kinds of instances that appear in practice, and not through a fixed algorithmic architecture.\n\nThe real tragedy of complexity lower bounds is not their tentative and asymptotic nature; it is that (a) they are rare and hard to come by, and they come in very few known kinds; and (b) they tend to be overly conservative, in that they often vastly overestimate the capabilities of the computational agents they are trying to delimit. Lemma 1 is a good example: it is designed to hold even if Grace uses the most sophisticated math to encode her input into her message. But when the lemma is applied in Theorem 1, Grace is very restricted, in that her message to Xavier is not a clever coding of her tokens, but the two particular simple numerical expressions that we call $G$ and $G^{\\prime}$ in the proof. It is intuitively clear that this computation — the token values projected, exponentiated, and then cross-multiplied and averaged — is a very poor way to encode the $n$ values of function $g$ so that Xavier can recover each one of them readily. This observation highlights an interesting open problem, the opportunity to develop a more sophisticated variant of Communication Complexity for computationally restricted agents in order to study the limitations of devices such as the Transformer.\n\nFinally, our two genres of negative results suggest an intriguing challenge: What would it take to design a different attention layer that is immune to these two lower bound techniques, while maintaining the architecture’s efficiency and effectiveness in practice? Our proof suggests a version of the softmax computation in the attention layer that is either not commutative or not associative, or one that requires more than logarithmic space. But, of course, simply evading a lower bound technique does not guarantee a tangible improvement in performance…\n\nAcknowledgment:\n\nWe are grateful to Fernando Pereira for his insights, engagement, and constructive critiques throughout this project. Thanks also to Olivier Bousquet for many insightful comments on an earlier draft. This work was done when the third author was a visiting scientist at Google DeepMind in Zurich. The work of the first and third authors was partially supported by an NSF grant."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0007",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_089766d7181355d39c37",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx1",
+          "text": "[AB09] Sanjeev Arora and Boaz Barak. Computational complexity: a modern approach. Cambridge University Press, 2009.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 115
+        },
+        {
+          "paragraph_id": "p_bece0daab874bcff9037",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx2",
+          "text": "[CPP22] Xi Chen, Christos Papadimitriou, and Binghui Peng. Memory bounds for continual learning. In 2022 IEEE 63rd Annual Symposium on Foundations of Computer Science (FOCS), pages 519–530. IEEE, 2022.",
+          "kind": "list_item",
+          "char_start": 117,
+          "char_end": 318
+        },
+        {
+          "paragraph_id": "p_05707c0d3742ad1ea719",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx3",
+          "text": "[DLS+23] Nouha Dziri, Ximing Lu, Melanie Sclar, Xiang Lorraine Li, Liwei Jiang, Bill Yuchen Lin, Peter West, Chandra Bhagavatula, Ronan Le Bras, Jena D Hwang, et al. Faith and fate: Limits of transformers on compositionality. 2023.",
+          "kind": "list_item",
+          "char_start": 320,
+          "char_end": 551
+        },
+        {
+          "paragraph_id": "p_b05fa4a24afd06750aad",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx4",
+          "text": "[EGZ20] Javid Ebrahimi, Dhruv Gelda, and Wei Zhang. How can self-attention networks recognize dyck-n languages? In Findings of the Association for Computational Linguistics: EMNLP 2020, pages 4301–4306, 2020.",
+          "kind": "list_item",
+          "char_start": 553,
+          "char_end": 761
+        },
+        {
+          "paragraph_id": "p_2384eb52a627fa935d6c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx5",
+          "text": "[FGZ+23] Guhao Feng, Yuntian Gu, Bohang Zhang, Haotian Ye, Di He, and Liwei Wang. Towards revealing the mystery behind chain of thought: a theoretical perspective. 2023.",
+          "kind": "list_item",
+          "char_start": 763,
+          "char_end": 932
+        },
+        {
+          "paragraph_id": "p_1933e01695af7603ee46",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx6",
+          "text": "[GLL+24] Xinyan Guan, Yanjiang Liu, Hongyu Lin, Yaojie Lu, Ben He, Xianpei Han, and Le Sun. Mitigating large language model hallucinations via autonomous knowledge graph-based retrofitting. In Proceedings of the AAAI Conference on Artificial Intelligence, 2024.",
+          "kind": "list_item",
+          "char_start": 934,
+          "char_end": 1195
+        },
+        {
+          "paragraph_id": "p_69d8fb6d222e4cc09e4e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx7",
+          "text": "[Hah20] Michael Hahn. Theoretical limitations of self-attention in neural sequence models. Transactions of the Association for Computational Linguistics, 8:156–171, 2020.",
+          "kind": "list_item",
+          "char_start": 1197,
+          "char_end": 1367
+        },
+        {
+          "paragraph_id": "p_410bd3ac00805e46c350",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx8",
+          "text": "[JLF+23] Ziwei Ji, Nayeon Lee, Rita Frieske, Tiezheng Yu, Dan Su, Yan Xu, Etsuko Ishii, Ye Jin Bang, Andrea Madotto, and Pascale Fung. Survey of hallucination in natural language generation. ACM Computing Surveys, 55(12):1–38, 2023.",
+          "kind": "list_item",
+          "char_start": 1369,
+          "char_end": 1601
+        },
+        {
+          "paragraph_id": "p_09bf996ed6decfa707aa",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx9",
+          "text": "[Kla00] Hartmut Klauck. On quantum and probabilistic communication: Las vegas and one-way protocols. In Proceedings of the thirty-second annual ACM symposium on Theory of computing, pages 644–651, 2000.",
+          "kind": "list_item",
+          "char_start": 1603,
+          "char_end": 1805
+        },
+        {
+          "paragraph_id": "p_75b5c8ac56fa977cee81",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx10",
+          "text": "[KN96] Eyal Kushilevitz and Noam Nisan. Communication complexity. Cambridge University Press, 1996.",
+          "kind": "list_item",
+          "char_start": 1807,
+          "char_end": 1906
+        },
+        {
+          "paragraph_id": "p_f784d0683ca2c56f2b59",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx11",
+          "text": "[KV23] Adam Tauman Kalai and Santosh S Vempala. Calibrated language models must hallucinate. arXiv preprint arXiv:2311.14648, 2023.",
+          "kind": "list_item",
+          "char_start": 1908,
+          "char_end": 2039
+        },
+        {
+          "paragraph_id": "p_1490fd957cafe34d5fbe",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx12",
+          "text": "[Mat] Holy Bible, Matthew 1, 1–17.",
+          "kind": "list_item",
+          "char_start": 2041,
+          "char_end": 2075
+        },
+        {
+          "paragraph_id": "p_4ea8bc2f94affe1b6d04",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx13",
+          "text": "[MS23a] William Merrill and Ashish Sabharwal. The expresssive power of transformers with chain of thought. arXiv preprint arXiv:2310.07923, 2023.",
+          "kind": "list_item",
+          "char_start": 2077,
+          "char_end": 2222
+        },
+        {
+          "paragraph_id": "p_0b6744aea0258333f817",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx14",
+          "text": "[MS23b] William Merrill and Ashish Sabharwal. The parallelism tradeoff: Limitations of log-precision transformers. Transactions of the Association for Computational Linguistics, 11:531–545, 2023.",
+          "kind": "list_item",
+          "char_start": 2224,
+          "char_end": 2419
+        },
+        {
+          "paragraph_id": "p_a990af568bde4aca084a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx15",
+          "text": "[MYF+23] R Thomas McCoy, Shunyu Yao, Dan Friedman, Matthew Hardy, and Thomas L Griffiths. Embers of autoregression: Understanding large language models through the problem they are trained to solve. arXiv preprint arXiv:2309.13638, 2023.",
+          "kind": "list_item",
+          "char_start": 2421,
+          "char_end": 2658
+        },
+        {
+          "paragraph_id": "p_058a004e48a34c0c2beb",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx16",
+          "text": "[NW91] Noam Nisan and Avi Widgerson. Rounds in communication complexity revisited. In Proceedings of the 23rd Annual ACM symposium on Theory of computing, pages 419–429, 1991.",
+          "kind": "list_item",
+          "char_start": 2660,
+          "char_end": 2835
+        },
+        {
+          "paragraph_id": "p_7687263465003f4fc447",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx17",
+          "text": "[Pap93] Christos H Papadimitriou. Computational complexity. Addison-Wesley, 1993.",
+          "kind": "list_item",
+          "char_start": 2837,
+          "char_end": 2918
+        },
+        {
+          "paragraph_id": "p_28e7fbab42637998da8a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx18",
+          "text": "[PS82] Christos H Papadimitriou and Michael Sipser. Communication complexity. In Proceedings of the 14th Annual ACM symposium on Theory of computing, pages 196–200, 1982.",
+          "kind": "list_item",
+          "char_start": 2920,
+          "char_end": 3090
+        },
+        {
+          "paragraph_id": "p_321b5980369e6600c4cd",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx19",
+          "text": "[SHT23] Clayton Sanford, Daniel Hsu, and Matus Telgarsky. Representational strengths and limitations of transformers. 2023.",
+          "kind": "list_item",
+          "char_start": 3092,
+          "char_end": 3215
+        },
+        {
+          "paragraph_id": "p_79d1336db5d3951883ab",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx20",
+          "text": "[VSP+17] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.",
+          "kind": "list_item",
+          "char_start": 3217,
+          "char_end": 3438
+        },
+        {
+          "paragraph_id": "p_7bc3f8871b06c39e14e2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx21",
+          "text": "[WWS+22] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems, 35:24824–24837, 2022.",
+          "kind": "list_item",
+          "char_start": 3440,
+          "char_end": 3695
+        },
+        {
+          "paragraph_id": "p_ec4698f650efd69b6ff8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx22",
+          "text": "[Yeh20] Amir Yehudayoff. Pointer chasing via triangular discrimination. Combinatorics, Probability and Computing, 29(4):485–494, 2020.",
+          "kind": "list_item",
+          "char_start": 3697,
+          "char_end": 3831
+        },
+        {
+          "paragraph_id": "p_36d636f756d3dab495b2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bibx23",
+          "text": "[YPPN21] Shunyu Yao, Binghui Peng, Christos Papadimitriou, and Karthik Narasimhan. Self-attention networks can process bounded hierarchical languages. In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), pages 3770–3785, 2021.",
+          "kind": "list_item",
+          "char_start": 3833,
+          "char_end": 4197
+        }
+      ],
+      "text": "[AB09] Sanjeev Arora and Boaz Barak. Computational complexity: a modern approach. Cambridge University Press, 2009.\n\n[CPP22] Xi Chen, Christos Papadimitriou, and Binghui Peng. Memory bounds for continual learning. In 2022 IEEE 63rd Annual Symposium on Foundations of Computer Science (FOCS), pages 519–530. IEEE, 2022.\n\n[DLS+23] Nouha Dziri, Ximing Lu, Melanie Sclar, Xiang Lorraine Li, Liwei Jiang, Bill Yuchen Lin, Peter West, Chandra Bhagavatula, Ronan Le Bras, Jena D Hwang, et al. Faith and fate: Limits of transformers on compositionality. 2023.\n\n[EGZ20] Javid Ebrahimi, Dhruv Gelda, and Wei Zhang. How can self-attention networks recognize dyck-n languages? In Findings of the Association for Computational Linguistics: EMNLP 2020, pages 4301–4306, 2020.\n\n[FGZ+23] Guhao Feng, Yuntian Gu, Bohang Zhang, Haotian Ye, Di He, and Liwei Wang. Towards revealing the mystery behind chain of thought: a theoretical perspective. 2023.\n\n[GLL+24] Xinyan Guan, Yanjiang Liu, Hongyu Lin, Yaojie Lu, Ben He, Xianpei Han, and Le Sun. Mitigating large language model hallucinations via autonomous knowledge graph-based retrofitting. In Proceedings of the AAAI Conference on Artificial Intelligence, 2024.\n\n[Hah20] Michael Hahn. Theoretical limitations of self-attention in neural sequence models. Transactions of the Association for Computational Linguistics, 8:156–171, 2020.\n\n[JLF+23] Ziwei Ji, Nayeon Lee, Rita Frieske, Tiezheng Yu, Dan Su, Yan Xu, Etsuko Ishii, Ye Jin Bang, Andrea Madotto, and Pascale Fung. Survey of hallucination in natural language generation. ACM Computing Surveys, 55(12):1–38, 2023.\n\n[Kla00] Hartmut Klauck. On quantum and probabilistic communication: Las vegas and one-way protocols. In Proceedings of the thirty-second annual ACM symposium on Theory of computing, pages 644–651, 2000.\n\n[KN96] Eyal Kushilevitz and Noam Nisan. Communication complexity. Cambridge University Press, 1996.\n\n[KV23] Adam Tauman Kalai and Santosh S Vempala. Calibrated language models must hallucinate. arXiv preprint arXiv:2311.14648, 2023.\n\n[Mat] Holy Bible, Matthew 1, 1–17.\n\n[MS23a] William Merrill and Ashish Sabharwal. The expresssive power of transformers with chain of thought. arXiv preprint arXiv:2310.07923, 2023.\n\n[MS23b] William Merrill and Ashish Sabharwal. The parallelism tradeoff: Limitations of log-precision transformers. Transactions of the Association for Computational Linguistics, 11:531–545, 2023.\n\n[MYF+23] R Thomas McCoy, Shunyu Yao, Dan Friedman, Matthew Hardy, and Thomas L Griffiths. Embers of autoregression: Understanding large language models through the problem they are trained to solve. arXiv preprint arXiv:2309.13638, 2023.\n\n[NW91] Noam Nisan and Avi Widgerson. Rounds in communication complexity revisited. In Proceedings of the 23rd Annual ACM symposium on Theory of computing, pages 419–429, 1991.\n\n[Pap93] Christos H Papadimitriou. Computational complexity. Addison-Wesley, 1993.\n\n[PS82] Christos H Papadimitriou and Michael Sipser. Communication complexity. In Proceedings of the 14th Annual ACM symposium on Theory of computing, pages 196–200, 1982.\n\n[SHT23] Clayton Sanford, Daniel Hsu, and Matus Telgarsky. Representational strengths and limitations of transformers. 2023.\n\n[VSP+17] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.\n\n[WWS+22] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems, 35:24824–24837, 2022.\n\n[Yeh20] Amir Yehudayoff. Pointer chasing via triangular discrimination. Combinatorics, Probability and Computing, 29(4):485–494, 2020.\n\n[YPPN21] Shunyu Yao, Binghui Peng, Christos Papadimitriou, and Karthik Narasimhan. Self-attention networks can process bounded hierarchical languages. In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), pages 3770–3785, 2021."
+    },
+    {
+      "section_id": "arxiv_2402.08164_v2_s0008",
+      "title": "Appendix A Examples",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A Examples"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_03baa8446f92525c41eb",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.1",
+          "text": "We show here a few qualitative results that illustrate the difficulty of composition for state-of-the-art LLMs. A full empirical exposition for the case of compositional failures can be found in [DLS+23]. The experiments here are conducted on GPT 3.5, GPT 4 and Bard. The prompts used involve simple composition over spatial, temporal or relationship relations. The experiments were performed before Jan 21st, 2024. We allow all three LLMs to perform step-by-step reasoning, and we only show their final answer. The answers displayed are typical.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 546
+        },
+        {
+          "paragraph_id": "p_460552519e0536eafffc",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1",
+          "text": "Spatial composition",
+          "kind": "heading",
+          "char_start": 548,
+          "char_end": 567
+        },
+        {
+          "paragraph_id": "p_976f9bcd2f96f6ba9c4f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px1.p1.1",
+          "text": "When the prompt involves spatial information, transformer based systems appear to have problems with composition, see examples in Figure 1.",
+          "kind": "text",
+          "char_start": 569,
+          "char_end": 708
+        },
+        {
+          "paragraph_id": "p_a51e6a8cf8deb2ef4c04",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px2",
+          "text": "Temporal composition",
+          "kind": "heading",
+          "char_start": 710,
+          "char_end": 730
+        },
+        {
+          "paragraph_id": "p_f611bb234c59f36f5c81",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px2.p1.1",
+          "text": "Figure 2 shows two simple cases where temporal composition fails and all the state-of-the-art models return incorrect answers.",
+          "kind": "text",
+          "char_start": 732,
+          "char_end": 858
+        },
+        {
+          "paragraph_id": "p_5997ff2005c61d7cf829",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px3",
+          "text": "Relationship composition",
+          "kind": "heading",
+          "char_start": 860,
+          "char_end": 884
+        },
+        {
+          "paragraph_id": "p_7aa226064c24dba633bc",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.SS0.SSS0.Px3.p1.1",
+          "text": "We also see incorrect and hallucinatory answers when the prompt involves the composition of relationship information, see the two examples in Figure 3.",
+          "kind": "text",
+          "char_start": 886,
+          "char_end": 1037
+        },
+        {
+          "paragraph_id": "p_c1826e686559f53d786f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.F1",
+          "text": "Figure 1: Spatial composition produces incorrect answers",
+          "kind": "caption",
+          "char_start": 1039,
+          "char_end": 1095
+        },
+        {
+          "paragraph_id": "p_7628abbfbf14bc780181",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.F2",
+          "text": "Figure 2: Hallucinations in temporal composition",
+          "kind": "caption",
+          "char_start": 1097,
+          "char_end": 1145
+        },
+        {
+          "paragraph_id": "p_cb9f52463e3af5c72555",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.F3",
+          "text": "Figure 3: Hallucinations in relationship composition",
+          "kind": "caption",
+          "char_start": 1147,
+          "char_end": 1199
+        }
+      ],
+      "text": "We show here a few qualitative results that illustrate the difficulty of composition for state-of-the-art LLMs. A full empirical exposition for the case of compositional failures can be found in [DLS+23]. The experiments here are conducted on GPT 3.5, GPT 4 and Bard. The prompts used involve simple composition over spatial, temporal or relationship relations. The experiments were performed before Jan 21st, 2024. We allow all three LLMs to perform step-by-step reasoning, and we only show their final answer. The answers displayed are typical.\n\nSpatial composition\n\nWhen the prompt involves spatial information, transformer based systems appear to have problems with composition, see examples in Figure 1.\n\nTemporal composition\n\nFigure 2 shows two simple cases where temporal composition fails and all the state-of-the-art models return incorrect answers.\n\nRelationship composition\n\nWe also see incorrect and hallucinatory answers when the prompt involves the composition of relationship information, see the two examples in Figure 3.\n\nFigure 1: Spatial composition produces incorrect answers\n\nFigure 2: Hallucinations in temporal composition\n\nFigure 3: Hallucinations in relationship composition"
+    }
+  ]
+}

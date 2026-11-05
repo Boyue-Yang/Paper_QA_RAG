@@ -1,0 +1,2352 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2409.20325",
+  "version": "v2",
+  "title": "Old Optimizer, New Norm: An Anthology",
+  "source_format": "html",
+  "source_sha256": "da2aa66451bd29b5340a768ee7299d8462d41d76e0cf277907508357ee808b9d",
+  "source_url": "https://arxiv.org/html/2409.20325v2",
+  "source_path": "data/corpus_78/html/arxiv_2409.20325v2.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2409.20325_v2_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_3e91a12f166f8eee4b16",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "Deep learning optimizers are often motivated through a mix of convex and approximate second-order theory. We select three such methods—Adam, Shampoo and Prodigy—and argue that each method can instead be understood as a squarely first-order method without convexity assumptions. In fact, after switching off exponential moving averages, each method is equivalent to steepest descent under a particular norm. By generalizing this observation, we chart a new design space for training algorithms. Different operator norms should be assigned to different tensors based on the role that the tensor plays within the network. For example, while linear and embedding layers may have the same weight space of $\\mathbb{R}^{m\\times n}$, these layers play different roles and should be assigned different norms. We hope that this idea of carefully metrizing the neural architecture might lead to more stable, scalable and indeed faster training.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 933
+        }
+      ],
+      "text": "Deep learning optimizers are often motivated through a mix of convex and approximate second-order theory. We select three such methods—Adam, Shampoo and Prodigy—and argue that each method can instead be understood as a squarely first-order method without convexity assumptions. In fact, after switching off exponential moving averages, each method is equivalent to steepest descent under a particular norm. By generalizing this observation, we chart a new design space for training algorithms. Different operator norms should be assigned to different tensors based on the role that the tensor plays within the network. For example, while linear and embedding layers may have the same weight space of $\\mathbb{R}^{m\\times n}$, these layers play different roles and should be assigned different norms. We hope that this idea of carefully metrizing the neural architecture might lead to more stable, scalable and indeed faster training."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0001",
+      "title": "Prologue",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx1",
+      "path": [
+        "Prologue"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_3e84651943ee54ac283a",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p1.1",
+          "text": "Deep learning optimizers are often motivated from the perspectives of convex and approximate second-order theory. These theoretical frameworks have been used to inspire algorithmic ideas, as well as providing means to analyse the convergence of various optimizers. However, we believe—and will attempt to demonstrate—that there is a wealth of untapped algorithmic opportunity in the simpler realm of exact first-order theory without convexity assumptions.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 455
+        },
+        {
+          "paragraph_id": "p_b7dca4dd047fccda899f",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p2.1",
+          "text": "To make our case, we choose three optimizers that were originally analysed under convex or approximate second-order theory: Adam, Shampoo and Prodigy. After disabling their exponential moving averages (EMA), we show that each algorithm admits a parsimonious theoretical explanation as a variant of steepest descent under a certain norm. EMA can then be thought of as “smoothing out” the algorithm, or making it more robust to mini-batch noise, although nailing down the precise role of EMA is perhaps still an open problem.",
+          "kind": "text",
+          "char_start": 457,
+          "char_end": 980
+        },
+        {
+          "paragraph_id": "p_b4e153dd170b223f3f85",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p3.1",
+          "text": "By steepest descent, we mean the procedure of choosing a weight update $\\Delta{\\bm{w}}$ to minimise a local quadratic model of the loss function $\\mathcal{L}$ of the form $\\mathcal{L}({\\bm{w}})+\\nabla_{\\bm{w}}\\mathcal{L}({\\bm{w}})^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{w}}}\\|^{2}$, visualized in Figure 1. Crucially, the sharpness parameter $\\lambda$ and norm $\\|{\\cdot}\\|$ are chosen a priori, without touching an (approximate) Hessian during training. As such, we consider steepest descent to be a squarely first-order method and not an (approximate) second-order method.",
+          "kind": "text",
+          "char_start": 982,
+          "char_end": 1574
+        },
+        {
+          "paragraph_id": "p_25434cc557923ac13ee9",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p4.1",
+          "text": "Throughout the anthology, we rely on a dual description of steepest descent:",
+          "kind": "text",
+          "char_start": 1576,
+          "char_end": 1652
+        },
+        {
+          "paragraph_id": "p_245ed991f041368bc5be",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition1",
+          "text": "Proposition 1 (Steepest descent).",
+          "kind": "heading",
+          "char_start": 1654,
+          "char_end": 1687
+        },
+        {
+          "paragraph_id": "p_0e67e816a7ea4bbab6b2",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition1.p1.1",
+          "text": "For any ${\\bm{g}}\\in\\mathbb{R}^{n}$ thought of as “the gradient” and any $\\lambda\\geq 0$ thought of as “the sharpness”, and for any norm $\\|{\\cdot}\\|:\\mathbb{R}^{n}\\to\\mathbb{R}$ with dual norm $\\|{\\cdot}\\|^{\\dagger}$:",
+          "kind": "text",
+          "char_start": 1689,
+          "char_end": 1907
+        },
+        {
+          "paragraph_id": "p_3ed5fced4f65d7cf2cdf",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.EGx1",
+          "text": "\\displaystyle\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right]=-\\frac{\\|{{\\bm{g}}}\\|^{\\dagger}}{\\lambda}\\cdot\\argmax_{\\|{{\\bm{t}}}\\|=1}{\\bm{g}}^{\\top}{\\bm{t}}.",
+          "kind": "equation",
+          "char_start": 1909,
+          "char_end": 2146
+        },
+        {
+          "paragraph_id": "p_8fb5013f0dbd68cd6209",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p5.1",
+          "text": "Equation 1 separates the solution of the steepest descent problem into two pieces: first computing the step size as the dual norm of the gradient divided by the sharpness, and second solving for the step direction as the unit vector that maximizes the inner product with the gradient. The proof of this proposition is given in Appendix B.",
+          "kind": "text",
+          "char_start": 2148,
+          "char_end": 2486
+        },
+        {
+          "paragraph_id": "p_02715f81ad1f5e9ac358",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.F1",
+          "text": "Figure 1: Steepest descent considers the problem of minimizing a linear functional under a quadratic penalty: $\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right]$ for ${\\bm{g}}\\in\\mathbb{R}^{n}$. Here we show how the solution varies with the sharpness $\\lambda>0$ and the choice of norm $\\|{\\cdot}\\|$. We overlay different norm balls on top of a linear color gradient, and use arrows to denote the solution, meaning the member of the norm ball that “minimizes the color”. a) Increasing the sharpness decreases the size of the solution vector. b) Changing the norm can change the direction of the solution vector. For different $\\ell_{p}$ norms, the solution direction changes because the gradient is not axis-aligned. In practice, we should pick the sharpness and norm to fit the geometry of our loss.",
+          "kind": "caption",
+          "char_start": 2488,
+          "char_end": 3366
+        },
+        {
+          "paragraph_id": "p_806998557411046c66bf",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p6.1",
+          "text": "Of course, the art of steepest descent lies in choosing a norm $\\|{\\cdot}\\|$ and a sharpness $\\lambda$ suited to the optimization problem at hand. While it may be possible to turn this art into a science (Large et al., 2024), that ambition is beyond the scope of this anthology. Here we point out that past methods do implicitly make decisions about norms, and in a somewhat haphazard manner. In fact, they implicitly assign different induced matrix norms to the network layers:",
+          "kind": "text",
+          "char_start": 3368,
+          "char_end": 3846
+        },
+        {
+          "paragraph_id": "p_6be7d1a6b8840b3c8b95",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmydefinition1",
+          "text": "Definition 1 (Induced operator norm).",
+          "kind": "heading",
+          "char_start": 3848,
+          "char_end": 3885
+        },
+        {
+          "paragraph_id": "p_1cde103983d0222328da",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmydefinition1.p1.1",
+          "text": "Given a matrix ${\\bm{M}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ and two normed vector spaces $(\\mathbb{R}^{d_{\\mathrm{in}}},\\|{\\cdot}\\|_{\\alpha})$ and $(\\mathbb{R}^{d_{\\mathrm{out}}},\\|{\\cdot}\\|_{\\beta})$, the “$\\alpha$ to $\\beta$” induced operator norm is given by:",
+          "kind": "text",
+          "char_start": 3887,
+          "char_end": 4169
+        },
+        {
+          "paragraph_id": "p_6ba72ecadb7f6e2839cf",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.E2",
+          "text": "\\|{{\\bm{M}}}\\|_{\\alpha\\to\\beta}=\\max_{\\begin{subarray}{c}{\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{in}}}\\end{subarray}}\\frac{\\|{{\\bm{M}}{\\bm{x}}}\\|_{\\beta}}{\\|{{\\bm{x}}}\\|_{\\alpha}}.",
+          "kind": "equation",
+          "char_start": 4171,
+          "char_end": 4345
+        },
+        {
+          "paragraph_id": "p_502af82465925ea29653",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p7.1",
+          "text": "Definition 1 tells us that by varying the choice of vector norms $\\|{\\cdot}\\|_{\\alpha}$ and $\\|{\\cdot}\\|_{\\beta}$, we can induce a large family of matrix norms. In turn, this implies a correspondingly large family of steepest descent optimizers. By foregrounding this issue, we hope that algorithm designers may develop more suitable optimizers by becoming more intentional about their choice of norm.",
+          "kind": "text",
+          "char_start": 4347,
+          "char_end": 4748
+        }
+      ],
+      "text": "Deep learning optimizers are often motivated from the perspectives of convex and approximate second-order theory. These theoretical frameworks have been used to inspire algorithmic ideas, as well as providing means to analyse the convergence of various optimizers. However, we believe—and will attempt to demonstrate—that there is a wealth of untapped algorithmic opportunity in the simpler realm of exact first-order theory without convexity assumptions.\n\nTo make our case, we choose three optimizers that were originally analysed under convex or approximate second-order theory: Adam, Shampoo and Prodigy. After disabling their exponential moving averages (EMA), we show that each algorithm admits a parsimonious theoretical explanation as a variant of steepest descent under a certain norm. EMA can then be thought of as “smoothing out” the algorithm, or making it more robust to mini-batch noise, although nailing down the precise role of EMA is perhaps still an open problem.\n\nBy steepest descent, we mean the procedure of choosing a weight update $\\Delta{\\bm{w}}$ to minimise a local quadratic model of the loss function $\\mathcal{L}$ of the form $\\mathcal{L}({\\bm{w}})+\\nabla_{\\bm{w}}\\mathcal{L}({\\bm{w}})^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{w}}}\\|^{2}$, visualized in Figure 1. Crucially, the sharpness parameter $\\lambda$ and norm $\\|{\\cdot}\\|$ are chosen a priori, without touching an (approximate) Hessian during training. As such, we consider steepest descent to be a squarely first-order method and not an (approximate) second-order method.\n\nThroughout the anthology, we rely on a dual description of steepest descent:\n\nProposition 1 (Steepest descent).\n\nFor any ${\\bm{g}}\\in\\mathbb{R}^{n}$ thought of as “the gradient” and any $\\lambda\\geq 0$ thought of as “the sharpness”, and for any norm $\\|{\\cdot}\\|:\\mathbb{R}^{n}\\to\\mathbb{R}$ with dual norm $\\|{\\cdot}\\|^{\\dagger}$:\n\n\\displaystyle\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right]=-\\frac{\\|{{\\bm{g}}}\\|^{\\dagger}}{\\lambda}\\cdot\\argmax_{\\|{{\\bm{t}}}\\|=1}{\\bm{g}}^{\\top}{\\bm{t}}.\n\nEquation 1 separates the solution of the steepest descent problem into two pieces: first computing the step size as the dual norm of the gradient divided by the sharpness, and second solving for the step direction as the unit vector that maximizes the inner product with the gradient. The proof of this proposition is given in Appendix B.\n\nFigure 1: Steepest descent considers the problem of minimizing a linear functional under a quadratic penalty: $\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right]$ for ${\\bm{g}}\\in\\mathbb{R}^{n}$. Here we show how the solution varies with the sharpness $\\lambda>0$ and the choice of norm $\\|{\\cdot}\\|$. We overlay different norm balls on top of a linear color gradient, and use arrows to denote the solution, meaning the member of the norm ball that “minimizes the color”. a) Increasing the sharpness decreases the size of the solution vector. b) Changing the norm can change the direction of the solution vector. For different $\\ell_{p}$ norms, the solution direction changes because the gradient is not axis-aligned. In practice, we should pick the sharpness and norm to fit the geometry of our loss.\n\nOf course, the art of steepest descent lies in choosing a norm $\\|{\\cdot}\\|$ and a sharpness $\\lambda$ suited to the optimization problem at hand. While it may be possible to turn this art into a science (Large et al., 2024), that ambition is beyond the scope of this anthology. Here we point out that past methods do implicitly make decisions about norms, and in a somewhat haphazard manner. In fact, they implicitly assign different induced matrix norms to the network layers:\n\nDefinition 1 (Induced operator norm).\n\nGiven a matrix ${\\bm{M}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ and two normed vector spaces $(\\mathbb{R}^{d_{\\mathrm{in}}},\\|{\\cdot}\\|_{\\alpha})$ and $(\\mathbb{R}^{d_{\\mathrm{out}}},\\|{\\cdot}\\|_{\\beta})$, the “$\\alpha$ to $\\beta$” induced operator norm is given by:\n\n\\|{{\\bm{M}}}\\|_{\\alpha\\to\\beta}=\\max_{\\begin{subarray}{c}{\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{in}}}\\end{subarray}}\\frac{\\|{{\\bm{M}}{\\bm{x}}}\\|_{\\beta}}{\\|{{\\bm{x}}}\\|_{\\alpha}}.\n\nDefinition 1 tells us that by varying the choice of vector norms $\\|{\\cdot}\\|_{\\alpha}$ and $\\|{\\cdot}\\|_{\\beta}$, we can induce a large family of matrix norms. In turn, this implies a correspondingly large family of steepest descent optimizers. By foregrounding this issue, we hope that algorithm designers may develop more suitable optimizers by becoming more intentional about their choice of norm."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0002",
+      "title": "Story I Adam as Steepest Descent under the Max-of-Max Norm",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "Story I Adam as Steepest Descent under the Max-of-Max Norm"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_d9d7b2a71995e51d24be",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "Adam is a widely used deep learning optimizer: the original paper of Kingma and Ba (2015) now has well over 100,000 citations. Adam has been motivated in various ways, including through convex analysis (Kingma and Ba, 2015) and as an approximate second-order method (Sun and Spall, 2021). However, there have been efforts to build a more direct understanding of Adam: for instance, with exponential moving averages (EMA) switched off, Adam is just sign gradient descent (Balles and Hennig, 2018; Bernstein et al., 2018), which is equivalent to steepest descent under the infinity norm (Carlson et al., 2015a). In this story, we connect Adam to a certain “max-of-max” norm, showing how Adam respects the tensor structure of a neural network in a very particular way.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 765
+        },
+        {
+          "paragraph_id": "p_0cb2ecdce3d1f10ac42b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "To begin, we review how Adam connects to sign gradient descent. Ignoring bias corrections and numerical stabilizations, Adam is given by the following system of updates:",
+          "kind": "text",
+          "char_start": 767,
+          "char_end": 936
+        },
+        {
+          "paragraph_id": "p_21b3cd36f504b32ce3df",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.EGx2",
+          "text": "\\displaystyle{\\bm{m}}_{t} \\displaystyle=\\beta_{1}\\cdot{\\bm{m}}_{t-1}+(1-\\beta_{1})\\cdot{\\bm{g}}_{t}, \\displaystyle{\\bm{v}}_{t} \\displaystyle=\\beta_{2}\\cdot{\\bm{v}}_{t-1}+(1-\\beta_{2})\\cdot{\\bm{g}}_{t}^{2}, \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot{\\bm{m}}_{t}/\\sqrt{{\\bm{v}}_{t}},",
+          "kind": "equation",
+          "char_start": 938,
+          "char_end": 1241
+        },
+        {
+          "paragraph_id": "p_393577f43e4cb01cf67f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.2",
+          "text": "where $t$ denotes the time step, ${\\bm{g}}_{t}\\in\\mathbb{R}^{n}$ the gradient vector and $\\eta>0$ the step size. The EMA time scales of the first gradient moment ${\\bm{m}}_{t}$ and second moment ${\\bm{v}}_{t}$ are set by $0\\leq\\beta_{1},\\beta_{2}<1$. All operations are conducted entry-wise. If we switch off EMA by setting $\\beta_{1}=\\beta_{2}=0$, the Adam updates reduce to just sign gradient descent:",
+          "kind": "text",
+          "char_start": 1243,
+          "char_end": 1646
+        },
+        {
+          "paragraph_id": "p_f1099bc396c9fb94961f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.EGx3",
+          "text": "\\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot{\\bm{g}}_{t}/\\sqrt{{\\bm{g}}_{t}^{2}} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot\\operatorname{sign}({\\bm{g}}_{t}).",
+          "kind": "equation",
+          "char_start": 1648,
+          "char_end": 1819
+        },
+        {
+          "paragraph_id": "p_7652e502395752966178",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "This connection to sign descent should not be surprising since Adam, published in 2015, builds on the RMSprop optimizer that Tieleman and Hinton (2012) already called “the mini-batch version of just using the sign of the gradient”. And RMSprop itself built on the RPROP optimizer (Riedmiller and Braun, 1993), which also uses gradient signs.",
+          "kind": "text",
+          "char_start": 1821,
+          "char_end": 2162
+        },
+        {
+          "paragraph_id": "p_54a031e99072cb4921b8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "Still, why should using the sign of the gradient be a good idea in deep learning? In search of a motivation, we might consider that sign descent solves the problem of steepest descent under the vector $\\ell_{\\infty}$ norm, $\\|{{\\bm{v}}}\\|_{\\infty}\\vcentcolon=\\max_{i}|{{\\bm{v}}_{i}}|$ (Carlson et al., 2015a; Carlson et al., 2016; Xie and Li, 2024):",
+          "kind": "text",
+          "char_start": 2164,
+          "char_end": 2513
+        },
+        {
+          "paragraph_id": "p_f2fb43b074a0391a89b3",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition2",
+          "text": "Proposition 2 (Sign descent as steepest descent under the infinity norm).",
+          "kind": "heading",
+          "char_start": 2515,
+          "char_end": 2588
+        },
+        {
+          "paragraph_id": "p_d5c76cc14ae91d12852d",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition2.p1.1",
+          "text": "For any gradient vector ${\\bm{g}}\\in\\mathbb{R}^{n}$ and sharpness $\\lambda>0$, it holds that:",
+          "kind": "text",
+          "char_start": 2590,
+          "char_end": 2683
+        },
+        {
+          "paragraph_id": "p_1df25654fc9420d07873",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.E8",
+          "text": "\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|_{\\infty}^{2}\\right]=-\\frac{\\|{{\\bm{g}}}\\|_{1}}{\\lambda}\\,\\operatorname{sign}({\\bm{g}}).",
+          "kind": "equation",
+          "char_start": 2685,
+          "char_end": 2889
+        },
+        {
+          "paragraph_id": "p_b5df09654e58e64ace1e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "In words, the vector that minimizes a linear functional under an infinity norm penalty is a scalar multiple of a sign vector. The proof is given in Appendix B.",
+          "kind": "text",
+          "char_start": 2891,
+          "char_end": 3050
+        },
+        {
+          "paragraph_id": "p_48e9242ea65a00067cc6",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p6.1",
+          "text": "While this connection between Adam, sign descent and steepest descent is perhaps cute, it does not answer a basic question: Why does the vector $\\ell_{\\infty}$ norm have anything to do with neural network training? In particular, taking the weight space to be $\\mathbb{R}^{n}$ equipped with the simple infinity norm seems to “throw away” the fact that the weight space of a neural network is built in a structured way out of layers of matrices (and perhaps other tensors).",
+          "kind": "text",
+          "char_start": 3052,
+          "char_end": 3524
+        },
+        {
+          "paragraph_id": "p_deecd3dcbaea5b3a595a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p7.1",
+          "text": "To resolve this conundrum, we suggest that in fact the vector $\\ell_{\\infty}$ norm on the flattened weight space doesn’t have anything to do with deep learning. Instead, there is a coincidence at play. The $\\ell_{\\infty}$ norm enjoys a special property summarized by the slogan “a max of a max is a max”. To see this, consider a neural network with a list of $L$ weight matrices ${\\bm{W}}_{1},\\dots,{\\bm{W}}_{L}$. Let $\\mathrm{row}_{r}({\\bm{W}}_{l})$ denote the $r$th row of the $l$th weight matrix, and let ${\\bm{w}}=\\operatorname{flatten}({\\bm{W}}_{1},\\dots,{\\bm{W}}_{L})\\in\\mathbb{R}^{n}$ denote the full flattened weight vector. Then we have that:",
+          "kind": "text",
+          "char_start": 3526,
+          "char_end": 4177
+        },
+        {
+          "paragraph_id": "p_7664521f487043e83cf1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.E9",
+          "text": "\\|{{\\bm{w}}}\\|_{\\infty}=\\max_{l}\\max_{r}\\|{\\mathrm{row}_{r}({\\bm{W}}_{l})}\\|_{\\infty}=\\max_{l}\\|{{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}},",
+          "kind": "equation",
+          "char_start": 4179,
+          "char_end": 4319
+        },
+        {
+          "paragraph_id": "p_7ef7f8a03b0579123962",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p7.2",
+          "text": "where the second equality follows via Proposition 8. In words, the infinity norm of the flattened weight vector coincides with the largest $\\ell_{1}$ to $\\ell_{\\infty}$ operator norm of the layers. So Equation 9 connects the unstructured space of the flattened weight vector to the structured space of the list of weight matrices. We refer to the object $\\max_{l}\\|{{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}$ as the “max-of-max norm”. And sign descent emerges as steepest descent under this norm:",
+          "kind": "text",
+          "char_start": 4321,
+          "char_end": 4818
+        },
+        {
+          "paragraph_id": "p_601c76b7dddba8def563",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition3",
+          "text": "Proposition 3 (Sign descent as steepest descent under the max-of-max norm).",
+          "kind": "heading",
+          "char_start": 4820,
+          "char_end": 4895
+        },
+        {
+          "paragraph_id": "p_dd4cab8418e9aa6a522e",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition3.p1.1",
+          "text": "For any list of gradient matrices ${\\bm{G}}_{1},...,{\\bm{G}}_{L}$ and any sharpness $\\lambda>0$, consider the problem:",
+          "kind": "text",
+          "char_start": 4897,
+          "char_end": 5015
+        },
+        {
+          "paragraph_id": "p_4e9c2f2c6818189dc5bd",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.E10",
+          "text": "\\argmin_{\\Delta{\\bm{W}}_{1},...,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}\\|{\\Delta{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}^{2}\\right],",
+          "kind": "equation",
+          "char_start": 5017,
+          "char_end": 5228
+        },
+        {
+          "paragraph_id": "p_44397defc8ce1cd60453",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition3.p1.2",
+          "text": "where $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product, and $\\Delta{\\bm{W}}_{l}$ has the same shape as ${\\bm{G}}_{l}$. For step size $\\eta=\\frac{1}{\\lambda}\\sum_{l=1}^{L}\\|{{\\bm{G}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}^{\\dagger}$, where $\\dagger$ denotes the dual norm, Equation 10 is solved by:",
+          "kind": "text",
+          "char_start": 5230,
+          "char_end": 5537
+        },
+        {
+          "paragraph_id": "p_c6073803bc2fc071b9d8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.E11",
+          "text": "\\Delta{\\bm{W}}_{l}=-\\eta\\cdot\\operatorname{sign}({\\bm{G}}_{l})\\qquad\\text{ for each layer }l=1,...,L.",
+          "kind": "equation",
+          "char_start": 5539,
+          "char_end": 5640
+        },
+        {
+          "paragraph_id": "p_b5c9c0cf2484bae9097b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p8.1",
+          "text": "In words, the matrix-aware steepest descent problem of Equation 10 is solved by layerwise sign descent as given in Equation 11. This observation—that sign descent updates are implicitly doing per-matrix gradient normalization—may be a major reason that Adam, sign descent and Lion (Chen et al., 2023) outperform vanilla gradient descent in large language model training (Zhao et al., 2024; Large et al., 2024). The proof is given in Appendix B.",
+          "kind": "text",
+          "char_start": 5642,
+          "char_end": 6086
+        },
+        {
+          "paragraph_id": "p_d7df4a5e8aa31c74a27c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p10.1",
+          "text": "All told, this story has shown that Adam without EMA is sign descent and that, coincidentally, sign descent solves two different steepest descent problems: one on the flattened weight space, and one that is aware of the matrix structure of neural architecture. But, at the end of this story, questions linger. Why does the $\\ell_{1}$ to $\\ell_{\\infty}$ induced operator norm rear its head? What does it have to do with deep learning? Aren’t there other induced operator norms on matrices we could equally well consider? For answers to these questions, dear reader, you’ll have to wait for our next story… a story about Shampoo!",
+          "kind": "text",
+          "char_start": 6088,
+          "char_end": 6715
+        }
+      ],
+      "text": "Adam is a widely used deep learning optimizer: the original paper of Kingma and Ba (2015) now has well over 100,000 citations. Adam has been motivated in various ways, including through convex analysis (Kingma and Ba, 2015) and as an approximate second-order method (Sun and Spall, 2021). However, there have been efforts to build a more direct understanding of Adam: for instance, with exponential moving averages (EMA) switched off, Adam is just sign gradient descent (Balles and Hennig, 2018; Bernstein et al., 2018), which is equivalent to steepest descent under the infinity norm (Carlson et al., 2015a). In this story, we connect Adam to a certain “max-of-max” norm, showing how Adam respects the tensor structure of a neural network in a very particular way.\n\nTo begin, we review how Adam connects to sign gradient descent. Ignoring bias corrections and numerical stabilizations, Adam is given by the following system of updates:\n\n\\displaystyle{\\bm{m}}_{t} \\displaystyle=\\beta_{1}\\cdot{\\bm{m}}_{t-1}+(1-\\beta_{1})\\cdot{\\bm{g}}_{t}, \\displaystyle{\\bm{v}}_{t} \\displaystyle=\\beta_{2}\\cdot{\\bm{v}}_{t-1}+(1-\\beta_{2})\\cdot{\\bm{g}}_{t}^{2}, \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot{\\bm{m}}_{t}/\\sqrt{{\\bm{v}}_{t}},\n\nwhere $t$ denotes the time step, ${\\bm{g}}_{t}\\in\\mathbb{R}^{n}$ the gradient vector and $\\eta>0$ the step size. The EMA time scales of the first gradient moment ${\\bm{m}}_{t}$ and second moment ${\\bm{v}}_{t}$ are set by $0\\leq\\beta_{1},\\beta_{2}<1$. All operations are conducted entry-wise. If we switch off EMA by setting $\\beta_{1}=\\beta_{2}=0$, the Adam updates reduce to just sign gradient descent:\n\n\\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot{\\bm{g}}_{t}/\\sqrt{{\\bm{g}}_{t}^{2}} \\displaystyle={\\bm{w}}_{t}-\\eta\\cdot\\operatorname{sign}({\\bm{g}}_{t}).\n\nThis connection to sign descent should not be surprising since Adam, published in 2015, builds on the RMSprop optimizer that Tieleman and Hinton (2012) already called “the mini-batch version of just using the sign of the gradient”. And RMSprop itself built on the RPROP optimizer (Riedmiller and Braun, 1993), which also uses gradient signs.\n\nStill, why should using the sign of the gradient be a good idea in deep learning? In search of a motivation, we might consider that sign descent solves the problem of steepest descent under the vector $\\ell_{\\infty}$ norm, $\\|{{\\bm{v}}}\\|_{\\infty}\\vcentcolon=\\max_{i}|{{\\bm{v}}_{i}}|$ (Carlson et al., 2015a; Carlson et al., 2016; Xie and Li, 2024):\n\nProposition 2 (Sign descent as steepest descent under the infinity norm).\n\nFor any gradient vector ${\\bm{g}}\\in\\mathbb{R}^{n}$ and sharpness $\\lambda>0$, it holds that:\n\n\\argmin_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|_{\\infty}^{2}\\right]=-\\frac{\\|{{\\bm{g}}}\\|_{1}}{\\lambda}\\,\\operatorname{sign}({\\bm{g}}).\n\nIn words, the vector that minimizes a linear functional under an infinity norm penalty is a scalar multiple of a sign vector. The proof is given in Appendix B.\n\nWhile this connection between Adam, sign descent and steepest descent is perhaps cute, it does not answer a basic question: Why does the vector $\\ell_{\\infty}$ norm have anything to do with neural network training? In particular, taking the weight space to be $\\mathbb{R}^{n}$ equipped with the simple infinity norm seems to “throw away” the fact that the weight space of a neural network is built in a structured way out of layers of matrices (and perhaps other tensors).\n\nTo resolve this conundrum, we suggest that in fact the vector $\\ell_{\\infty}$ norm on the flattened weight space doesn’t have anything to do with deep learning. Instead, there is a coincidence at play. The $\\ell_{\\infty}$ norm enjoys a special property summarized by the slogan “a max of a max is a max”. To see this, consider a neural network with a list of $L$ weight matrices ${\\bm{W}}_{1},\\dots,{\\bm{W}}_{L}$. Let $\\mathrm{row}_{r}({\\bm{W}}_{l})$ denote the $r$th row of the $l$th weight matrix, and let ${\\bm{w}}=\\operatorname{flatten}({\\bm{W}}_{1},\\dots,{\\bm{W}}_{L})\\in\\mathbb{R}^{n}$ denote the full flattened weight vector. Then we have that:\n\n\\|{{\\bm{w}}}\\|_{\\infty}=\\max_{l}\\max_{r}\\|{\\mathrm{row}_{r}({\\bm{W}}_{l})}\\|_{\\infty}=\\max_{l}\\|{{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}},\n\nwhere the second equality follows via Proposition 8. In words, the infinity norm of the flattened weight vector coincides with the largest $\\ell_{1}$ to $\\ell_{\\infty}$ operator norm of the layers. So Equation 9 connects the unstructured space of the flattened weight vector to the structured space of the list of weight matrices. We refer to the object $\\max_{l}\\|{{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}$ as the “max-of-max norm”. And sign descent emerges as steepest descent under this norm:\n\nProposition 3 (Sign descent as steepest descent under the max-of-max norm).\n\nFor any list of gradient matrices ${\\bm{G}}_{1},...,{\\bm{G}}_{L}$ and any sharpness $\\lambda>0$, consider the problem:\n\n\\argmin_{\\Delta{\\bm{W}}_{1},...,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}\\|{\\Delta{\\bm{W}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}^{2}\\right],\n\nwhere $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product, and $\\Delta{\\bm{W}}_{l}$ has the same shape as ${\\bm{G}}_{l}$. For step size $\\eta=\\frac{1}{\\lambda}\\sum_{l=1}^{L}\\|{{\\bm{G}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}^{\\dagger}$, where $\\dagger$ denotes the dual norm, Equation 10 is solved by:\n\n\\Delta{\\bm{W}}_{l}=-\\eta\\cdot\\operatorname{sign}({\\bm{G}}_{l})\\qquad\\text{ for each layer }l=1,...,L.\n\nIn words, the matrix-aware steepest descent problem of Equation 10 is solved by layerwise sign descent as given in Equation 11. This observation—that sign descent updates are implicitly doing per-matrix gradient normalization—may be a major reason that Adam, sign descent and Lion (Chen et al., 2023) outperform vanilla gradient descent in large language model training (Zhao et al., 2024; Large et al., 2024). The proof is given in Appendix B.\n\nAll told, this story has shown that Adam without EMA is sign descent and that, coincidentally, sign descent solves two different steepest descent problems: one on the flattened weight space, and one that is aware of the matrix structure of neural architecture. But, at the end of this story, questions linger. Why does the $\\ell_{1}$ to $\\ell_{\\infty}$ induced operator norm rear its head? What does it have to do with deep learning? Aren’t there other induced operator norms on matrices we could equally well consider? For answers to these questions, dear reader, you’ll have to wait for our next story… a story about Shampoo!"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0003",
+      "title": "Story II Shampoo as Steepest Descent under the Spectral Norm",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "Story II Shampoo as Steepest Descent under the Spectral Norm"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e32697c1799f76a57c18",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.1",
+          "text": "Now, dear reader, we turn our attention to Shampoo (Gupta et al., 2017; Gupta et al., 2018). A variant of the Shampoo optimizer won the external tuning track of the 2024 AlgoPerf: Training Algorithms competition (Dahl et al., 2023). While the method was originally motivated as a generalization of the AdaGrad convex optimizer (Duchi et al., 2011) to tensor spaces, more recent work casts Shampoo as an approximate second-order method (Anil et al., 2020; Morwani et al., 2024). We will show that Shampoo—with accumulation disabled—is steepest descent under the max spectral norm over layers.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 591
+        },
+        {
+          "paragraph_id": "p_1d627def35b9a541e54b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p2.1",
+          "text": "To begin, we show that Shampoo updates, without accumulation, are semi-orthogonal matrices. At time step $t$ and for each layer, Shampoo collects the gradient matrix ${\\bm{G}}_{t}$ and makes the following update to the weight matrix ${\\bm{W}}_{t}$:",
+          "kind": "text",
+          "char_start": 593,
+          "char_end": 841
+        },
+        {
+          "paragraph_id": "p_5df279814794486bc737",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx4",
+          "text": "\\displaystyle{\\bm{L}}_{t} \\displaystyle={\\bm{L}}_{t-1}+{\\bm{G}}_{t}{\\bm{G}}_{t}^{T}, \\displaystyle{\\bm{R}}_{t} \\displaystyle=\\smash{{\\bm{R}}_{t-1}+{\\bm{G}}_{t}^{T}{\\bm{G}}_{t}}, \\displaystyle{\\bm{W}}_{t+1} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot{\\bm{L}}_{t}^{-\\nicefrac{{1}}{{4}}}{\\bm{G}}_{t}{\\bm{R}}_{t}^{-\\nicefrac{{1}}{{4}}}}.",
+          "kind": "equation",
+          "char_start": 843,
+          "char_end": 1176
+        },
+        {
+          "paragraph_id": "p_0edebae02ad547b99bf7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p2.2",
+          "text": "All operations, including the inverse fourth roots, are matrix operations. The accumulators ${\\bm{L}}_{t}$ and ${\\bm{R}}_{t}$ are referred to as the “left and right pre-conditioners”. Practitioners usually replace the simple sums in Equations 12 and 13 with EMAs (Shi et al., 2023). If we disable the accumulation, setting ${\\bm{L}}_{t}={\\bm{G}}_{t}{\\bm{G}}_{t}^{\\top}$ and ${\\bm{R}}_{t}={\\bm{G}}_{t}^{\\top}{\\bm{G}}_{t}$, Shampoo reduces to:",
+          "kind": "text",
+          "char_start": 1178,
+          "char_end": 1619
+        },
+        {
+          "paragraph_id": "p_0782ac5358391e957631",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.EGx5",
+          "text": "\\displaystyle{\\bm{W}}_{t+1} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot({\\bm{G}}_{t}{\\bm{G}}_{t}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}_{t}\\,({\\bm{G}}_{t}^{\\top}{\\bm{G}}_{t})^{-\\nicefrac{{1}}{{4}}}} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot{\\bm{U}}_{t}{\\bm{V}}_{t}^{\\top}},",
+          "kind": "equation",
+          "char_start": 1621,
+          "char_end": 1898
+        },
+        {
+          "paragraph_id": "p_7ed1abdeb61724ac9ea8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p2.3",
+          "text": "where Equation 16 is reached by substituting the reduced singular value decomposition (SVD) of the gradient ${\\bm{G}}_{t}={\\bm{U}}_{t}{\\bm{\\Sigma}}_{t}{\\bm{V}}_{t}^{\\top}$ into Equation 15. Notice that there is a direct parallel between Equations 6 and 7 for Adam and Equations 15 and 16 for Shampoo. So, Shampoo without accumulation makes a semi-orthogonal weight update. In fact:",
+          "kind": "text",
+          "char_start": 1900,
+          "char_end": 2281
+        },
+        {
+          "paragraph_id": "p_157975d9c38855a57ae8",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition4",
+          "text": "Proposition 4 (Projection to the closest semi-orthogonal matrix).",
+          "kind": "heading",
+          "char_start": 2283,
+          "char_end": 2348
+        },
+        {
+          "paragraph_id": "p_12098995b17521a66549",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition4.p1.1",
+          "text": "Consider the semi-orthogonal matrices $\\mathcal{O}_{m\\times n}\\vcentcolon=\\left\\{{\\bm{A}}\\in\\mathbb{R}^{m\\times n}:{\\bm{A}}{\\bm{A}}^{\\top}=\\mathbf{I}_{m}\\text{ or }{\\bm{A}}^{\\top}{\\bm{A}}=\\mathbf{I}_{n}\\right\\}$ and let $\\|{\\cdot}\\|_{F}$ denote the Frobenius norm. For any matrix ${\\bm{G}}\\in\\mathbb{R}^{m\\times n}$ with reduced SVD ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$:",
+          "kind": "text",
+          "char_start": 2350,
+          "char_end": 2731
+        },
+        {
+          "paragraph_id": "p_48e2027b4c8ed72942bc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E17",
+          "text": "\\argmin_{{\\bm{A}}\\in\\mathcal{O}_{m\\times n}}\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}={\\bm{U}}{\\bm{V}}^{\\top},",
+          "kind": "equation",
+          "char_start": 2733,
+          "char_end": 2829
+        },
+        {
+          "paragraph_id": "p_d6dfe46be403e23fb5f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition4.p1.2",
+          "text": "where the minimizer ${\\bm{U}}{\\bm{V}}^{\\top}$ is unique if and only if the matrix ${\\bm{G}}$ has full rank.",
+          "kind": "text",
+          "char_start": 2831,
+          "char_end": 2938
+        },
+        {
+          "paragraph_id": "p_0b1f190894d398d4e23d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p3.1",
+          "text": "So, Shampoo without accumulation projects the gradient matrix to the closest semi-orthogonal matrix in Frobenius norm. The proof is in Appendix B. Why might this be a good idea, you ask? Well, for one thing, it’s steepest descent—this time under the maximum spectral norm $\\|{\\cdot}\\|_{\\ell_{2}\\to\\ell_{2}}$ (Definition 1) over all the matrices in the network:",
+          "kind": "text",
+          "char_start": 2940,
+          "char_end": 3300
+        },
+        {
+          "paragraph_id": "p_0f8bee1711463c6a3277",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition5",
+          "text": "Proposition 5 (Shampoo as steepest descent under the spectral norm).",
+          "kind": "heading",
+          "char_start": 3302,
+          "char_end": 3370
+        },
+        {
+          "paragraph_id": "p_2f266192011a381d3a78",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition5.p1.1",
+          "text": "For any list of gradient matrices ${\\bm{G}}_{1},...,{\\bm{G}}_{L}$ and any sharpness $\\lambda>0$, consider the problem:",
+          "kind": "text",
+          "char_start": 3372,
+          "char_end": 3490
+        },
+        {
+          "paragraph_id": "p_532e1ffd759a79b4c6f7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E18",
+          "text": "\\argmin_{\\Delta{\\bm{W}}_{1},...,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\,\\max_{l=1}^{L}\\|{\\Delta{\\bm{W}}_{l}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2}\\right],",
+          "kind": "equation",
+          "char_start": 3492,
+          "char_end": 3700
+        },
+        {
+          "paragraph_id": "p_74f3df848bd3db3924de",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition5.p1.2",
+          "text": "where $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product and $\\Delta{\\bm{W}}_{l}$ has the same shape as ${\\bm{G}}_{l}$. Suppose that ${\\bm{G}}_{l}$ has reduced SVD given by ${\\bm{G}}_{l}={\\bm{U}}_{l}{\\bm{\\Sigma}}_{l}{\\bm{V}}_{l}^{\\top}$ for each $l=1,...,L$. Then Equation 18 is solved with a step size $\\eta=\\frac{1}{\\lambda}\\sum_{l=1}^{L}\\operatorname{tr}{\\bm{\\Sigma}}_{l}$ and an update:",
+          "kind": "text",
+          "char_start": 3702,
+          "char_end": 4105
+        },
+        {
+          "paragraph_id": "p_e7ef5c4ac5c3226d336a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E19",
+          "text": "\\Delta{\\bm{W}}_{l}=-\\eta\\cdot{\\bm{U}}_{l}{\\bm{V}}_{l}^{\\top}\\quad\\text{ for each }l=1,...,L.",
+          "kind": "equation",
+          "char_start": 4107,
+          "char_end": 4199
+        },
+        {
+          "paragraph_id": "p_956bcf23e366f833b75f",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition5.p1.3",
+          "text": "This solution for $\\Delta{\\bm{W}}_{l}$ is unique if and only if the matrix ${\\bm{G}}_{l}$ is of full rank.",
+          "kind": "text",
+          "char_start": 4201,
+          "char_end": 4307
+        },
+        {
+          "paragraph_id": "p_abe905394c456ae49737",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p4.1",
+          "text": "The proof is given in Appendix B. A novelty of this proposition in contrast to prior work on stochastic spectral descent (Carlson et al., 2015a; Carlson et al., 2016) is our use of a max norm over layers to handle the multi-layer case. However, our main contribution here is to draw the connection between Proposition 5 and Shampoo as in Equations 15 and 16.",
+          "kind": "text",
+          "char_start": 4309,
+          "char_end": 4667
+        },
+        {
+          "paragraph_id": "p_03d6121c8da52dc74577",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p5.1",
+          "text": "So, Shampoo without accumulation is steepest descent under the spectral norm. Why might this be a good idea in deep learning? The idea that we wish to advance is that one can derive upper bounds on the loss of machine learning models in terms of spectral norms. Here we present the simplest possible example: a linear model and the square loss.",
+          "kind": "text",
+          "char_start": 4669,
+          "char_end": 5013
+        },
+        {
+          "paragraph_id": "p_85e83fcf20ad484b5a73",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition6",
+          "text": "Proposition 6 (Bounding the square loss of a linear predictor).",
+          "kind": "heading",
+          "char_start": 5015,
+          "char_end": 5078
+        },
+        {
+          "paragraph_id": "p_78d95e0f00fb11f7ac7a",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition6.p1.1",
+          "text": "Consider a matrix ${\\bm{W}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ that we shall think of as a linear predictor mapping an input ${\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{in}}}$ to an output ${\\bm{y}}={\\bm{W}}{\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{out}}}$. Given a dataset of $n$ samples $\\mathcal{D}=\\{({\\bm{x}}_{1},{\\bm{y}}_{1}),...,({\\bm{x}}_{n},{\\bm{y}}_{n})\\}$, where the $i$th input is normalized such that $\\|{\\bm{x}}_{i}\\|_{2}=\\sqrt{d_{\\mathrm{in}}}$, we can construct the “square loss”:",
+          "kind": "text",
+          "char_start": 5080,
+          "char_end": 5579
+        },
+        {
+          "paragraph_id": "p_e7df09c055324f0c6990",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E20",
+          "text": "\\mathcal{L}({\\bm{W}})\\vcentcolon=\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{{\\bm{y}}_{i}-{\\bm{W}}{\\bm{x}}_{i}}\\|_{2}^{2}.",
+          "kind": "equation",
+          "char_start": 5581,
+          "char_end": 5714
+        },
+        {
+          "paragraph_id": "p_94dade60ce8da4b27b42",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition6.p1.2",
+          "text": "Then, for any matrix $\\Delta{\\bm{W}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ thought of as a weight update, it holds that:",
+          "kind": "text",
+          "char_start": 5716,
+          "char_end": 5853
+        },
+        {
+          "paragraph_id": "p_ef91cb6342bc0f747a96",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.E21",
+          "text": "\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})\\leq\\mathcal{L}({\\bm{W}})+\\langle\\nabla_{\\bm{W}}\\mathcal{L}({\\bm{W}}),\\Delta{\\bm{W}}\\rangle+\\tfrac{1}{2}\\cdot\\tfrac{d_{\\mathrm{in}}}{d_{\\mathrm{out}}}\\cdot\\|{\\Delta{\\bm{W}}}\\|_{\\mathrm{\\ell_{2}\\to\\ell_{2}}}^{2},",
+          "kind": "equation",
+          "char_start": 5855,
+          "char_end": 6102
+        },
+        {
+          "paragraph_id": "p_3206b7125714aa3a2094",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition6.p1.3",
+          "text": "where $\\langle\\cdot,\\cdot\\rangle$ is the Frobenius inner product.",
+          "kind": "text",
+          "char_start": 6104,
+          "char_end": 6169
+        },
+        {
+          "paragraph_id": "p_9a15fc19875bdf914d5b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p6.1",
+          "text": "In words: the square loss of a linear predictor admits an upper bound that is quadratic in the spectral norm of the weight perturbation. Choosing the weight perturbation to minimize this upper bound is precisely steepest descent under the spectral norm! The proof is given in Appendix B. This optimizer design pattern, which starts by deriving an upper bound on the loss (as in Proposition 6) and then minimizes it (as in Proposition 5), is known generally as majorization-minimization (Lange, 2016). It is an exact and first-principles design pattern, without Hessian approximations or appeals to convex theory. This design pattern is used extensively by Carlson et al. (2015a); Carlson et al. (2016) to design optimizers for restricted Boltzmann machines and discrete graphical models. Generalizing the pattern to arbitrary network architectures and loss functions requires more advanced machinery (Bernstein et al., 2023; Streeter, 2023; Large et al., 2024).",
+          "kind": "text",
+          "char_start": 6171,
+          "char_end": 7132
+        },
+        {
+          "paragraph_id": "p_6c7357e86d53672294ff",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p8.1",
+          "text": "And so, dear reader, we have reached the end of our second story. We have shown that Shampoo without accumulation corresponds to projecting the gradient matrix to the closest semi-orthogonal matrix, which solves the problem of steepest descent under the spectral norm. And we showed how steepest descent under the spectral norm emerges from upper bounding the square loss of a linear predictor. This perspective, of viewing Shampoo as a (smoothed out) projection to the space of semi-orthogonal matrices, grounds the algorithm in a prior literature on spectral descent (Carlson et al., 2015a; Carlson et al., 2016; Fan, 2017). And in Appendix A, we discuss how it might unlock new means for computing the Shampoo updates.",
+          "kind": "text",
+          "char_start": 7134,
+          "char_end": 7855
+        },
+        {
+          "paragraph_id": "p_baeca4bd149748ddc006",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p9.1",
+          "text": "We summarize our first two stories in Table 1. And we still have one more left to tell…",
+          "kind": "text",
+          "char_start": 7857,
+          "char_end": 7944
+        },
+        {
+          "paragraph_id": "p_8c96fd91d7b7958e2fa2",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.T1.2",
+          "text": "Domain | Norm | Solution | Optimizer | Cousin\n$\\mathbb{R}^{n}$ | Euclidean $\\ell_{2}$ | $\\displaystyle\\Delta{\\bm{w}}=-\\tfrac{\\|{{\\bm{g}}}\\|_{2}}{\\lambda}\\,\\tfrac{{\\bm{g}}}{\\|{{\\bm{g}}}\\|_{2}}$ | vanilla gradient descent | SGD\n$\\mathbb{R}^{n}$ | infinity $\\ell_{\\infty}$ | $\\displaystyle\\Delta{\\bm{w}}=-\\tfrac{\\|{{\\bm{g}}}\\|_{1}}{\\lambda}\\operatorname{sign}({\\bm{g}})$ | sign descent | Adam\n$\\mathbb{R}^{m\\times n}$ | Frobenius $S_{2}$ | $\\displaystyle\\Delta{\\bm{W}}=-\\tfrac{\\|{{\\bm{G}}}\\|_{F}}{\\lambda}\\,\\tfrac{{\\bm{G}}}{\\|{{\\bm{G}}}\\|_{F}}$ | vanilla gradient descent | SGD\n$\\mathbb{R}^{m\\times n}$ | spectral $S_{\\infty}$ | $\\displaystyle\\Delta{\\bm{W}}=-\\tfrac{\\operatorname{tr}{\\bm{\\Sigma}}}{\\lambda}\\,{\\bm{U}}{\\bm{V}}^{\\top}$ | spectral descent | Shampoo",
+          "kind": "table",
+          "char_start": 7946,
+          "char_end": 8704
+        },
+        {
+          "paragraph_id": "p_b21a3e5f481324ff92fa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.T1",
+          "text": "Table 1: Popular optimizers are related to steepest descent under different norms. For vector-valued optimization problems, we consider the steepest descent problem $\\smash{\\argmin_{\\Delta{\\bm{w}}}{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{w}}}\\|^{2}}$. For matrix-valued problems, we consider $\\smash{\\argmin_{\\Delta{\\bm{W}}}\\,\\langle{\\bm{G}},\\Delta{\\bm{W}}\\rangle+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{W}}}\\|^{2}}$, where $\\langle\\cdot,\\cdot\\rangle$ is the Frobenius inner product. We list the solution for different vector $\\ell_{p}$ norms and Schatten $S_{p}$ norms. The Schatten $S_{p}$ norm of a matrix returns the $\\ell_{p}$ norm of its vector of singular values. Finally, ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$ is the reduced singular value decomposition of the gradient.",
+          "kind": "caption",
+          "char_start": 8706,
+          "char_end": 9515
+        }
+      ],
+      "text": "Now, dear reader, we turn our attention to Shampoo (Gupta et al., 2017; Gupta et al., 2018). A variant of the Shampoo optimizer won the external tuning track of the 2024 AlgoPerf: Training Algorithms competition (Dahl et al., 2023). While the method was originally motivated as a generalization of the AdaGrad convex optimizer (Duchi et al., 2011) to tensor spaces, more recent work casts Shampoo as an approximate second-order method (Anil et al., 2020; Morwani et al., 2024). We will show that Shampoo—with accumulation disabled—is steepest descent under the max spectral norm over layers.\n\nTo begin, we show that Shampoo updates, without accumulation, are semi-orthogonal matrices. At time step $t$ and for each layer, Shampoo collects the gradient matrix ${\\bm{G}}_{t}$ and makes the following update to the weight matrix ${\\bm{W}}_{t}$:\n\n\\displaystyle{\\bm{L}}_{t} \\displaystyle={\\bm{L}}_{t-1}+{\\bm{G}}_{t}{\\bm{G}}_{t}^{T}, \\displaystyle{\\bm{R}}_{t} \\displaystyle=\\smash{{\\bm{R}}_{t-1}+{\\bm{G}}_{t}^{T}{\\bm{G}}_{t}}, \\displaystyle{\\bm{W}}_{t+1} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot{\\bm{L}}_{t}^{-\\nicefrac{{1}}{{4}}}{\\bm{G}}_{t}{\\bm{R}}_{t}^{-\\nicefrac{{1}}{{4}}}}.\n\nAll operations, including the inverse fourth roots, are matrix operations. The accumulators ${\\bm{L}}_{t}$ and ${\\bm{R}}_{t}$ are referred to as the “left and right pre-conditioners”. Practitioners usually replace the simple sums in Equations 12 and 13 with EMAs (Shi et al., 2023). If we disable the accumulation, setting ${\\bm{L}}_{t}={\\bm{G}}_{t}{\\bm{G}}_{t}^{\\top}$ and ${\\bm{R}}_{t}={\\bm{G}}_{t}^{\\top}{\\bm{G}}_{t}$, Shampoo reduces to:\n\n\\displaystyle{\\bm{W}}_{t+1} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot({\\bm{G}}_{t}{\\bm{G}}_{t}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}_{t}\\,({\\bm{G}}_{t}^{\\top}{\\bm{G}}_{t})^{-\\nicefrac{{1}}{{4}}}} \\displaystyle=\\smash{{\\bm{W}}_{t}-\\eta\\cdot{\\bm{U}}_{t}{\\bm{V}}_{t}^{\\top}},\n\nwhere Equation 16 is reached by substituting the reduced singular value decomposition (SVD) of the gradient ${\\bm{G}}_{t}={\\bm{U}}_{t}{\\bm{\\Sigma}}_{t}{\\bm{V}}_{t}^{\\top}$ into Equation 15. Notice that there is a direct parallel between Equations 6 and 7 for Adam and Equations 15 and 16 for Shampoo. So, Shampoo without accumulation makes a semi-orthogonal weight update. In fact:\n\nProposition 4 (Projection to the closest semi-orthogonal matrix).\n\nConsider the semi-orthogonal matrices $\\mathcal{O}_{m\\times n}\\vcentcolon=\\left\\{{\\bm{A}}\\in\\mathbb{R}^{m\\times n}:{\\bm{A}}{\\bm{A}}^{\\top}=\\mathbf{I}_{m}\\text{ or }{\\bm{A}}^{\\top}{\\bm{A}}=\\mathbf{I}_{n}\\right\\}$ and let $\\|{\\cdot}\\|_{F}$ denote the Frobenius norm. For any matrix ${\\bm{G}}\\in\\mathbb{R}^{m\\times n}$ with reduced SVD ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$:\n\n\\argmin_{{\\bm{A}}\\in\\mathcal{O}_{m\\times n}}\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}={\\bm{U}}{\\bm{V}}^{\\top},\n\nwhere the minimizer ${\\bm{U}}{\\bm{V}}^{\\top}$ is unique if and only if the matrix ${\\bm{G}}$ has full rank.\n\nSo, Shampoo without accumulation projects the gradient matrix to the closest semi-orthogonal matrix in Frobenius norm. The proof is in Appendix B. Why might this be a good idea, you ask? Well, for one thing, it’s steepest descent—this time under the maximum spectral norm $\\|{\\cdot}\\|_{\\ell_{2}\\to\\ell_{2}}$ (Definition 1) over all the matrices in the network:\n\nProposition 5 (Shampoo as steepest descent under the spectral norm).\n\nFor any list of gradient matrices ${\\bm{G}}_{1},...,{\\bm{G}}_{L}$ and any sharpness $\\lambda>0$, consider the problem:\n\n\\argmin_{\\Delta{\\bm{W}}_{1},...,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\,\\max_{l=1}^{L}\\|{\\Delta{\\bm{W}}_{l}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2}\\right],\n\nwhere $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product and $\\Delta{\\bm{W}}_{l}$ has the same shape as ${\\bm{G}}_{l}$. Suppose that ${\\bm{G}}_{l}$ has reduced SVD given by ${\\bm{G}}_{l}={\\bm{U}}_{l}{\\bm{\\Sigma}}_{l}{\\bm{V}}_{l}^{\\top}$ for each $l=1,...,L$. Then Equation 18 is solved with a step size $\\eta=\\frac{1}{\\lambda}\\sum_{l=1}^{L}\\operatorname{tr}{\\bm{\\Sigma}}_{l}$ and an update:\n\n\\Delta{\\bm{W}}_{l}=-\\eta\\cdot{\\bm{U}}_{l}{\\bm{V}}_{l}^{\\top}\\quad\\text{ for each }l=1,...,L.\n\nThis solution for $\\Delta{\\bm{W}}_{l}$ is unique if and only if the matrix ${\\bm{G}}_{l}$ is of full rank.\n\nThe proof is given in Appendix B. A novelty of this proposition in contrast to prior work on stochastic spectral descent (Carlson et al., 2015a; Carlson et al., 2016) is our use of a max norm over layers to handle the multi-layer case. However, our main contribution here is to draw the connection between Proposition 5 and Shampoo as in Equations 15 and 16.\n\nSo, Shampoo without accumulation is steepest descent under the spectral norm. Why might this be a good idea in deep learning? The idea that we wish to advance is that one can derive upper bounds on the loss of machine learning models in terms of spectral norms. Here we present the simplest possible example: a linear model and the square loss.\n\nProposition 6 (Bounding the square loss of a linear predictor).\n\nConsider a matrix ${\\bm{W}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ that we shall think of as a linear predictor mapping an input ${\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{in}}}$ to an output ${\\bm{y}}={\\bm{W}}{\\bm{x}}\\in\\mathbb{R}^{d_{\\mathrm{out}}}$. Given a dataset of $n$ samples $\\mathcal{D}=\\{({\\bm{x}}_{1},{\\bm{y}}_{1}),...,({\\bm{x}}_{n},{\\bm{y}}_{n})\\}$, where the $i$th input is normalized such that $\\|{\\bm{x}}_{i}\\|_{2}=\\sqrt{d_{\\mathrm{in}}}$, we can construct the “square loss”:\n\n\\mathcal{L}({\\bm{W}})\\vcentcolon=\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{{\\bm{y}}_{i}-{\\bm{W}}{\\bm{x}}_{i}}\\|_{2}^{2}.\n\nThen, for any matrix $\\Delta{\\bm{W}}\\in\\mathbb{R}^{d_{\\mathrm{out}}\\times d_{\\mathrm{in}}}$ thought of as a weight update, it holds that:\n\n\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})\\leq\\mathcal{L}({\\bm{W}})+\\langle\\nabla_{\\bm{W}}\\mathcal{L}({\\bm{W}}),\\Delta{\\bm{W}}\\rangle+\\tfrac{1}{2}\\cdot\\tfrac{d_{\\mathrm{in}}}{d_{\\mathrm{out}}}\\cdot\\|{\\Delta{\\bm{W}}}\\|_{\\mathrm{\\ell_{2}\\to\\ell_{2}}}^{2},\n\nwhere $\\langle\\cdot,\\cdot\\rangle$ is the Frobenius inner product.\n\nIn words: the square loss of a linear predictor admits an upper bound that is quadratic in the spectral norm of the weight perturbation. Choosing the weight perturbation to minimize this upper bound is precisely steepest descent under the spectral norm! The proof is given in Appendix B. This optimizer design pattern, which starts by deriving an upper bound on the loss (as in Proposition 6) and then minimizes it (as in Proposition 5), is known generally as majorization-minimization (Lange, 2016). It is an exact and first-principles design pattern, without Hessian approximations or appeals to convex theory. This design pattern is used extensively by Carlson et al. (2015a); Carlson et al. (2016) to design optimizers for restricted Boltzmann machines and discrete graphical models. Generalizing the pattern to arbitrary network architectures and loss functions requires more advanced machinery (Bernstein et al., 2023; Streeter, 2023; Large et al., 2024).\n\nAnd so, dear reader, we have reached the end of our second story. We have shown that Shampoo without accumulation corresponds to projecting the gradient matrix to the closest semi-orthogonal matrix, which solves the problem of steepest descent under the spectral norm. And we showed how steepest descent under the spectral norm emerges from upper bounding the square loss of a linear predictor. This perspective, of viewing Shampoo as a (smoothed out) projection to the space of semi-orthogonal matrices, grounds the algorithm in a prior literature on spectral descent (Carlson et al., 2015a; Carlson et al., 2016; Fan, 2017). And in Appendix A, we discuss how it might unlock new means for computing the Shampoo updates.\n\nWe summarize our first two stories in Table 1. And we still have one more left to tell…\n\nDomain | Norm | Solution | Optimizer | Cousin\n$\\mathbb{R}^{n}$ | Euclidean $\\ell_{2}$ | $\\displaystyle\\Delta{\\bm{w}}=-\\tfrac{\\|{{\\bm{g}}}\\|_{2}}{\\lambda}\\,\\tfrac{{\\bm{g}}}{\\|{{\\bm{g}}}\\|_{2}}$ | vanilla gradient descent | SGD\n$\\mathbb{R}^{n}$ | infinity $\\ell_{\\infty}$ | $\\displaystyle\\Delta{\\bm{w}}=-\\tfrac{\\|{{\\bm{g}}}\\|_{1}}{\\lambda}\\operatorname{sign}({\\bm{g}})$ | sign descent | Adam\n$\\mathbb{R}^{m\\times n}$ | Frobenius $S_{2}$ | $\\displaystyle\\Delta{\\bm{W}}=-\\tfrac{\\|{{\\bm{G}}}\\|_{F}}{\\lambda}\\,\\tfrac{{\\bm{G}}}{\\|{{\\bm{G}}}\\|_{F}}$ | vanilla gradient descent | SGD\n$\\mathbb{R}^{m\\times n}$ | spectral $S_{\\infty}$ | $\\displaystyle\\Delta{\\bm{W}}=-\\tfrac{\\operatorname{tr}{\\bm{\\Sigma}}}{\\lambda}\\,{\\bm{U}}{\\bm{V}}^{\\top}$ | spectral descent | Shampoo\n\nTable 1: Popular optimizers are related to steepest descent under different norms. For vector-valued optimization problems, we consider the steepest descent problem $\\smash{\\argmin_{\\Delta{\\bm{w}}}{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{w}}}\\|^{2}}$. For matrix-valued problems, we consider $\\smash{\\argmin_{\\Delta{\\bm{W}}}\\,\\langle{\\bm{G}},\\Delta{\\bm{W}}\\rangle+\\frac{\\lambda}{2}\\cdot\\|{\\Delta{\\bm{W}}}\\|^{2}}$, where $\\langle\\cdot,\\cdot\\rangle$ is the Frobenius inner product. We list the solution for different vector $\\ell_{p}$ norms and Schatten $S_{p}$ norms. The Schatten $S_{p}$ norm of a matrix returns the $\\ell_{p}$ norm of its vector of singular values. Finally, ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$ is the reduced singular value decomposition of the gradient."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0004",
+      "title": "Story III Prodigy: Automatically Computing the Escape Velocity",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "Story III Prodigy: Automatically Computing the Escape Velocity"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_cdfdd92d2841905eccda",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "For our final story, we speak of Prodigy (Mishchenko and Defazio, 2023). The Prodigy optimizer falls amid a series of recent works (Defazio and Mishchenko, 2023; Khaled et al., 2023; Ivgi et al., 2023) that attempt to apply convex theory to design and analyse deep learning optimizers that do not require tuning. In contrast, we argue that Prodigy (without EMA) is but another example of steepest descent, where instead of using the step size $\\eta=\\|{{\\bm{g}}}\\|^{\\dagger}/\\lambda$ from Proposition 1, Prodigy uses a heuristic to automatically warm up to a good step size. This demonstrates the value of Proposition 1 for disentangling the optimizer design problem. If one knows a good norm $\\|{\\cdot}\\|$ but is ignorant of the sharpness parameter $\\lambda$, then one may obtain the step direction by solving $\\argmax_{\\|{{\\bm{t}}}\\|=1}{\\bm{g}}^{\\top}{\\bm{t}}$ from Proposition 1, while using another means to find a good step size.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 933
+        },
+        {
+          "paragraph_id": "p_1620b351bfc5f4032c91",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.1",
+          "text": "Then let us make our case. We focus on Algorithm 3 in the Prodigy paper, since this is the version used in their experiments. We first show that with EMA switched off, Prodigy implements sign gradient descent with a step size that warms up automatically. Ignoring the numerical stabilization and learning rate schedule, Prodigy is given by:",
+          "kind": "text",
+          "char_start": 935,
+          "char_end": 1275
+        },
+        {
+          "paragraph_id": "p_f2214d2fc1d97c4ea477",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx6",
+          "text": "\\displaystyle{\\bm{m}}_{t} \\displaystyle=\\beta_{1}\\cdot{\\bm{m}}_{t-1}+(1-\\beta_{1})\\cdot\\eta_{t}\\,{\\bm{g}}_{t}, \\displaystyle{\\bm{v}}_{t} \\displaystyle=\\beta_{2}\\cdot{\\bm{v}}_{t-1}+(1-\\beta_{2})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}^{2}, \\displaystyle r_{t} \\displaystyle=\\sqrt{\\beta_{2}}\\cdot r_{t-1}+(1-\\sqrt{\\beta_{2}})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t}), \\displaystyle{\\bm{s}}_{t} \\displaystyle=\\sqrt{\\beta_{2}}\\cdot{\\bm{s}}_{t-1}+(1-\\sqrt{\\beta_{2}})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}, \\displaystyle\\eta_{t+1} \\displaystyle=\\max\\left(\\eta_{t},\\tfrac{r_{t}}{\\|{{\\bm{s}}_{t}}\\|_{1}}\\right), \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta_{t}\\cdot{\\bm{m}}_{t}/\\sqrt{{\\bm{v}}_{t}},",
+          "kind": "equation",
+          "char_start": 1277,
+          "char_end": 1991
+        },
+        {
+          "paragraph_id": "p_a0ddae161f5f20dec8df",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.2",
+          "text": "where $t$ denotes the time step and ${\\bm{g}}_{t}\\in\\mathbb{R}^{n}$ the gradient vector. While this system of updates may seem intimidating, if we switch off EMA by setting $\\beta_{1}=\\beta_{2}=0$, the Prodigy updates simplify dramatically to just sign gradient descent with a dynamical step size as follows:",
+          "kind": "text",
+          "char_start": 1993,
+          "char_end": 2301
+        },
+        {
+          "paragraph_id": "p_6a7db5e600d9cb0917e1",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx7",
+          "text": "\\displaystyle\\eta_{t+1} \\displaystyle=\\max\\left(\\eta_{t},\\tfrac{{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t})}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\right), \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta_{t}\\cdot\\operatorname{sign}({\\bm{g}}_{t}).",
+          "kind": "equation",
+          "char_start": 2303,
+          "char_end": 2549
+        },
+        {
+          "paragraph_id": "p_bc4367d490712baa8466",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p2.3",
+          "text": "But Proposition 2 showed that sign descent is steepest descent under the infinity norm. Therefore Equations 28 and 29 prove our claim that Prodigy without EMA is steepest descent, although with a dynamically chosen step size denoted $\\eta_{t}$.",
+          "kind": "text",
+          "char_start": 2551,
+          "char_end": 2795
+        },
+        {
+          "paragraph_id": "p_99a6443461d93a6369be",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.1",
+          "text": "All that remains is to understand the dynamical rule, given by Equation 28, for choosing the step size $\\eta_{t}$. We shall argue that this dynamical rule can be understood to approximate a heuristic algorithm for achieving, but not exceeding, what we shall call escape velocity:",
+          "kind": "text",
+          "char_start": 2797,
+          "char_end": 3076
+        },
+        {
+          "paragraph_id": "p_443f334b1b1ab6fc2855",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i1",
+          "text": "• Choose a very small initial step size $\\eta_{0}$—small enough to be a priori sure that $\\eta_{0}\\ll\\eta_{\\star}$, where $\\eta_{\\star}$ denotes escape velocity: the unknown but optimal initial step size;",
+          "kind": "list_item",
+          "char_start": 3078,
+          "char_end": 3282
+        },
+        {
+          "paragraph_id": "p_8a9d00b848452c8f9726",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i2",
+          "text": "• At each step, check if the weights ${\\bm{w}}_{t}$ have escaped the linearization of the loss around the initial weights ${\\bm{w}}_{0}$—if not, double the step size according to $\\eta_{t+1}=2\\times\\eta_{t}$;",
+          "kind": "list_item",
+          "char_start": 3284,
+          "char_end": 3492
+        },
+        {
+          "paragraph_id": "p_c7c6a515dced0fc89c3c",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i3",
+          "text": "• Once the weights ${\\bm{w}}_{t}$ have escaped the initial linearization, stop increasing the step size. We say that the step size $\\eta_{t}$ has reached escape velocity $\\eta_{\\star}$.",
+          "kind": "list_item",
+          "char_start": 3494,
+          "char_end": 3679
+        },
+        {
+          "paragraph_id": "p_6a6eb94932b2539e951d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.2",
+          "text": "The rationale behind this procedure is that if we knew the optimal initial step size $\\eta_{\\star}$, then the weights should escape the initial linearization of the loss in a single step. Formally, the directional derivative $({\\bm{w}}_{1}-{\\bm{w}}_{0})^{\\top}{\\bm{g}}_{1}$ must vanish if the step size is chosen optimally (Cauchy, 1847). If the directional derivative in the direction of the first weight update is still negative $({\\bm{w}}_{1}-{\\bm{w}}_{0})^{\\top}{\\bm{g}}_{1}<0$, then we could have taken a larger step. Said another way, we can use the angle that the gradient ${\\bm{g}}_{1}$ makes with the change in weights ${\\bm{w}}_{1}-{\\bm{w}}_{0}$ to tell us whether or not we should increase the step size. Notice that procedure has no reliance on convexity.",
+          "kind": "text",
+          "char_start": 3681,
+          "char_end": 4448
+        },
+        {
+          "paragraph_id": "p_ce579c870b27ae095fed",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.1",
+          "text": "With this in mind, let us massage Prodigy’s step size update (Equation 28) as follows:",
+          "kind": "text",
+          "char_start": 4450,
+          "char_end": 4536
+        },
+        {
+          "paragraph_id": "p_de5a063796a537aca1f7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.EGx8",
+          "text": "\\displaystyle\\eta_{t+1}=\\max\\left(\\eta_{t},\\tfrac{{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t})}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\right)=\\max\\left(\\eta_{t},\\tfrac{\\|{{\\bm{g}}_{t}}\\|_{2}}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\times\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{2}\\times\\cos\\theta\\right),",
+          "kind": "equation",
+          "char_start": 4538,
+          "char_end": 4805
+        },
+        {
+          "paragraph_id": "p_79a1e15b6e03a3573937",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.2",
+          "text": "where $\\theta$ denotes the angle between the gradient ${\\bm{g}}_{t}$ and the difference in weights ${\\bm{w}}_{0}-{\\bm{w}}_{t}$. To help make sense of this expression, we make two assumptions:",
+          "kind": "text",
+          "char_start": 4807,
+          "char_end": 4998
+        },
+        {
+          "paragraph_id": "p_33ddfd20f322f5401362",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I2.i1",
+          "text": "1. The gradient is a “dense” vector in $\\mathbb{R}^{n}$, meaning that $\\|{{\\bm{g}}_{t}}\\|_{2}/\\|{{\\bm{g}}_{t}}\\|_{1}\\approx 1/\\sqrt{n}$;",
+          "kind": "list_item",
+          "char_start": 5000,
+          "char_end": 5136
+        },
+        {
+          "paragraph_id": "p_52b1b77fb8f4df7f77f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I2.i2",
+          "text": "2. ${\\bm{w}}_{t}$ is still close enough to the initialization ${\\bm{w}}_{0}$ that $\\cos\\theta\\approx 1$.",
+          "kind": "list_item",
+          "char_start": 5138,
+          "char_end": 5242
+        },
+        {
+          "paragraph_id": "p_dc65b2584a1f031357ca",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.3",
+          "text": "Under these assumptions, Equation 30 becomes just $\\eta_{t+1}\\approx\\max\\left(\\eta_{t},\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}\\right)$, where the root mean square (RMS) norm is defined via $\\|{\\cdot}\\|_{\\mathrm{RMS}}\\vcentcolon=\\tfrac{1}{\\sqrt{n}}\\,\\|{\\cdot}\\|_{2}$. Combined with Equation 29, this allows us to estimate the size of the weight change at step $t+1$:",
+          "kind": "text",
+          "char_start": 5244,
+          "char_end": 5616
+        },
+        {
+          "paragraph_id": "p_e17767ff912e36338efc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.Ex1",
+          "text": "\\|{{\\bm{w}}_{t+2}-{\\bm{w}}_{t+1}}\\|_{\\mathrm{RMS}}=\\eta_{t+1}\\cdot\\|{\\operatorname{sign}({\\bm{g}}_{t})}\\|_{\\mathrm{RMS}}\\approx\\max\\left(\\eta_{t},\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}\\right)\\geq\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}},",
+          "kind": "equation",
+          "char_start": 5618,
+          "char_end": 5868
+        },
+        {
+          "paragraph_id": "p_01c3b0490c891f4d7778",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.4",
+          "text": "where we have used the fact that a sign vector has unit RMS norm. In words, while assumptions (1) and (2) hold, the step size at time $t+1$ is equivalent to the whole progress up to step $t$. This suggests exponential growth in the step size that continues until assumption (2) breaks, which we think of as the step size reaching the escape velocity $\\eta_{\\star}$",
+          "kind": "text",
+          "char_start": 5870,
+          "char_end": 6234
+        },
+        {
+          "paragraph_id": "p_709d18f956ef814d67cb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p5.1",
+          "text": "Now we wish to point out that this procedure is just one amongst a space of line search methods that one might consider (Armijo, 1966; Riedmiller and Braun, 1993; Kenneweg et al., 2024). For instance, Prodigy’s decision to only let $\\eta_{t}$ increase and never decrease could be sub-optimal. And the decision to measure the angle between the gradient and the weight difference ${\\bm{w}}_{t}-{\\bm{w}}_{0}$ has alternatives. One could instead use the most recent weight difference ${\\bm{w}}_{t}-{\\bm{w}}_{t-1}$. Lastly, in place of relying on the norm ratio $\\|{{\\bm{g}}}\\|_{2}/\\|{{\\bm{g}}_{1}}\\|$ to implicitly convert the $\\ell_{2}$ norm $\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{2}$ into the RMS norm $\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}$, one could consider a more explicit method. For instance, we found a rule akin to $\\eta_{t+1}=\\eta_{t}\\times(1+\\cos\\theta)$ to work well in some preliminary experiments.",
+          "kind": "text",
+          "char_start": 6236,
+          "char_end": 7149
+        },
+        {
+          "paragraph_id": "p_55ac1904490ae3b47f70",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p7.1",
+          "text": "Our time grows short, dear reader, and our third story draws to an end. We have argued that Prodigy without EMA is sign descent—an example of steepest descent—with a particular mechanism for warming up the step size. Starting with a tiny initial step size, Prodigy multiplicatively increases the step size until the weights escape the initial locally linear region of the loss. Prodigy’s step size adjustment is based on the angle between the gradient and the total weight change. This is a form of online line search. This highlights that once one has chosen a norm, the steepest descent framework allows freedom to estimate the step size in various different ways.",
+          "kind": "text",
+          "char_start": 7151,
+          "char_end": 7817
+        }
+      ],
+      "text": "For our final story, we speak of Prodigy (Mishchenko and Defazio, 2023). The Prodigy optimizer falls amid a series of recent works (Defazio and Mishchenko, 2023; Khaled et al., 2023; Ivgi et al., 2023) that attempt to apply convex theory to design and analyse deep learning optimizers that do not require tuning. In contrast, we argue that Prodigy (without EMA) is but another example of steepest descent, where instead of using the step size $\\eta=\\|{{\\bm{g}}}\\|^{\\dagger}/\\lambda$ from Proposition 1, Prodigy uses a heuristic to automatically warm up to a good step size. This demonstrates the value of Proposition 1 for disentangling the optimizer design problem. If one knows a good norm $\\|{\\cdot}\\|$ but is ignorant of the sharpness parameter $\\lambda$, then one may obtain the step direction by solving $\\argmax_{\\|{{\\bm{t}}}\\|=1}{\\bm{g}}^{\\top}{\\bm{t}}$ from Proposition 1, while using another means to find a good step size.\n\nThen let us make our case. We focus on Algorithm 3 in the Prodigy paper, since this is the version used in their experiments. We first show that with EMA switched off, Prodigy implements sign gradient descent with a step size that warms up automatically. Ignoring the numerical stabilization and learning rate schedule, Prodigy is given by:\n\n\\displaystyle{\\bm{m}}_{t} \\displaystyle=\\beta_{1}\\cdot{\\bm{m}}_{t-1}+(1-\\beta_{1})\\cdot\\eta_{t}\\,{\\bm{g}}_{t}, \\displaystyle{\\bm{v}}_{t} \\displaystyle=\\beta_{2}\\cdot{\\bm{v}}_{t-1}+(1-\\beta_{2})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}^{2}, \\displaystyle r_{t} \\displaystyle=\\sqrt{\\beta_{2}}\\cdot r_{t-1}+(1-\\sqrt{\\beta_{2}})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t}), \\displaystyle{\\bm{s}}_{t} \\displaystyle=\\sqrt{\\beta_{2}}\\cdot{\\bm{s}}_{t-1}+(1-\\sqrt{\\beta_{2}})\\cdot\\eta_{t}^{2}\\,{\\bm{g}}_{t}, \\displaystyle\\eta_{t+1} \\displaystyle=\\max\\left(\\eta_{t},\\tfrac{r_{t}}{\\|{{\\bm{s}}_{t}}\\|_{1}}\\right), \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta_{t}\\cdot{\\bm{m}}_{t}/\\sqrt{{\\bm{v}}_{t}},\n\nwhere $t$ denotes the time step and ${\\bm{g}}_{t}\\in\\mathbb{R}^{n}$ the gradient vector. While this system of updates may seem intimidating, if we switch off EMA by setting $\\beta_{1}=\\beta_{2}=0$, the Prodigy updates simplify dramatically to just sign gradient descent with a dynamical step size as follows:\n\n\\displaystyle\\eta_{t+1} \\displaystyle=\\max\\left(\\eta_{t},\\tfrac{{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t})}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\right), \\displaystyle{\\bm{w}}_{t+1} \\displaystyle={\\bm{w}}_{t}-\\eta_{t}\\cdot\\operatorname{sign}({\\bm{g}}_{t}).\n\nBut Proposition 2 showed that sign descent is steepest descent under the infinity norm. Therefore Equations 28 and 29 prove our claim that Prodigy without EMA is steepest descent, although with a dynamically chosen step size denoted $\\eta_{t}$.\n\nAll that remains is to understand the dynamical rule, given by Equation 28, for choosing the step size $\\eta_{t}$. We shall argue that this dynamical rule can be understood to approximate a heuristic algorithm for achieving, but not exceeding, what we shall call escape velocity:\n\n• Choose a very small initial step size $\\eta_{0}$—small enough to be a priori sure that $\\eta_{0}\\ll\\eta_{\\star}$, where $\\eta_{\\star}$ denotes escape velocity: the unknown but optimal initial step size;\n\n• At each step, check if the weights ${\\bm{w}}_{t}$ have escaped the linearization of the loss around the initial weights ${\\bm{w}}_{0}$—if not, double the step size according to $\\eta_{t+1}=2\\times\\eta_{t}$;\n\n• Once the weights ${\\bm{w}}_{t}$ have escaped the initial linearization, stop increasing the step size. We say that the step size $\\eta_{t}$ has reached escape velocity $\\eta_{\\star}$.\n\nThe rationale behind this procedure is that if we knew the optimal initial step size $\\eta_{\\star}$, then the weights should escape the initial linearization of the loss in a single step. Formally, the directional derivative $({\\bm{w}}_{1}-{\\bm{w}}_{0})^{\\top}{\\bm{g}}_{1}$ must vanish if the step size is chosen optimally (Cauchy, 1847). If the directional derivative in the direction of the first weight update is still negative $({\\bm{w}}_{1}-{\\bm{w}}_{0})^{\\top}{\\bm{g}}_{1}<0$, then we could have taken a larger step. Said another way, we can use the angle that the gradient ${\\bm{g}}_{1}$ makes with the change in weights ${\\bm{w}}_{1}-{\\bm{w}}_{0}$ to tell us whether or not we should increase the step size. Notice that procedure has no reliance on convexity.\n\nWith this in mind, let us massage Prodigy’s step size update (Equation 28) as follows:\n\n\\displaystyle\\eta_{t+1}=\\max\\left(\\eta_{t},\\tfrac{{\\bm{g}}_{t}^{\\top}({\\bm{w}}_{0}-{\\bm{w}}_{t})}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\right)=\\max\\left(\\eta_{t},\\tfrac{\\|{{\\bm{g}}_{t}}\\|_{2}}{\\|{{\\bm{g}}_{t}}\\|_{1}}\\times\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{2}\\times\\cos\\theta\\right),\n\nwhere $\\theta$ denotes the angle between the gradient ${\\bm{g}}_{t}$ and the difference in weights ${\\bm{w}}_{0}-{\\bm{w}}_{t}$. To help make sense of this expression, we make two assumptions:\n\n1. The gradient is a “dense” vector in $\\mathbb{R}^{n}$, meaning that $\\|{{\\bm{g}}_{t}}\\|_{2}/\\|{{\\bm{g}}_{t}}\\|_{1}\\approx 1/\\sqrt{n}$;\n\n2. ${\\bm{w}}_{t}$ is still close enough to the initialization ${\\bm{w}}_{0}$ that $\\cos\\theta\\approx 1$.\n\nUnder these assumptions, Equation 30 becomes just $\\eta_{t+1}\\approx\\max\\left(\\eta_{t},\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}\\right)$, where the root mean square (RMS) norm is defined via $\\|{\\cdot}\\|_{\\mathrm{RMS}}\\vcentcolon=\\tfrac{1}{\\sqrt{n}}\\,\\|{\\cdot}\\|_{2}$. Combined with Equation 29, this allows us to estimate the size of the weight change at step $t+1$:\n\n\\|{{\\bm{w}}_{t+2}-{\\bm{w}}_{t+1}}\\|_{\\mathrm{RMS}}=\\eta_{t+1}\\cdot\\|{\\operatorname{sign}({\\bm{g}}_{t})}\\|_{\\mathrm{RMS}}\\approx\\max\\left(\\eta_{t},\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}\\right)\\geq\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}},\n\nwhere we have used the fact that a sign vector has unit RMS norm. In words, while assumptions (1) and (2) hold, the step size at time $t+1$ is equivalent to the whole progress up to step $t$. This suggests exponential growth in the step size that continues until assumption (2) breaks, which we think of as the step size reaching the escape velocity $\\eta_{\\star}$\n\nNow we wish to point out that this procedure is just one amongst a space of line search methods that one might consider (Armijo, 1966; Riedmiller and Braun, 1993; Kenneweg et al., 2024). For instance, Prodigy’s decision to only let $\\eta_{t}$ increase and never decrease could be sub-optimal. And the decision to measure the angle between the gradient and the weight difference ${\\bm{w}}_{t}-{\\bm{w}}_{0}$ has alternatives. One could instead use the most recent weight difference ${\\bm{w}}_{t}-{\\bm{w}}_{t-1}$. Lastly, in place of relying on the norm ratio $\\|{{\\bm{g}}}\\|_{2}/\\|{{\\bm{g}}_{1}}\\|$ to implicitly convert the $\\ell_{2}$ norm $\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{2}$ into the RMS norm $\\|{{\\bm{w}}_{t}-{\\bm{w}}_{0}}\\|_{\\mathrm{RMS}}$, one could consider a more explicit method. For instance, we found a rule akin to $\\eta_{t+1}=\\eta_{t}\\times(1+\\cos\\theta)$ to work well in some preliminary experiments.\n\nOur time grows short, dear reader, and our third story draws to an end. We have argued that Prodigy without EMA is sign descent—an example of steepest descent—with a particular mechanism for warming up the step size. Starting with a tiny initial step size, Prodigy multiplicatively increases the step size until the weights escape the initial locally linear region of the loss. Prodigy’s step size adjustment is based on the angle between the gradient and the total weight change. This is a form of online line search. This highlights that once one has chosen a norm, the steepest descent framework allows freedom to estimate the step size in various different ways."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0005",
+      "title": "Epilogue",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx2",
+      "path": [
+        "Epilogue"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_900ef3398bf323154bb5",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p1.1",
+          "text": "This anthology has presented new ways of understanding old optimizers. Proposition 1 decouples the optimizer design problem into two pieces: first choosing a norm and second finding a step size. This design space is already broad. We have argued that Adam chooses the infinity norm (Proposition 2) or equivalently the max-of-max norm (Proposition 3), which respects a layered matrix structure. Shampoo chooses the spectral norm (Proposition 5). Prodigy chooses the same norm as Adam, and then uses a heuristic to automatically warm up to a good step size, as in Equation 28, which we term reaching escape velocity.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 614
+        },
+        {
+          "paragraph_id": "p_cf4fb7f2872aaecbb01a",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p2.1",
+          "text": "Through the lens of steepest descent, the decisions that Adam, Shampoo and Prodigy make may seem arbitrary. In fact, we think that they are somewhat arbitrary. And there may be more principled ways to make these decisions. To demonstrate this point, we now introduce a tool called the modular norm (Large et al., 2024) and its corresponding steepest descent algorithm. The modular norm generalizes the norms that appeared in Proposition 3 for Adam and Proposition 5 for Shampoo. Formally:",
+          "kind": "text",
+          "char_start": 616,
+          "char_end": 1104
+        },
+        {
+          "paragraph_id": "p_c7901b08efe3bd0aaa97",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition7",
+          "text": "Proposition 7 (Steepest descent under the modular norm).",
+          "kind": "heading",
+          "char_start": 1106,
+          "char_end": 1162
+        },
+        {
+          "paragraph_id": "p_8b4572190bb24c62228d",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition7.p1.1",
+          "text": "Given scalar coefficients $s_{1},\\dots,s_{L}>0$ and norms $\\|{\\cdot}\\|_{1},\\dots,\\|{\\cdot}\\|_{L}$, we define the modular norm as the mapping:",
+          "kind": "text",
+          "char_start": 1164,
+          "char_end": 1305
+        },
+        {
+          "paragraph_id": "p_113f020039553bd93105",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.E31",
+          "text": "{\\bm{W}}_{1},\\dots,{\\bm{W}}_{L}\\mapsto\\max\\left\\{s_{1}\\|{{\\bm{W}}_{1}}\\|_{1},\\dots,s_{L}\\|{{\\bm{W}}_{L}}\\|_{L}\\right\\}.",
+          "kind": "equation",
+          "char_start": 1307,
+          "char_end": 1426
+        },
+        {
+          "paragraph_id": "p_b7cba9e305bb62d36314",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition7.p1.2",
+          "text": "The corresponding steepest descent problem is given by:",
+          "kind": "text",
+          "char_start": 1428,
+          "char_end": 1483
+        },
+        {
+          "paragraph_id": "p_b3948477bdc0f0dae9ca",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.E32",
+          "text": "\\argmin_{\\Delta{\\bm{W}}_{1},\\dots,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}\\|{\\Delta{\\bm{W}}_{l}}\\|_{l}^{2}\\right],",
+          "kind": "equation",
+          "char_start": 1485,
+          "char_end": 1684
+        },
+        {
+          "paragraph_id": "p_480c65c7af2edbf1873b",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition7.p1.3",
+          "text": "where $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product, and for each $l=1,...,L$ the two matrices $\\Delta{\\bm{W}}_{l}$ and ${\\bm{G}}_{l}$ are of the same shape. If we define the global step size $\\eta=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\frac{1}{s_{k}}\\|{{\\bm{G}}_{k}}\\|_{k}^{\\dagger}$, then the solution to Equation 32 is given by:",
+          "kind": "text",
+          "char_start": 1686,
+          "char_end": 2028
+        },
+        {
+          "paragraph_id": "p_290bc7ef773162a54283",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.EGx9",
+          "text": "\\displaystyle\\Delta{\\bm{W}}_{l}=-\\frac{\\eta}{s_{l}}\\cdot\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle\\quad\\text{ for each layer }l=1,...,L.",
+          "kind": "equation",
+          "char_start": 2030,
+          "char_end": 2199
+        },
+        {
+          "paragraph_id": "p_94a33bc13ebbd8fdb3e0",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p3.1",
+          "text": "In words, steepest descent under the modular norm updates each layer in a direction informed by that layer’s norm and with a global step size computed as a weighted sum of the dual norms of the gradients over layers. The proof of this proposition is given in Appendix B.",
+          "kind": "text",
+          "char_start": 2201,
+          "char_end": 2471
+        },
+        {
+          "paragraph_id": "p_e6c564edc9bdc7744b3d",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p4.1",
+          "text": "When confronted with the modular norm, it’s natural to ask how one should assign norms to layers. And there are so many norms to choose from! Beyond the familiar $\\ell_{2}\\to\\ell_{2}$ spectral norm, many other induced operator norms are computationally tractable:",
+          "kind": "text",
+          "char_start": 2473,
+          "char_end": 2736
+        },
+        {
+          "paragraph_id": "p_9894d8976f88a71680be",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition8",
+          "text": "Proposition 8 ($\\ell_{1}\\to\\ell_{p}$ and $\\ell_{p}\\to\\ell_{\\infty}$ induced operator norms are tractable).",
+          "kind": "heading",
+          "char_start": 2738,
+          "char_end": 2844
+        },
+        {
+          "paragraph_id": "p_993540badf5a28c87759",
+          "page": null,
+          "bbox": null,
+          "element_id": "Thmmyproposition8.p1.1",
+          "text": "For a matrix ${\\bm{M}}\\in\\mathbb{R}^{m\\times n}$ with $m$ rows $\\{\\mathrm{row}_{i}({\\bm{M}})\\}_{i=1}^{m}$ and $n$ columns $\\{\\mathrm{col}_{j}({\\bm{M}})\\}_{j=1}^{n}$, and $1\\leq p\\leq\\infty$:",
+          "kind": "text",
+          "char_start": 2846,
+          "char_end": 3036
+        },
+        {
+          "paragraph_id": "p_ceb79b9302ec78f56867",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.EGx10",
+          "text": "\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p};\\qquad\\|{{\\bm{M}}}\\|_{\\ell_{p}\\to\\ell_{\\infty}}=\\max_{i}\\|{\\mathrm{row}_{i}({\\bm{M}})}\\|_{\\frac{p}{p-1}}.",
+          "kind": "equation",
+          "char_start": 3038,
+          "char_end": 3238
+        },
+        {
+          "paragraph_id": "p_bfdc0c9fd3a96b539aba",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p5.1",
+          "text": "In words, the $\\ell_{1}\\to\\ell_{p}$ operator norm is the largest $\\ell_{p}$ norm of the columns; the $\\ell_{p}\\to\\ell_{\\infty}$ operator norm is the largest dual $\\ell_{p}$ norm over the rows. The proof is given in Appendix B.",
+          "kind": "text",
+          "char_start": 3240,
+          "char_end": 3466
+        },
+        {
+          "paragraph_id": "p_b0f6cdb27191ce1c293f",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p6.1",
+          "text": "To assign a norm to a layer, we believe that one should consider the role that layer plays in the neural network. For instance, since linear layers are typically used to map to and from vectors with roughly unit RMS norm, it is appropriate to equip linear layers with the induced RMS to RMS operator norm (Yang et al., 2023), which resolves to a rescaled spectral norm. And since embedding layers map from one-hot vectors to vectors with roughly unit RMS norm, it is appropriate to equip embedding layers with the $\\ell_{1}$ to RMS operator norm, which resolves to a rescaled $\\ell_{1}$ to $\\ell_{2}$ operator norm. So embedding layers and linear layers should be equipped with different norms despite the weight space being a matrix space in both cases. In short, the algorithm designer has freedom to choose input and output norms for layers that capture differences in how the layers are used; inducing the corresponding operator norm on the layer’s weights provides control over how the optimizer learns representations.",
+          "kind": "text",
+          "char_start": 3468,
+          "char_end": 4492
+        },
+        {
+          "paragraph_id": "p_d3f90b2603f79c5421be",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p7.1",
+          "text": "We believe that picking the right norms could improve the speed and scalability of neural network training. We are seeing evidence that equipping neural network layers with better norms can lead to learning rate transfer across scale (Yang et al., 2023; Large et al., 2024). And since Shampoo won the external tuning track of the 2024 AlgoPerf competition (Dahl et al., 2023), it is garnering interest as a fast training method. The second story in our anthology shows that Shampoo is closely connected to the spectral norm.",
+          "kind": "text",
+          "char_start": 4494,
+          "char_end": 5018
+        },
+        {
+          "paragraph_id": "p_c7fac9f24327a6a18e62",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p8.1",
+          "text": "In conclusion, this work highlights a perspective on optimizer design as choosing two things: a norm and a step size. We have shown that three popular methods—Adam, Shampoo and Prodigy—fit within this perspective. We hope that researchers can design improved training algorithms by choosing norms and step sizes more intentionally.",
+          "kind": "text",
+          "char_start": 5020,
+          "char_end": 5351
+        },
+        {
+          "paragraph_id": "p_d2caa13d641d729a12c7",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p9.1",
+          "text": "“Though this be madness, yet there is method in’t.”",
+          "kind": "text",
+          "char_start": 5353,
+          "char_end": 5404
+        },
+        {
+          "paragraph_id": "p_7494a62bfd2058c056da",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx2.p9.2",
+          "text": "Hamlet",
+          "kind": "text",
+          "char_start": 5406,
+          "char_end": 5412
+        }
+      ],
+      "text": "This anthology has presented new ways of understanding old optimizers. Proposition 1 decouples the optimizer design problem into two pieces: first choosing a norm and second finding a step size. This design space is already broad. We have argued that Adam chooses the infinity norm (Proposition 2) or equivalently the max-of-max norm (Proposition 3), which respects a layered matrix structure. Shampoo chooses the spectral norm (Proposition 5). Prodigy chooses the same norm as Adam, and then uses a heuristic to automatically warm up to a good step size, as in Equation 28, which we term reaching escape velocity.\n\nThrough the lens of steepest descent, the decisions that Adam, Shampoo and Prodigy make may seem arbitrary. In fact, we think that they are somewhat arbitrary. And there may be more principled ways to make these decisions. To demonstrate this point, we now introduce a tool called the modular norm (Large et al., 2024) and its corresponding steepest descent algorithm. The modular norm generalizes the norms that appeared in Proposition 3 for Adam and Proposition 5 for Shampoo. Formally:\n\nProposition 7 (Steepest descent under the modular norm).\n\nGiven scalar coefficients $s_{1},\\dots,s_{L}>0$ and norms $\\|{\\cdot}\\|_{1},\\dots,\\|{\\cdot}\\|_{L}$, we define the modular norm as the mapping:\n\n{\\bm{W}}_{1},\\dots,{\\bm{W}}_{L}\\mapsto\\max\\left\\{s_{1}\\|{{\\bm{W}}_{1}}\\|_{1},\\dots,s_{L}\\|{{\\bm{W}}_{L}}\\|_{L}\\right\\}.\n\nThe corresponding steepest descent problem is given by:\n\n\\argmin_{\\Delta{\\bm{W}}_{1},\\dots,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}\\|{\\Delta{\\bm{W}}_{l}}\\|_{l}^{2}\\right],\n\nwhere $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product, and for each $l=1,...,L$ the two matrices $\\Delta{\\bm{W}}_{l}$ and ${\\bm{G}}_{l}$ are of the same shape. If we define the global step size $\\eta=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\frac{1}{s_{k}}\\|{{\\bm{G}}_{k}}\\|_{k}^{\\dagger}$, then the solution to Equation 32 is given by:\n\n\\displaystyle\\Delta{\\bm{W}}_{l}=-\\frac{\\eta}{s_{l}}\\cdot\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle\\quad\\text{ for each layer }l=1,...,L.\n\nIn words, steepest descent under the modular norm updates each layer in a direction informed by that layer’s norm and with a global step size computed as a weighted sum of the dual norms of the gradients over layers. The proof of this proposition is given in Appendix B.\n\nWhen confronted with the modular norm, it’s natural to ask how one should assign norms to layers. And there are so many norms to choose from! Beyond the familiar $\\ell_{2}\\to\\ell_{2}$ spectral norm, many other induced operator norms are computationally tractable:\n\nProposition 8 ($\\ell_{1}\\to\\ell_{p}$ and $\\ell_{p}\\to\\ell_{\\infty}$ induced operator norms are tractable).\n\nFor a matrix ${\\bm{M}}\\in\\mathbb{R}^{m\\times n}$ with $m$ rows $\\{\\mathrm{row}_{i}({\\bm{M}})\\}_{i=1}^{m}$ and $n$ columns $\\{\\mathrm{col}_{j}({\\bm{M}})\\}_{j=1}^{n}$, and $1\\leq p\\leq\\infty$:\n\n\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p};\\qquad\\|{{\\bm{M}}}\\|_{\\ell_{p}\\to\\ell_{\\infty}}=\\max_{i}\\|{\\mathrm{row}_{i}({\\bm{M}})}\\|_{\\frac{p}{p-1}}.\n\nIn words, the $\\ell_{1}\\to\\ell_{p}$ operator norm is the largest $\\ell_{p}$ norm of the columns; the $\\ell_{p}\\to\\ell_{\\infty}$ operator norm is the largest dual $\\ell_{p}$ norm over the rows. The proof is given in Appendix B.\n\nTo assign a norm to a layer, we believe that one should consider the role that layer plays in the neural network. For instance, since linear layers are typically used to map to and from vectors with roughly unit RMS norm, it is appropriate to equip linear layers with the induced RMS to RMS operator norm (Yang et al., 2023), which resolves to a rescaled spectral norm. And since embedding layers map from one-hot vectors to vectors with roughly unit RMS norm, it is appropriate to equip embedding layers with the $\\ell_{1}$ to RMS operator norm, which resolves to a rescaled $\\ell_{1}$ to $\\ell_{2}$ operator norm. So embedding layers and linear layers should be equipped with different norms despite the weight space being a matrix space in both cases. In short, the algorithm designer has freedom to choose input and output norms for layers that capture differences in how the layers are used; inducing the corresponding operator norm on the layer’s weights provides control over how the optimizer learns representations.\n\nWe believe that picking the right norms could improve the speed and scalability of neural network training. We are seeing evidence that equipping neural network layers with better norms can lead to learning rate transfer across scale (Yang et al., 2023; Large et al., 2024). And since Shampoo won the external tuning track of the 2024 AlgoPerf competition (Dahl et al., 2023), it is garnering interest as a fast training method. The second story in our anthology shows that Shampoo is closely connected to the spectral norm.\n\nIn conclusion, this work highlights a perspective on optimizer design as choosing two things: a norm and a step size. We have shown that three popular methods—Adam, Shampoo and Prodigy—fit within this perspective. We hope that researchers can design improved training algorithms by choosing norms and step sizes more intentionally.\n\n“Though this be madness, yet there is method in’t.”\n\nHamlet"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0006",
+      "title": "Acknowledgements",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx3",
+      "path": [
+        "Acknowledgements"
+      ],
+      "kind": "acknowledgments",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_469fe39566448a4875f9",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx3.p1.1",
+          "text": "We are grateful to Tim Large and Phillip Isola for invaluable discussions on the stories in this anthology. We also thank Jack Gallagher, Keller Jordan, Tongzhou Wang and Victor Butoi for very helpful conversations.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 215
+        }
+      ],
+      "text": "We are grateful to Tim Large and Phillip Isola for invaluable discussions on the stories in this anthology. We also thank Jack Gallagher, Keller Jordan, Tongzhou Wang and Victor Butoi for very helpful conversations."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0007",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6242f9f6c3952e04af09",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "Anil et al. (2020) Rohan Anil, Vineet Gupta, Tomer Koren, Kevin Regan, and Yoram Singer. Scalable second order optimization for deep learning. arXiv:2002.09018, 2020.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 166
+        },
+        {
+          "paragraph_id": "p_05ce8064ca023c400631",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "Armijo (1966) Larry Armijo. Minimization of functions having Lipschitz continuous first partial derivatives. Pacific Journal of Mathematics, 1966.",
+          "kind": "list_item",
+          "char_start": 168,
+          "char_end": 314
+        },
+        {
+          "paragraph_id": "p_760ee1a0a5e8c7cef0bc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "Balles and Hennig (2018) Lukas Balles and Philipp Hennig. Dissecting Adam: The sign, magnitude and variance of stochastic gradients. In International Conference on Machine Learning, 2018.",
+          "kind": "list_item",
+          "char_start": 316,
+          "char_end": 503
+        },
+        {
+          "paragraph_id": "p_4520c492f7c450ea4a1f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "Bernstein et al. (2018) Jeremy Bernstein, Yu-Xiang Wang, Kamyar Azizzadenesheli, and Animashree Anandkumar. signSGD: Compressed optimisation for non-convex problems. In International Conference on Machine Learning, 2018.",
+          "kind": "list_item",
+          "char_start": 505,
+          "char_end": 725
+        },
+        {
+          "paragraph_id": "p_bca0c79be4e8ac4fd1f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "Bernstein et al. (2023) Jeremy Bernstein, Chris Mingard, Kevin Huang, Navid Azizan, and Yisong Yue. Automatic Gradient Descent: Deep Learning without Hyperparameters. arXiv:2304.05187, 2023.",
+          "kind": "list_item",
+          "char_start": 727,
+          "char_end": 917
+        },
+        {
+          "paragraph_id": "p_86a8d510c0e429044e6d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "Björck and Bowie (1971) Åke Björck and C. Bowie. An iterative algorithm for computing the best estimate of an orthogonal matrix. SIAM Journal on Numerical Analysis, 1971.",
+          "kind": "list_item",
+          "char_start": 919,
+          "char_end": 1089
+        },
+        {
+          "paragraph_id": "p_717c6a00507451df4d4d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "Carlson et al. (2015a) David Carlson, Volkan Cevher, and Lawrence Carin. Stochastic spectral descent for Restricted Boltzmann Machines. In International Conference on Artificial Intelligence and Statistics, 2015a.",
+          "kind": "list_item",
+          "char_start": 1091,
+          "char_end": 1304
+        },
+        {
+          "paragraph_id": "p_5a60591aae4f8f3cdc93",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "Carlson et al. (2015b) David Carlson, Edo Collins, Ya-Ping Hsieh, Lawrence Carin, and Volkan Cevher. Preconditioned spectral descent for deep learning. In Neural Information Processing Systems, 2015b.",
+          "kind": "list_item",
+          "char_start": 1306,
+          "char_end": 1506
+        },
+        {
+          "paragraph_id": "p_21073cdafe49204d97c6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "Carlson et al. (2016) David Carlson, Ya-Ping Hsieh, Edo Collins, Lawrence Carin, and Volkan Cevher. Stochastic spectral descent for discrete graphical models. Selected Topics in Signal Processing, 2016.",
+          "kind": "list_item",
+          "char_start": 1508,
+          "char_end": 1710
+        },
+        {
+          "paragraph_id": "p_f892a4b3373ee534b4c6",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "Cauchy (1847) Augustin-Louis Cauchy. Méthode générale pour la résolution des systèmes d’équations simultanées. Comptes Rendus Hebdomadaires des Séances de l’Académie des Sciences, 1847.",
+          "kind": "list_item",
+          "char_start": 1712,
+          "char_end": 1897
+        },
+        {
+          "paragraph_id": "p_895e61264ef87e4e2565",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "Chen et al. (2023) Xiangning Chen, Chen Liang, Da Huang, Esteban Real, Kaiyuan Wang, Hieu Pham, Xuanyi Dong, Thang Luong, Cho-Jui Hsieh, Yifeng Lu, and Quoc V Le. Symbolic discovery of optimization algorithms. In Neural Information Processing Systems, 2023.",
+          "kind": "list_item",
+          "char_start": 1899,
+          "char_end": 2156
+        },
+        {
+          "paragraph_id": "p_1dff3d19a8f648384401",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "Dahl et al. (2023) George E. Dahl, Frank Schneider, Zachary Nado, Naman Agarwal, Chandramouli Shama Sastry, Philipp Hennig, Sourabh Medapati, Runa Eschenhagen, Priya Kasimbeg, Daniel Suo, Juhan Bae, Justin Gilmer, Abel L. Peirson, Bilal Khan, Rohan Anil, Mike Rabbat, Shankar Krishnan, Daniel Snider, Ehsan Amid, Kongtao Chen, Chris J. Maddison, Rakshith Vasudev, Michal Badura, Ankush Garg, and Peter Mattson. Benchmarking neural network training algorithms. arXiv:2306.07179, 2023.",
+          "kind": "list_item",
+          "char_start": 2158,
+          "char_end": 2641
+        },
+        {
+          "paragraph_id": "p_1148b07e2b517b492589",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "Defazio and Mishchenko (2023) Aaron Defazio and Konstantin Mishchenko. Learning-rate-free learning by D-adaptation. In International Conference on Machine Learning, 2023.",
+          "kind": "list_item",
+          "char_start": 2643,
+          "char_end": 2813
+        },
+        {
+          "paragraph_id": "p_754ae7518233e33a3ba4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "Duchi et al. (2011) John C. Duchi, Elad Hazan, and Yoram Singer. Adaptive subgradient methods for online learning and stochastic optimization. Journal Machine Learning Research, 2011.",
+          "kind": "list_item",
+          "char_start": 2815,
+          "char_end": 2998
+        },
+        {
+          "paragraph_id": "p_8bba65b5dd78716a3d52",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "Fan (2017) Kai Fan. Unifying the stochastic spectral descent for Restricted Boltzmann Machines with Bernoulli or Gaussian inputs. arXiv:1703.09766, 2017.",
+          "kind": "list_item",
+          "char_start": 3000,
+          "char_end": 3153
+        },
+        {
+          "paragraph_id": "p_669da776f0c4bc522428",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "Feinberg et al. (2023) Vladimir Feinberg, Xinyi Chen, Y. Jennifer Sun, Rohan Anil, and Elad Hazan. Sketchy: Memory-efficient adaptive regularization with frequent directions. In Neural Information Processing Systems, 2023.",
+          "kind": "list_item",
+          "char_start": 3155,
+          "char_end": 3377
+        },
+        {
+          "paragraph_id": "p_92609a98a6ce2e3c6078",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "Gupta et al. (2017) Vineet Gupta, Tomer Koren, and Yoram Singer. A unified approach to adaptive regularization in online and stochastic optimization. Technical report, Google Brain, 2017.",
+          "kind": "list_item",
+          "char_start": 3379,
+          "char_end": 3566
+        },
+        {
+          "paragraph_id": "p_9f5640903548c7589d96",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "Gupta et al. (2018) Vineet Gupta, Tomer Koren, and Yoram Singer. Shampoo: Preconditioned stochastic tensor optimization. In International Conference on Machine Learning, 2018.",
+          "kind": "list_item",
+          "char_start": 3568,
+          "char_end": 3743
+        },
+        {
+          "paragraph_id": "p_8c196599138f6a340026",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "Higham (2008) Nicholas J. Higham. Functions of Matrices. Society for Industrial and Applied Mathematics, 2008.",
+          "kind": "list_item",
+          "char_start": 3745,
+          "char_end": 3855
+        },
+        {
+          "paragraph_id": "p_8303ab301f566f534363",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "Ivgi et al. (2023) Maor Ivgi, Oliver Hinder, and Yair Carmon. DoG is SGD’s best friend: A parameter-free dynamic step size schedule. In International Conference on Machine Learning, 2023.",
+          "kind": "list_item",
+          "char_start": 3857,
+          "char_end": 4044
+        },
+        {
+          "paragraph_id": "p_7fed412beb27b406e83c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "Kenneweg et al. (2024) Philip Kenneweg, Tristan Kenneweg, and Barbara Hammer. Improving line search methods for large scale neural network training. In International Conference on Artificial Intelligence, Computer, Data Sciences and Applications, 2024.",
+          "kind": "list_item",
+          "char_start": 4046,
+          "char_end": 4298
+        },
+        {
+          "paragraph_id": "p_c4bd9599e35acf963209",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "Khaled et al. (2023) Ahmed Khaled, Konstantin Mishchenko, and Chi Jin. DoWG unleashed: An efficient universal parameter-free gradient descent method. In Neural Information Processing Systems, 2023.",
+          "kind": "list_item",
+          "char_start": 4300,
+          "char_end": 4497
+        },
+        {
+          "paragraph_id": "p_f67f6b67cc589e8c5c16",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "Kingma and Ba (2015) Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In International Conference on Learning Representations, 2015.",
+          "kind": "list_item",
+          "char_start": 4499,
+          "char_end": 4659
+        },
+        {
+          "paragraph_id": "p_f2eb14785b8669fc13b9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "Kovarik (1970) Zdislav Kovarik. Some iterative methods for improving orthonormality. SIAM Journal on Numerical Analysis, 1970.",
+          "kind": "list_item",
+          "char_start": 4661,
+          "char_end": 4787
+        },
+        {
+          "paragraph_id": "p_a667ef90b3e3af358e35",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "Lakić (1998) Slobodan Lakić. On the computation of the matrix k-th root. Journal of Applied Mathematics and Mechanics, 1998.",
+          "kind": "list_item",
+          "char_start": 4789,
+          "char_end": 4913
+        },
+        {
+          "paragraph_id": "p_971812795deca604f253",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "Lange (2016) Kenneth Lange. MM Optimization Algorithms. Society for Industrial and Applied Mathematics, 2016.",
+          "kind": "list_item",
+          "char_start": 4915,
+          "char_end": 5024
+        },
+        {
+          "paragraph_id": "p_fa5c6e1c5b452a01d7ad",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "Large et al. (2024) Tim Large, Yang Liu, Minyoung Huh, Hyojin Bahng, Phillip Isola, and Jeremy Bernstein. Scalable optimization in the modular norm. arXiv:2405.14813, 2024.",
+          "kind": "list_item",
+          "char_start": 5026,
+          "char_end": 5198
+        },
+        {
+          "paragraph_id": "p_e76ac3a39a53ee0d5f14",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "Martinsson and Tropp (2020) Per-Gunnar Martinsson and Joel A. Tropp. Randomized numerical linear algebra: Foundations and algorithms. Acta Numerica, 2020.",
+          "kind": "list_item",
+          "char_start": 5200,
+          "char_end": 5354
+        },
+        {
+          "paragraph_id": "p_4abf217ac6c39116003e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib29",
+          "text": "Mishchenko and Defazio (2023) Konstantin Mishchenko and Aaron Defazio. Prodigy: An expeditiously adaptive parameter-free learner. arXiv:2306.06101, 2023.",
+          "kind": "list_item",
+          "char_start": 5356,
+          "char_end": 5509
+        },
+        {
+          "paragraph_id": "p_af9f1c526d4cbf5ca946",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib30",
+          "text": "Morwani et al. (2024) Depen Morwani, Itai Shapira, Nikhil Vyas, Eran Malach, Sham Kakade, and Lucas Janson. A new perspective on Shampoo’s preconditioner. arXiv:2406.17748, 2024.",
+          "kind": "list_item",
+          "char_start": 5511,
+          "char_end": 5689
+        },
+        {
+          "paragraph_id": "p_519b7046e5fa40ae7928",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib31",
+          "text": "Riedmiller and Braun (1993) Martin Riedmiller and Heinrich Braun. A direct adaptive method for faster backpropagation learning: The RPROP algorithm. In International Conference on Neural Networks, 1993.",
+          "kind": "list_item",
+          "char_start": 5691,
+          "char_end": 5893
+        },
+        {
+          "paragraph_id": "p_83fc88aabd3d29db8442",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib32",
+          "text": "Shi et al. (2023) Hao-Jun Michael Shi, Tsung-Hsien Lee, Shintaro Iwasaki, Jose Gallego-Posada, Zhijing Li, Kaushik Rangadurai, Dheevatsa Mudigere, and Michael Rabbat. A distributed data-parallel PyTorch implementation of the distributed Shampoo optimizer for training neural networks at-scale. arXiv:2309.06497, 2023.",
+          "kind": "list_item",
+          "char_start": 5895,
+          "char_end": 6212
+        },
+        {
+          "paragraph_id": "p_38284bbf6c6114667319",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib33",
+          "text": "Streeter (2023) Matthew Streeter. Universal majorization-minimization algorithms. arXiv:2308.00190, 2023.",
+          "kind": "list_item",
+          "char_start": 6214,
+          "char_end": 6319
+        },
+        {
+          "paragraph_id": "p_2b155d50d068377339e2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib34",
+          "text": "Sun and Spall (2021) Shiqing Sun and James C. Spall. Connection of diagonal Hessian estimates to natural gradients in stochastic optimization. In Information Sciences and Systems, 2021.",
+          "kind": "list_item",
+          "char_start": 6321,
+          "char_end": 6506
+        },
+        {
+          "paragraph_id": "p_bf4302ceada062a161e8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib35",
+          "text": "Tieleman and Hinton (2012) Tijmen Tieleman and Geoffrey Hinton. RMSprop. Coursera: Neural Networks for Machine Learning, Lecture 6.5, 2012.",
+          "kind": "list_item",
+          "char_start": 6508,
+          "char_end": 6647
+        },
+        {
+          "paragraph_id": "p_fdfd4bf061db4dad8fdc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib36",
+          "text": "Xie and Li (2024) Shuo Xie and Zhiyuan Li. Implicit bias of AdamW: $\\ell_{\\infty}$-norm constrained optimization. In International Conference on Machine Learning, 2024.",
+          "kind": "list_item",
+          "char_start": 6649,
+          "char_end": 6817
+        },
+        {
+          "paragraph_id": "p_916ef0d3c8fea1e20f30",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib37",
+          "text": "Yang et al. (2023) Greg Yang, James B. Simon, and Jeremy Bernstein. A spectral condition for feature learning. arXiv:2310.17813, 2023.",
+          "kind": "list_item",
+          "char_start": 6819,
+          "char_end": 6953
+        },
+        {
+          "paragraph_id": "p_2cc0b8272d739f29d490",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib38",
+          "text": "Zhao et al. (2024) Rosie Zhao, Depen Morwani, David Brandfonbrener, Nikhil Vyas, and Sham Kakade. Deconstructing what makes a good optimizer for language models. arXiv:2407.07972, 2024.",
+          "kind": "list_item",
+          "char_start": 6955,
+          "char_end": 7140
+        }
+      ],
+      "text": "Anil et al. (2020) Rohan Anil, Vineet Gupta, Tomer Koren, Kevin Regan, and Yoram Singer. Scalable second order optimization for deep learning. arXiv:2002.09018, 2020.\n\nArmijo (1966) Larry Armijo. Minimization of functions having Lipschitz continuous first partial derivatives. Pacific Journal of Mathematics, 1966.\n\nBalles and Hennig (2018) Lukas Balles and Philipp Hennig. Dissecting Adam: The sign, magnitude and variance of stochastic gradients. In International Conference on Machine Learning, 2018.\n\nBernstein et al. (2018) Jeremy Bernstein, Yu-Xiang Wang, Kamyar Azizzadenesheli, and Animashree Anandkumar. signSGD: Compressed optimisation for non-convex problems. In International Conference on Machine Learning, 2018.\n\nBernstein et al. (2023) Jeremy Bernstein, Chris Mingard, Kevin Huang, Navid Azizan, and Yisong Yue. Automatic Gradient Descent: Deep Learning without Hyperparameters. arXiv:2304.05187, 2023.\n\nBjörck and Bowie (1971) Åke Björck and C. Bowie. An iterative algorithm for computing the best estimate of an orthogonal matrix. SIAM Journal on Numerical Analysis, 1971.\n\nCarlson et al. (2015a) David Carlson, Volkan Cevher, and Lawrence Carin. Stochastic spectral descent for Restricted Boltzmann Machines. In International Conference on Artificial Intelligence and Statistics, 2015a.\n\nCarlson et al. (2015b) David Carlson, Edo Collins, Ya-Ping Hsieh, Lawrence Carin, and Volkan Cevher. Preconditioned spectral descent for deep learning. In Neural Information Processing Systems, 2015b.\n\nCarlson et al. (2016) David Carlson, Ya-Ping Hsieh, Edo Collins, Lawrence Carin, and Volkan Cevher. Stochastic spectral descent for discrete graphical models. Selected Topics in Signal Processing, 2016.\n\nCauchy (1847) Augustin-Louis Cauchy. Méthode générale pour la résolution des systèmes d’équations simultanées. Comptes Rendus Hebdomadaires des Séances de l’Académie des Sciences, 1847.\n\nChen et al. (2023) Xiangning Chen, Chen Liang, Da Huang, Esteban Real, Kaiyuan Wang, Hieu Pham, Xuanyi Dong, Thang Luong, Cho-Jui Hsieh, Yifeng Lu, and Quoc V Le. Symbolic discovery of optimization algorithms. In Neural Information Processing Systems, 2023.\n\nDahl et al. (2023) George E. Dahl, Frank Schneider, Zachary Nado, Naman Agarwal, Chandramouli Shama Sastry, Philipp Hennig, Sourabh Medapati, Runa Eschenhagen, Priya Kasimbeg, Daniel Suo, Juhan Bae, Justin Gilmer, Abel L. Peirson, Bilal Khan, Rohan Anil, Mike Rabbat, Shankar Krishnan, Daniel Snider, Ehsan Amid, Kongtao Chen, Chris J. Maddison, Rakshith Vasudev, Michal Badura, Ankush Garg, and Peter Mattson. Benchmarking neural network training algorithms. arXiv:2306.07179, 2023.\n\nDefazio and Mishchenko (2023) Aaron Defazio and Konstantin Mishchenko. Learning-rate-free learning by D-adaptation. In International Conference on Machine Learning, 2023.\n\nDuchi et al. (2011) John C. Duchi, Elad Hazan, and Yoram Singer. Adaptive subgradient methods for online learning and stochastic optimization. Journal Machine Learning Research, 2011.\n\nFan (2017) Kai Fan. Unifying the stochastic spectral descent for Restricted Boltzmann Machines with Bernoulli or Gaussian inputs. arXiv:1703.09766, 2017.\n\nFeinberg et al. (2023) Vladimir Feinberg, Xinyi Chen, Y. Jennifer Sun, Rohan Anil, and Elad Hazan. Sketchy: Memory-efficient adaptive regularization with frequent directions. In Neural Information Processing Systems, 2023.\n\nGupta et al. (2017) Vineet Gupta, Tomer Koren, and Yoram Singer. A unified approach to adaptive regularization in online and stochastic optimization. Technical report, Google Brain, 2017.\n\nGupta et al. (2018) Vineet Gupta, Tomer Koren, and Yoram Singer. Shampoo: Preconditioned stochastic tensor optimization. In International Conference on Machine Learning, 2018.\n\nHigham (2008) Nicholas J. Higham. Functions of Matrices. Society for Industrial and Applied Mathematics, 2008.\n\nIvgi et al. (2023) Maor Ivgi, Oliver Hinder, and Yair Carmon. DoG is SGD’s best friend: A parameter-free dynamic step size schedule. In International Conference on Machine Learning, 2023.\n\nKenneweg et al. (2024) Philip Kenneweg, Tristan Kenneweg, and Barbara Hammer. Improving line search methods for large scale neural network training. In International Conference on Artificial Intelligence, Computer, Data Sciences and Applications, 2024.\n\nKhaled et al. (2023) Ahmed Khaled, Konstantin Mishchenko, and Chi Jin. DoWG unleashed: An efficient universal parameter-free gradient descent method. In Neural Information Processing Systems, 2023.\n\nKingma and Ba (2015) Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In International Conference on Learning Representations, 2015.\n\nKovarik (1970) Zdislav Kovarik. Some iterative methods for improving orthonormality. SIAM Journal on Numerical Analysis, 1970.\n\nLakić (1998) Slobodan Lakić. On the computation of the matrix k-th root. Journal of Applied Mathematics and Mechanics, 1998.\n\nLange (2016) Kenneth Lange. MM Optimization Algorithms. Society for Industrial and Applied Mathematics, 2016.\n\nLarge et al. (2024) Tim Large, Yang Liu, Minyoung Huh, Hyojin Bahng, Phillip Isola, and Jeremy Bernstein. Scalable optimization in the modular norm. arXiv:2405.14813, 2024.\n\nMartinsson and Tropp (2020) Per-Gunnar Martinsson and Joel A. Tropp. Randomized numerical linear algebra: Foundations and algorithms. Acta Numerica, 2020.\n\nMishchenko and Defazio (2023) Konstantin Mishchenko and Aaron Defazio. Prodigy: An expeditiously adaptive parameter-free learner. arXiv:2306.06101, 2023.\n\nMorwani et al. (2024) Depen Morwani, Itai Shapira, Nikhil Vyas, Eran Malach, Sham Kakade, and Lucas Janson. A new perspective on Shampoo’s preconditioner. arXiv:2406.17748, 2024.\n\nRiedmiller and Braun (1993) Martin Riedmiller and Heinrich Braun. A direct adaptive method for faster backpropagation learning: The RPROP algorithm. In International Conference on Neural Networks, 1993.\n\nShi et al. (2023) Hao-Jun Michael Shi, Tsung-Hsien Lee, Shintaro Iwasaki, Jose Gallego-Posada, Zhijing Li, Kaushik Rangadurai, Dheevatsa Mudigere, and Michael Rabbat. A distributed data-parallel PyTorch implementation of the distributed Shampoo optimizer for training neural networks at-scale. arXiv:2309.06497, 2023.\n\nStreeter (2023) Matthew Streeter. Universal majorization-minimization algorithms. arXiv:2308.00190, 2023.\n\nSun and Spall (2021) Shiqing Sun and James C. Spall. Connection of diagonal Hessian estimates to natural gradients in stochastic optimization. In Information Sciences and Systems, 2021.\n\nTieleman and Hinton (2012) Tijmen Tieleman and Geoffrey Hinton. RMSprop. Coursera: Neural Networks for Machine Learning, Lecture 6.5, 2012.\n\nXie and Li (2024) Shuo Xie and Zhiyuan Li. Implicit bias of AdamW: $\\ell_{\\infty}$-norm constrained optimization. In International Conference on Machine Learning, 2024.\n\nYang et al. (2023) Greg Yang, James B. Simon, and Jeremy Bernstein. A spectral condition for feature learning. arXiv:2310.17813, 2023.\n\nZhao et al. (2024) Rosie Zhao, Depen Morwani, David Brandfonbrener, Nikhil Vyas, and Sham Kakade. Deconstructing what makes a good optimizer for language models. arXiv:2407.07972, 2024."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0008",
+      "title": "Appendix A Computational Strategies for Shampoo",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A1",
+      "path": [
+        "Appendix A Computational Strategies for Shampoo"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_4a178ed8e0f26fd2259a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.1",
+          "text": "Let ${\\bm{G}}\\in\\mathbb{R}^{m\\times n}$ be a gradient matrix with reduced SVD ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$. By Equations 15 and 16, the corresponding Shampoo update (with EMA disabled) is given by:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 216
+        },
+        {
+          "paragraph_id": "p_c9783db795fed26de912",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.E35",
+          "text": "\\Delta{\\bm{W}}=-\\eta\\cdot({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{4}}}=-\\eta\\cdot{\\bm{U}}{\\bm{V}}^{\\top}.",
+          "kind": "equation",
+          "char_start": 218,
+          "char_end": 386
+        },
+        {
+          "paragraph_id": "p_2ea1e498acdcf93e8277",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.2",
+          "text": "Here we list every means we know of computing or approximating this equation. First, we mention that $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{4}}}=({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}\\,{\\bm{G}}={\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{2}}}$, so if one is willing to compute inverse matrix roots, one need only compute either $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}$ or $({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{2}}}$, whichever has smaller dimension. With that said, to compute Equation 35, one may:",
+          "kind": "text",
+          "char_start": 388,
+          "char_end": 989
+        },
+        {
+          "paragraph_id": "p_c548c92e11c9a0c44e8c",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i1",
+          "text": "1. Do the SVD. Apply an SVD routine to compute ${\\bm{U}}$, ${\\bm{\\Sigma}}$ and ${\\bm{V}}^{\\top}$ and just discard ${\\bm{\\Sigma}}$.",
+          "kind": "list_item",
+          "char_start": 991,
+          "char_end": 1121
+        },
+        {
+          "paragraph_id": "p_d77464a4b7f428601e8b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i2",
+          "text": "2. Do sketching. Sketching is a randomized method (Martinsson and Tropp, 2020) that can be used to approximate the SVD. See, for instance, Sketchy (Feinberg et al., 2023) and spectral descent for deep learning (Carlson et al., 2015b).",
+          "kind": "list_item",
+          "char_start": 1123,
+          "char_end": 1357
+        },
+        {
+          "paragraph_id": "p_d50b2c2faf141c7f2aa5",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i3",
+          "text": "3. Do Newton iteration for inverse $p$th roots. Inverse matrix roots such as $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}$ can be computed via Newton iteration (Lakić, 1998). This is discussed in Chapter 7 of Higham (2008)’s book. And see Anil et al. (2020)’s paper.",
+          "kind": "list_item",
+          "char_start": 1359,
+          "char_end": 1630
+        },
+        {
+          "paragraph_id": "p_4adc4244dca1fc5aa2a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.I1.i4",
+          "text": "4. Do Newton-Schulz iteration. We developed a “Newton-Schulz iteration” for computing ${\\bm{U}}{\\bm{V}}^{\\top}$, adapted from Equation 5.22 in Higham (2008)’s book. In short, if we set ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}$ (or alternatively ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{F}$) and iterate: ${\\bm{X}}_{t+1}=\\frac{3}{2}\\cdot{\\bm{X}}_{t}-\\frac{1}{2}\\cdot{\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top}{\\bm{X}}_{t},$ (36) then as $t\\to\\infty$, the sequence ${\\bm{X}}_{t}\\to{\\bm{U}}{\\bm{V}}^{\\top}$. To see this, one should plot the univariate cubic function $f(x)\\vcentcolon=\\tfrac{3}{2}\\cdot x-\\tfrac{1}{2}\\cdot x^{3}$ and see that, for $0<x<\\sqrt{3}$, iterating this cubic will push $x$ closer and closer to $+1$. The final step is to realize that the effect of the iteration in Equation 36 is to apply this cubic $f(x)$ to each singular value of ${\\bm{X}}_{t}$. This also shows that the spectral normalization ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}$ is stronger than what is required: we need only ensure that ${\\bm{X}}_{0}$ has all singular values greater than zero and less than $\\sqrt{3}$ in order for the iteration to converge. There are in fact a family of degree $2n+1$ polynomial iterations of the form ${\\bm{X}}_{t+1}=a\\cdot{\\bm{X}}_{t}+b\\cdot{\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top}{\\bm{X}}_{t}+c\\cdot({\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top})^{2}{\\bm{X}}_{t}+...+z\\cdot({\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top})^{n}{\\bm{X}}_{t}$ (37) for suitable $a,b,c,...,z$ that could be used instead of Equation 36. One should choose coefficients $a,b,c,...,z$ so that the univariate polynomial $g(x)=a\\cdot x+b\\cdot x^{3}+c\\cdot x^{5}+...+z\\cdot x^{2n+1}$ is a suitable approximation to $\\operatorname{sign}(x)$. The coefficients can be tuned graphically to achieve the fastest convergence. After posting the first version of this paper on arXiv, we found out that the iteration, at least for fixed coefficients, is classical (Kovarik, 1970; Björck and Bowie, 1971).",
+          "kind": "list_item",
+          "char_start": 1632,
+          "char_end": 3605
+        },
+        {
+          "paragraph_id": "p_83f714fa7187b2eca0c2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A1.p1.3",
+          "text": "Which of these methods is most useful in practice may depend on factors such as the condition number of the matrix ${\\bm{G}}$ or the nature of the available computational resources.",
+          "kind": "text",
+          "char_start": 3607,
+          "char_end": 3788
+        }
+      ],
+      "text": "Let ${\\bm{G}}\\in\\mathbb{R}^{m\\times n}$ be a gradient matrix with reduced SVD ${\\bm{G}}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$. By Equations 15 and 16, the corresponding Shampoo update (with EMA disabled) is given by:\n\n\\Delta{\\bm{W}}=-\\eta\\cdot({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{4}}}=-\\eta\\cdot{\\bm{U}}{\\bm{V}}^{\\top}.\n\nHere we list every means we know of computing or approximating this equation. First, we mention that $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{4}}}\\,{\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{4}}}=({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}\\,{\\bm{G}}={\\bm{G}}\\,({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{2}}}$, so if one is willing to compute inverse matrix roots, one need only compute either $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}$ or $({\\bm{G}}^{\\top}{\\bm{G}})^{-\\nicefrac{{1}}{{2}}}$, whichever has smaller dimension. With that said, to compute Equation 35, one may:\n\n1. Do the SVD. Apply an SVD routine to compute ${\\bm{U}}$, ${\\bm{\\Sigma}}$ and ${\\bm{V}}^{\\top}$ and just discard ${\\bm{\\Sigma}}$.\n\n2. Do sketching. Sketching is a randomized method (Martinsson and Tropp, 2020) that can be used to approximate the SVD. See, for instance, Sketchy (Feinberg et al., 2023) and spectral descent for deep learning (Carlson et al., 2015b).\n\n3. Do Newton iteration for inverse $p$th roots. Inverse matrix roots such as $({\\bm{G}}{\\bm{G}}^{\\top})^{-\\nicefrac{{1}}{{2}}}$ can be computed via Newton iteration (Lakić, 1998). This is discussed in Chapter 7 of Higham (2008)’s book. And see Anil et al. (2020)’s paper.\n\n4. Do Newton-Schulz iteration. We developed a “Newton-Schulz iteration” for computing ${\\bm{U}}{\\bm{V}}^{\\top}$, adapted from Equation 5.22 in Higham (2008)’s book. In short, if we set ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}$ (or alternatively ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{F}$) and iterate: ${\\bm{X}}_{t+1}=\\frac{3}{2}\\cdot{\\bm{X}}_{t}-\\frac{1}{2}\\cdot{\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top}{\\bm{X}}_{t},$ (36) then as $t\\to\\infty$, the sequence ${\\bm{X}}_{t}\\to{\\bm{U}}{\\bm{V}}^{\\top}$. To see this, one should plot the univariate cubic function $f(x)\\vcentcolon=\\tfrac{3}{2}\\cdot x-\\tfrac{1}{2}\\cdot x^{3}$ and see that, for $0<x<\\sqrt{3}$, iterating this cubic will push $x$ closer and closer to $+1$. The final step is to realize that the effect of the iteration in Equation 36 is to apply this cubic $f(x)$ to each singular value of ${\\bm{X}}_{t}$. This also shows that the spectral normalization ${\\bm{X}}_{0}={\\bm{G}}/\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}$ is stronger than what is required: we need only ensure that ${\\bm{X}}_{0}$ has all singular values greater than zero and less than $\\sqrt{3}$ in order for the iteration to converge. There are in fact a family of degree $2n+1$ polynomial iterations of the form ${\\bm{X}}_{t+1}=a\\cdot{\\bm{X}}_{t}+b\\cdot{\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top}{\\bm{X}}_{t}+c\\cdot({\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top})^{2}{\\bm{X}}_{t}+...+z\\cdot({\\bm{X}}_{t}{\\bm{X}}_{t}^{\\top})^{n}{\\bm{X}}_{t}$ (37) for suitable $a,b,c,...,z$ that could be used instead of Equation 36. One should choose coefficients $a,b,c,...,z$ so that the univariate polynomial $g(x)=a\\cdot x+b\\cdot x^{3}+c\\cdot x^{5}+...+z\\cdot x^{2n+1}$ is a suitable approximation to $\\operatorname{sign}(x)$. The coefficients can be tuned graphically to achieve the fastest convergence. After posting the first version of this paper on arXiv, we found out that the iteration, at least for fixed coefficients, is classical (Kovarik, 1970; Björck and Bowie, 1971).\n\nWhich of these methods is most useful in practice may depend on factors such as the condition number of the matrix ${\\bm{G}}$ or the nature of the available computational resources."
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0009",
+      "title": "Appendix B Proofs",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2",
+      "path": [
+        "Appendix B Proofs"
+      ],
+      "kind": "body",
+      "paragraphs": [],
+      "text": ""
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0010",
+      "title": "Proposition 1: Proposition 1 (Steepest descent).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx1",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 1: Proposition 1 (Steepest descent)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_eef8cf06984d1bc930aa",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx1.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_f31cb9bd772951ee593d",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx1.p1.1",
+          "text": "First, let’s study the minimization under the change of variables $\\Delta{\\bm{w}}=c\\cdot{\\bm{t}}$, where $c\\geq 0$ encodes the “magnitude” and ${\\bm{t}}$ is a unit vector ($\\|{{\\bm{t}}}\\|=1$) encoding the “direction”:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 220
+        },
+        {
+          "paragraph_id": "p_4d48fe301c760a460f87",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx11",
+          "text": "\\displaystyle\\min_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\min_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[c\\cdot{\\bm{g}}^{\\top}{\\bm{t}}+\\frac{\\lambda}{2}c^{2}\\|{{\\bm{t}}}\\|^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\left[c\\cdot\\min_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]+\\frac{\\lambda}{2}c^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\left[-c\\cdot\\|{{\\bm{g}}}\\|^{\\dagger}+\\frac{\\lambda}{2}c^{2}\\right],",
+          "kind": "equation",
+          "char_start": 222,
+          "char_end": 773
+        },
+        {
+          "paragraph_id": "p_9d50fa4c3ca4f26f346f",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx1.p1.2",
+          "text": "Inspecting Equation 39, we see that the minimizer for the direction ${\\bm{t}}$ is given by:",
+          "kind": "text",
+          "char_start": 775,
+          "char_end": 866
+        },
+        {
+          "paragraph_id": "p_ebe1fd08074320800b0a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx12",
+          "text": "\\displaystyle{\\bm{t}} \\displaystyle=\\argmin_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]=-\\argmax_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]",
+          "kind": "equation",
+          "char_start": 868,
+          "char_end": 1082
+        },
+        {
+          "paragraph_id": "p_d22bc7bcf65ad6b767c1",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx1.p1.3",
+          "text": "And similarly, by inspecting Equation 40, the minimizer for the magnitude $c$ is given by:",
+          "kind": "text",
+          "char_start": 1084,
+          "char_end": 1174
+        },
+        {
+          "paragraph_id": "p_e7675ea53e5e444fe7b9",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx13",
+          "text": "\\displaystyle c \\displaystyle=\\argmin_{c\\geq 0}\\left[-c\\cdot\\|{{\\bm{g}}}\\|^{\\dagger}+\\frac{\\lambda}{2}c^{2}\\right]=\\frac{\\|{{\\bm{g}}}\\|^{\\dagger}}{\\lambda}.",
+          "kind": "equation",
+          "char_start": 1176,
+          "char_end": 1332
+        },
+        {
+          "paragraph_id": "p_11951e1f3252d70b80ad",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx1.p1.4",
+          "text": "Multiplying these expressions, we obtain the minimizer for $\\Delta{\\bm{w}}$, yielding the result. ∎",
+          "kind": "text",
+          "char_start": 1334,
+          "char_end": 1433
+        }
+      ],
+      "text": ".\n\nFirst, let’s study the minimization under the change of variables $\\Delta{\\bm{w}}=c\\cdot{\\bm{t}}$, where $c\\geq 0$ encodes the “magnitude” and ${\\bm{t}}$ is a unit vector ($\\|{{\\bm{t}}}\\|=1$) encoding the “direction”:\n\n\\displaystyle\\min_{\\Delta{\\bm{w}}\\in\\mathbb{R}^{n}}\\left[{\\bm{g}}^{\\top}\\Delta{\\bm{w}}+\\frac{\\lambda}{2}\\,\\|{\\Delta{\\bm{w}}}\\|^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\min_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[c\\cdot{\\bm{g}}^{\\top}{\\bm{t}}+\\frac{\\lambda}{2}c^{2}\\|{{\\bm{t}}}\\|^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\left[c\\cdot\\min_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]+\\frac{\\lambda}{2}c^{2}\\right] \\displaystyle=\\min_{c\\geq 0}\\left[-c\\cdot\\|{{\\bm{g}}}\\|^{\\dagger}+\\frac{\\lambda}{2}c^{2}\\right],\n\nInspecting Equation 39, we see that the minimizer for the direction ${\\bm{t}}$ is given by:\n\n\\displaystyle{\\bm{t}} \\displaystyle=\\argmin_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]=-\\argmax_{{\\bm{t}}\\in\\mathbb{R}^{n}:\\|{{\\bm{t}}}\\|=1}\\left[{\\bm{g}}^{\\top}{\\bm{t}}\\right]\n\nAnd similarly, by inspecting Equation 40, the minimizer for the magnitude $c$ is given by:\n\n\\displaystyle c \\displaystyle=\\argmin_{c\\geq 0}\\left[-c\\cdot\\|{{\\bm{g}}}\\|^{\\dagger}+\\frac{\\lambda}{2}c^{2}\\right]=\\frac{\\|{{\\bm{g}}}\\|^{\\dagger}}{\\lambda}.\n\nMultiplying these expressions, we obtain the minimizer for $\\Delta{\\bm{w}}$, yielding the result. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0011",
+      "title": "Proposition 2: Proposition 2 (Sign descent as steepest descent under the infinity norm).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx2",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 2: Proposition 2 (Sign descent as steepest descent under the infinity norm)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0aecabde53570f65f798",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx2.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_9c4d3bcecd7c16cb81c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx2.p1.1",
+          "text": "The result follows by applying Proposition 1. We just need that $\\argmax_{\\|{{\\bm{t}}}\\|_{\\infty}=1}{\\bm{g}}^{\\top}{\\bm{t}}=\\operatorname{sign}({\\bm{g}})$, and also that the dual norm $\\|{{\\bm{g}}}\\|_{\\infty}^{\\dagger}\\vcentcolon=\\max_{\\|{{\\bm{t}}}\\|_{\\infty}=1}{\\bm{g}}^{\\top}{\\bm{t}}={\\bm{g}}^{\\top}\\operatorname{sign}({\\bm{g}})=\\|{{\\bm{g}}}\\|_{1}$. ∎",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 356
+        }
+      ],
+      "text": ".\n\nThe result follows by applying Proposition 1. We just need that $\\argmax_{\\|{{\\bm{t}}}\\|_{\\infty}=1}{\\bm{g}}^{\\top}{\\bm{t}}=\\operatorname{sign}({\\bm{g}})$, and also that the dual norm $\\|{{\\bm{g}}}\\|_{\\infty}^{\\dagger}\\vcentcolon=\\max_{\\|{{\\bm{t}}}\\|_{\\infty}=1}{\\bm{g}}^{\\top}{\\bm{t}}={\\bm{g}}^{\\top}\\operatorname{sign}({\\bm{g}})=\\|{{\\bm{g}}}\\|_{1}$. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0012",
+      "title": "Proposition 3: Proposition 3 (Sign descent as steepest descent under the max-of-max norm).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx3",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 3: Proposition 3 (Sign descent as steepest descent under the max-of-max norm)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2a22e868938e36e33282",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx3.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_6e4aaa20f282a6c3475e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx3.p1.1",
+          "text": "The result follows from Proposition 7 by setting all the scalars $s_{1},...,s_{L}$ to one and all the norms $\\|{\\cdot}\\|_{1},...,\\|{\\cdot}\\|_{L}$ to the $\\ell_{1}$ to $\\ell_{\\infty}$ operator norm. All we need is to show that the argmax at each matrix space $l=1,...,L$ satisfies:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 283
+        },
+        {
+          "paragraph_id": "p_6096a4702f78a60ec228",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.E43",
+          "text": "\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}=1}\\operatorname{tr}({\\bm{G}}_{l}^{\\top}{\\bm{T}}_{l})=\\operatorname{sign}({\\bm{G}}_{l}).",
+          "kind": "equation",
+          "char_start": 285,
+          "char_end": 427
+        },
+        {
+          "paragraph_id": "p_924e1265b8a7a13545f2",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx3.p1.2",
+          "text": "But this holds because, by Proposition 8, $\\|{{\\bm{T}}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}=\\max_{i}\\|{\\mathrm{col}_{i}({\\bm{T}})}\\|_{\\infty}=\\max_{ij}|{{\\bm{T}}_{ij}}|$, and therefore all components in the argmax must be of unit size and gradient aligned. ∎",
+          "kind": "text",
+          "char_start": 429,
+          "char_end": 680
+        }
+      ],
+      "text": ".\n\nThe result follows from Proposition 7 by setting all the scalars $s_{1},...,s_{L}$ to one and all the norms $\\|{\\cdot}\\|_{1},...,\\|{\\cdot}\\|_{L}$ to the $\\ell_{1}$ to $\\ell_{\\infty}$ operator norm. All we need is to show that the argmax at each matrix space $l=1,...,L$ satisfies:\n\n\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}=1}\\operatorname{tr}({\\bm{G}}_{l}^{\\top}{\\bm{T}}_{l})=\\operatorname{sign}({\\bm{G}}_{l}).\n\nBut this holds because, by Proposition 8, $\\|{{\\bm{T}}}\\|_{\\ell_{1}\\to\\ell_{\\infty}}=\\max_{i}\\|{\\mathrm{col}_{i}({\\bm{T}})}\\|_{\\infty}=\\max_{ij}|{{\\bm{T}}_{ij}}|$, and therefore all components in the argmax must be of unit size and gradient aligned. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0013",
+      "title": "Proposition 4: Proposition 4 (Projection to the closest semi-orthogonal matrix).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx4",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 4: Proposition 4 (Projection to the closest semi-orthogonal matrix)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_5b8739cc5f533e055735",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_97970d7392355a67a498",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p1.1",
+          "text": "To begin, we observe that the minimizer over semi-orthogonal matrices of the “distance” $\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}$ is the same as the maximizer over semi-orthogonal matrices of the “alignment” $\\langle{\\bm{A}},{\\bm{G}}\\rangle$, where $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product. This is because:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 321
+        },
+        {
+          "paragraph_id": "p_2939eeea0f48e2b0e186",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx14",
+          "text": "\\displaystyle\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}^{2} \\displaystyle=\\|{{\\bm{A}}}\\|_{F}^{2}-2\\cdot\\langle{\\bm{A}},{\\bm{G}}\\rangle+\\|{{\\bm{G}}}\\|_{F}^{2},",
+          "kind": "equation",
+          "char_start": 323,
+          "char_end": 466
+        },
+        {
+          "paragraph_id": "p_45be5876745842e95cc1",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p1.2",
+          "text": "and the term $\\|{{\\bm{A}}}\\|_{F}^{2}$ is fixed at $\\|{{\\bm{A}}}\\|_{F}^{2}=\\min(m,n)$ for a semi-orthogonal matrix ${\\bm{A}}\\in\\mathcal{O}_{m\\times n}$.",
+          "kind": "text",
+          "char_start": 468,
+          "char_end": 619
+        },
+        {
+          "paragraph_id": "p_ea68e7eb22238681d4ad",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p2.1",
+          "text": "Now, let ${\\bm{G}}=\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$ denote the SVD of ${\\bm{G}}$. Then the alignment satisfies:",
+          "kind": "text",
+          "char_start": 621,
+          "char_end": 752
+        },
+        {
+          "paragraph_id": "p_263d07745393e1873d9d",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx15",
+          "text": "\\displaystyle\\langle{\\bm{A}},{\\bm{G}}\\rangle=\\operatorname{tr}\\sum_{i}\\sigma_{i}\\,{\\bm{v}}_{i}{\\bm{u}}_{i}^{\\top}{\\bm{A}}=\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}^{\\top}{\\bm{A}}{\\bm{v}}_{i}\\leq\\sum_{i}\\sigma_{i},",
+          "kind": "equation",
+          "char_start": 754,
+          "char_end": 958
+        },
+        {
+          "paragraph_id": "p_5b8828bea472fc1a066b",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p2.2",
+          "text": "where the second equality follows by the cyclic property of the trace, and the inequality is since ${\\bm{A}}$ being semi-orthogonal means that ${\\bm{u}}^{\\top}{\\bm{A}}{\\bm{v}}\\leq 1$ for any two unit vectors ${\\bm{u}}$ and ${\\bm{v}}$.",
+          "kind": "text",
+          "char_start": 960,
+          "char_end": 1194
+        },
+        {
+          "paragraph_id": "p_50f879fe797e9a513bb1",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p3.1",
+          "text": "Next, observe that for the semi-orthogonal matrix ${\\bm{A}}_{\\star}=\\sum_{i}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$, we have that:",
+          "kind": "text",
+          "char_start": 1196,
+          "char_end": 1319
+        },
+        {
+          "paragraph_id": "p_1c3c988bed6a9785a58a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.E46",
+          "text": "\\langle{\\bm{A}}_{\\star},{\\bm{G}}\\rangle=\\sum_{i}\\sigma_{i}\\sum_{j}{\\bm{u}}_{i}^{\\top}{\\bm{u}}_{j}{\\bm{v}}_{j}^{\\top}{\\bm{v}}_{i}=\\sum_{i}\\sigma_{i},",
+          "kind": "equation",
+          "char_start": 1321,
+          "char_end": 1469
+        },
+        {
+          "paragraph_id": "p_d9f0b40445accf57ad6a",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p3.2",
+          "text": "since the $\\{{\\bm{u}}_{i}\\}$ and $\\{{\\bm{v}}_{i}\\}$ are orthonormal. Comparing against Equation 45, we see that ${\\bm{A}}_{\\star}$ indeed maximizes the alignment, since it achieves the upper bound of $\\sum_{i}\\sigma_{i}$. And ${\\bm{A}}_{\\star}$ therefore also minimizes the distance $\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}$ amongst semi-orthogonal matrices ${\\bm{A}}$. Note that if ${\\bm{U}}$ is the matrix that has the $\\{{\\bm{u}}_{i}\\}$ as columns, and likewise for ${\\bm{V}}$ and the $\\{{\\bm{v}}_{i}\\}$, then this solution may equivalently be expressed as ${\\bm{A}}_{\\star}={\\bm{U}}{\\bm{V}}^{\\top}$.",
+          "kind": "text",
+          "char_start": 1471,
+          "char_end": 2062
+        },
+        {
+          "paragraph_id": "p_97432ff9fedf5b025935",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p4.1",
+          "text": "All that remains is to explore the uniqueness of this solution:",
+          "kind": "text",
+          "char_start": 2064,
+          "char_end": 2127
+        },
+        {
+          "paragraph_id": "p_40336a82af607719c6a4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.I1.i1",
+          "text": "• If ${\\bm{G}}$ is full rank, the solution ${\\bm{A}}_{\\star}$ is unique. ${\\bm{G}}$ being full rank means that all the singular values $\\sigma_{i}$ are positive. In this case, we see from Equation 45 that to maximize the alignment the semi-orthogonal matrix ${\\bm{A}}$ must satisfy ${\\bm{u}}_{i}^{\\top}{\\bm{A}}{\\bm{v}}_{i}=1$ for all $i$. Since ${\\bm{A}}$ has spectral norm one, in turn this requires that ${\\bm{A}}{\\bm{v}}_{i}={\\bm{u}}_{i}$ and ${\\bm{A}}^{\\top}{\\bm{u}}_{i}={\\bm{v}}_{i}$ for all $i$. These conditions uniquely pick out ${\\bm{A}}=\\sum_{i}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$.",
+          "kind": "list_item",
+          "char_start": 2129,
+          "char_end": 2717
+        },
+        {
+          "paragraph_id": "p_28ea6151fe96b248a8c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.I1.i2",
+          "text": "• If ${\\bm{G}}$ is not full rank then the solution ${\\bm{A}}_{\\star}$ is not unique. This solution is just as good: ${\\bm{A}}_{\\dagger}=\\sum_{i:\\sigma_{i}>0}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}+\\sum_{i:\\sigma_{i}=0}{\\bm{u}}_{i}(-{\\bm{v}}_{i})^{\\top}.$ (47)",
+          "kind": "list_item",
+          "char_start": 2719,
+          "char_end": 2970
+        },
+        {
+          "paragraph_id": "p_7ad22aadfce1bbc05cb3",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx4.p4.2",
+          "text": "This completes the proof.∎",
+          "kind": "text",
+          "char_start": 2972,
+          "char_end": 2998
+        }
+      ],
+      "text": ".\n\nTo begin, we observe that the minimizer over semi-orthogonal matrices of the “distance” $\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}$ is the same as the maximizer over semi-orthogonal matrices of the “alignment” $\\langle{\\bm{A}},{\\bm{G}}\\rangle$, where $\\langle\\cdot,\\cdot\\rangle$ denotes the Frobenius inner product. This is because:\n\n\\displaystyle\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}^{2} \\displaystyle=\\|{{\\bm{A}}}\\|_{F}^{2}-2\\cdot\\langle{\\bm{A}},{\\bm{G}}\\rangle+\\|{{\\bm{G}}}\\|_{F}^{2},\n\nand the term $\\|{{\\bm{A}}}\\|_{F}^{2}$ is fixed at $\\|{{\\bm{A}}}\\|_{F}^{2}=\\min(m,n)$ for a semi-orthogonal matrix ${\\bm{A}}\\in\\mathcal{O}_{m\\times n}$.\n\nNow, let ${\\bm{G}}=\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$ denote the SVD of ${\\bm{G}}$. Then the alignment satisfies:\n\n\\displaystyle\\langle{\\bm{A}},{\\bm{G}}\\rangle=\\operatorname{tr}\\sum_{i}\\sigma_{i}\\,{\\bm{v}}_{i}{\\bm{u}}_{i}^{\\top}{\\bm{A}}=\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}^{\\top}{\\bm{A}}{\\bm{v}}_{i}\\leq\\sum_{i}\\sigma_{i},\n\nwhere the second equality follows by the cyclic property of the trace, and the inequality is since ${\\bm{A}}$ being semi-orthogonal means that ${\\bm{u}}^{\\top}{\\bm{A}}{\\bm{v}}\\leq 1$ for any two unit vectors ${\\bm{u}}$ and ${\\bm{v}}$.\n\nNext, observe that for the semi-orthogonal matrix ${\\bm{A}}_{\\star}=\\sum_{i}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$, we have that:\n\n\\langle{\\bm{A}}_{\\star},{\\bm{G}}\\rangle=\\sum_{i}\\sigma_{i}\\sum_{j}{\\bm{u}}_{i}^{\\top}{\\bm{u}}_{j}{\\bm{v}}_{j}^{\\top}{\\bm{v}}_{i}=\\sum_{i}\\sigma_{i},\n\nsince the $\\{{\\bm{u}}_{i}\\}$ and $\\{{\\bm{v}}_{i}\\}$ are orthonormal. Comparing against Equation 45, we see that ${\\bm{A}}_{\\star}$ indeed maximizes the alignment, since it achieves the upper bound of $\\sum_{i}\\sigma_{i}$. And ${\\bm{A}}_{\\star}$ therefore also minimizes the distance $\\|{{\\bm{A}}-{\\bm{G}}}\\|_{F}$ amongst semi-orthogonal matrices ${\\bm{A}}$. Note that if ${\\bm{U}}$ is the matrix that has the $\\{{\\bm{u}}_{i}\\}$ as columns, and likewise for ${\\bm{V}}$ and the $\\{{\\bm{v}}_{i}\\}$, then this solution may equivalently be expressed as ${\\bm{A}}_{\\star}={\\bm{U}}{\\bm{V}}^{\\top}$.\n\nAll that remains is to explore the uniqueness of this solution:\n\n• If ${\\bm{G}}$ is full rank, the solution ${\\bm{A}}_{\\star}$ is unique. ${\\bm{G}}$ being full rank means that all the singular values $\\sigma_{i}$ are positive. In this case, we see from Equation 45 that to maximize the alignment the semi-orthogonal matrix ${\\bm{A}}$ must satisfy ${\\bm{u}}_{i}^{\\top}{\\bm{A}}{\\bm{v}}_{i}=1$ for all $i$. Since ${\\bm{A}}$ has spectral norm one, in turn this requires that ${\\bm{A}}{\\bm{v}}_{i}={\\bm{u}}_{i}$ and ${\\bm{A}}^{\\top}{\\bm{u}}_{i}={\\bm{v}}_{i}$ for all $i$. These conditions uniquely pick out ${\\bm{A}}=\\sum_{i}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}$.\n\n• If ${\\bm{G}}$ is not full rank then the solution ${\\bm{A}}_{\\star}$ is not unique. This solution is just as good: ${\\bm{A}}_{\\dagger}=\\sum_{i:\\sigma_{i}>0}{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}+\\sum_{i:\\sigma_{i}=0}{\\bm{u}}_{i}(-{\\bm{v}}_{i})^{\\top}.$ (47)\n\nThis completes the proof.∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0014",
+      "title": "Proposition 5: Proposition 5 (Shampoo as steepest descent under the spectral norm).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx5",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 5: Proposition 5 (Shampoo as steepest descent under the spectral norm)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_26bbe5c6b60137368d69",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx5.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_dc84162a9047b98ce522",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx5.p1.1",
+          "text": "First, we apply Proposition 7 with scalars $s_{1},...,s_{L}$ set to one and all norms set to $\\|{\\cdot}\\|_{\\ell_{2}\\to\\ell_{2}}$. This tells us that the solution is given by $\\Delta{\\bm{W}}_{l}=-\\eta\\cdot\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\operatorname{tr}({\\bm{G}}_{l}^{\\top}{\\bm{T}}_{l})$ for each $l=1,...,L$ and with $\\eta=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\|{{\\bm{G}}_{k}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}$. We just need to resolve the dual norm and evaluate the argmax.",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 475
+        },
+        {
+          "paragraph_id": "p_75500705f7356e9aa094",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx5.p2.1",
+          "text": "Let’s start with the dual norm. For a matrix ${\\bm{G}}$ with SVD $\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$ we have:",
+          "kind": "text",
+          "char_start": 477,
+          "char_end": 641
+        },
+        {
+          "paragraph_id": "p_56798eb75acb3300c953",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx16",
+          "text": "\\displaystyle\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}\\vcentcolon=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\operatorname{tr}{\\bm{G}}^{\\top}{\\bm{T}} \\displaystyle=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\operatorname{tr}\\sum_{i}\\sigma_{i}\\,{\\bm{v}}_{i}{\\bm{u}}_{i}^{\\top}{\\bm{T}} \\displaystyle=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}^{\\top}{\\bm{T}}{\\bm{v}}_{i}\\leq\\sum_{i}\\sigma_{i}=\\operatorname{tr}{\\bm{\\Sigma}},",
+          "kind": "equation",
+          "char_start": 643,
+          "char_end": 1108
+        },
+        {
+          "paragraph_id": "p_de24c555906176768725",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx5.p2.2",
+          "text": "where the upper bound follows from the spectral norm constraint on ${\\bm{T}}$. But this upper bound is attained by setting ${\\bm{T}}={\\bm{U}}{\\bm{V}}^{\\top}$ (also resolving the argmax) and so $\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}=\\operatorname{tr}{\\bm{\\Sigma}}$.",
+          "kind": "text",
+          "char_start": 1110,
+          "char_end": 1383
+        },
+        {
+          "paragraph_id": "p_d49f5858b0b16aad425c",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx5.p3.1",
+          "text": "The uniqueness claim follows by the same argument as for Proposition 4. ∎",
+          "kind": "text",
+          "char_start": 1385,
+          "char_end": 1458
+        }
+      ],
+      "text": ".\n\nFirst, we apply Proposition 7 with scalars $s_{1},...,s_{L}$ set to one and all norms set to $\\|{\\cdot}\\|_{\\ell_{2}\\to\\ell_{2}}$. This tells us that the solution is given by $\\Delta{\\bm{W}}_{l}=-\\eta\\cdot\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\operatorname{tr}({\\bm{G}}_{l}^{\\top}{\\bm{T}}_{l})$ for each $l=1,...,L$ and with $\\eta=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\|{{\\bm{G}}_{k}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}$. We just need to resolve the dual norm and evaluate the argmax.\n\nLet’s start with the dual norm. For a matrix ${\\bm{G}}$ with SVD $\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}{\\bm{v}}_{i}^{\\top}={\\bm{U}}{\\bm{\\Sigma}}{\\bm{V}}^{\\top}$ we have:\n\n\\displaystyle\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}\\vcentcolon=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\operatorname{tr}{\\bm{G}}^{\\top}{\\bm{T}} \\displaystyle=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\operatorname{tr}\\sum_{i}\\sigma_{i}\\,{\\bm{v}}_{i}{\\bm{u}}_{i}^{\\top}{\\bm{T}} \\displaystyle=\\max_{\\|{{\\bm{T}}}\\|_{\\ell_{2}\\to\\ell_{2}}=1}\\sum_{i}\\sigma_{i}\\,{\\bm{u}}_{i}^{\\top}{\\bm{T}}{\\bm{v}}_{i}\\leq\\sum_{i}\\sigma_{i}=\\operatorname{tr}{\\bm{\\Sigma}},\n\nwhere the upper bound follows from the spectral norm constraint on ${\\bm{T}}$. But this upper bound is attained by setting ${\\bm{T}}={\\bm{U}}{\\bm{V}}^{\\top}$ (also resolving the argmax) and so $\\|{{\\bm{G}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{\\dagger}=\\operatorname{tr}{\\bm{\\Sigma}}$.\n\nThe uniqueness claim follows by the same argument as for Proposition 4. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0015",
+      "title": "Proposition 6: Proposition 6 (Bounding the square loss of a linear predictor).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx6",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 6: Proposition 6 (Bounding the square loss of a linear predictor)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0d2cbefb3a991f8cfe93",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx6.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_66605028985a67ad06b6",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx6.p1.1",
+          "text": "First observe that the square loss is quadratic in ${\\bm{W}}$ so there are no cubic terms or higher. The bound must agree to first-order with the first-order Taylor expansion of $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$, which is precisely $\\mathcal{L}({\\bm{W}})+\\langle\\nabla_{\\bm{W}}\\mathcal{L}({\\bm{W}}),\\Delta{\\bm{W}}\\rangle$, since otherwise the bound would be violated for sufficiently small $\\Delta{\\bm{W}}$. To obtain the second-order piece of the bound, it’s easiest just to multiply out $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$ and see that the second-order piece of $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$ satisfies:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 624
+        },
+        {
+          "paragraph_id": "p_a13335cc23537df164ae",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx17",
+          "text": "\\displaystyle\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}{\\bm{x}}^{(i)}}\\|_{2}^{2}\\leq\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2}\\cdot\\|{{\\bm{x}}^{(i)}}\\|_{2}^{2}=\\frac{1}{2}\\frac{d_{\\mathrm{in}}}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2},",
+          "kind": "equation",
+          "char_start": 626,
+          "char_end": 967
+        },
+        {
+          "paragraph_id": "p_bb4407a97f3c3c426f49",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx6.p1.2",
+          "text": "where the last equality uses the input normalization $\\|{{\\bm{x}}^{(i)}}\\|_{2}=\\sqrt{d_{\\mathrm{in}}}$. We are done. ∎",
+          "kind": "text",
+          "char_start": 969,
+          "char_end": 1087
+        }
+      ],
+      "text": ".\n\nFirst observe that the square loss is quadratic in ${\\bm{W}}$ so there are no cubic terms or higher. The bound must agree to first-order with the first-order Taylor expansion of $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$, which is precisely $\\mathcal{L}({\\bm{W}})+\\langle\\nabla_{\\bm{W}}\\mathcal{L}({\\bm{W}}),\\Delta{\\bm{W}}\\rangle$, since otherwise the bound would be violated for sufficiently small $\\Delta{\\bm{W}}$. To obtain the second-order piece of the bound, it’s easiest just to multiply out $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$ and see that the second-order piece of $\\mathcal{L}({\\bm{W}}+\\Delta{\\bm{W}})$ satisfies:\n\n\\displaystyle\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}{\\bm{x}}^{(i)}}\\|_{2}^{2}\\leq\\frac{1}{2n}\\sum_{i=1}^{n}\\frac{1}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2}\\cdot\\|{{\\bm{x}}^{(i)}}\\|_{2}^{2}=\\frac{1}{2}\\frac{d_{\\mathrm{in}}}{d_{\\mathrm{out}}}\\|{\\Delta{\\bm{W}}}\\|_{\\ell_{2}\\to\\ell_{2}}^{2},\n\nwhere the last equality uses the input normalization $\\|{{\\bm{x}}^{(i)}}\\|_{2}=\\sqrt{d_{\\mathrm{in}}}$. We are done. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0016",
+      "title": "Proposition 7: Proposition 7 (Steepest descent under the modular norm).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx7",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 7: Proposition 7 (Steepest descent under the modular norm)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_eef75b8638a8ab5eca20",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx7.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_a6cc8673b963425ccc59",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx7.p1.1",
+          "text": "For each layer $l=1,...,L$, we decompose $\\Delta{\\bm{W}}_{l}$ into its magnitude and direction: $\\Delta{\\bm{W}}_{l}=c_{l}\\cdot{\\bm{T}}_{l}$, for $c_{l}\\geq 0$ and $\\|{{\\bm{T}}_{l}}\\|_{l}=1$. Under this change of variables, the minimization becomes:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 251
+        },
+        {
+          "paragraph_id": "p_33f320f0db5fc6ea2cdb",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx18",
+          "text": "\\displaystyle\\min_{\\Delta{\\bm{W}}_{1},\\dots,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}\\|{\\Delta{\\bm{W}}_{l}}\\|_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{c_{1},\\dots,c_{L}\\geq 0}\\left[\\sum_{l=1}^{L}c_{l}\\min_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}c_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{c_{1},\\dots,c_{L}\\geq 0}\\left[-\\sum_{l=1}^{L}c_{l}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}c_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{\\eta\\geq 0}\\left[-\\sum_{l=1}^{L}\\frac{\\eta}{s_{l}}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}+\\frac{\\lambda}{2}\\eta^{2}\\right],",
+          "kind": "equation",
+          "char_start": 253,
+          "char_end": 973
+        },
+        {
+          "paragraph_id": "p_6e688246f4522f65161e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx7.p1.2",
+          "text": "where Equation 54 follows by observing that at the minimum we must have $s_{1}c_{1},...,s_{L}c_{L}$ all taking the same value of $\\eta\\geq 0$ (still to be determined), since otherwise we could increase the sum $\\sum_{l}c_{l}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}$ by increasing any of the slack $c_{l}$ without paying a penalty in terms of the max. We can now read off the minimizers from Equations 52, 53 and 54:",
+          "kind": "text",
+          "char_start": 975,
+          "char_end": 1382
+        },
+        {
+          "paragraph_id": "p_52978792e9e3b0e9c464",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx19",
+          "text": "\\displaystyle{\\bm{T}}_{l} \\displaystyle=\\argmin_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle=-\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle; \\displaystyle c_{l} \\displaystyle=\\frac{\\eta}{s_{l}}; \\displaystyle\\eta \\displaystyle=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\frac{1}{s_{k}}\\|{{\\bm{G}}_{k}}\\|_{k}^{\\dagger}.",
+          "kind": "equation",
+          "char_start": 1384,
+          "char_end": 1743
+        },
+        {
+          "paragraph_id": "p_1764168007bc5a2131a7",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx7.p1.3",
+          "text": "Combining, we obtain the overall minimizer for each $l=1,...,L$ via $\\Delta{\\bm{W}}_{l}=c_{l}\\cdot{\\bm{T}}_{l}=-\\frac{\\eta}{s_{l}}\\argmax\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle$, where $\\eta$ is given by Equation 57, proving the result. ∎",
+          "kind": "text",
+          "char_start": 1745,
+          "char_end": 1985
+        }
+      ],
+      "text": ".\n\nFor each layer $l=1,...,L$, we decompose $\\Delta{\\bm{W}}_{l}$ into its magnitude and direction: $\\Delta{\\bm{W}}_{l}=c_{l}\\cdot{\\bm{T}}_{l}$, for $c_{l}\\geq 0$ and $\\|{{\\bm{T}}_{l}}\\|_{l}=1$. Under this change of variables, the minimization becomes:\n\n\\displaystyle\\min_{\\Delta{\\bm{W}}_{1},\\dots,\\Delta{\\bm{W}}_{L}}\\left[\\sum_{l=1}^{L}\\langle{\\bm{G}}_{l},\\Delta{\\bm{W}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}\\|{\\Delta{\\bm{W}}_{l}}\\|_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{c_{1},\\dots,c_{L}\\geq 0}\\left[\\sum_{l=1}^{L}c_{l}\\min_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}c_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{c_{1},\\dots,c_{L}\\geq 0}\\left[-\\sum_{l=1}^{L}c_{l}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}+\\frac{\\lambda}{2}\\max_{l=1}^{L}s_{l}^{2}c_{l}^{2}\\right] \\displaystyle\\qquad=\\min_{\\eta\\geq 0}\\left[-\\sum_{l=1}^{L}\\frac{\\eta}{s_{l}}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}+\\frac{\\lambda}{2}\\eta^{2}\\right],\n\nwhere Equation 54 follows by observing that at the minimum we must have $s_{1}c_{1},...,s_{L}c_{L}$ all taking the same value of $\\eta\\geq 0$ (still to be determined), since otherwise we could increase the sum $\\sum_{l}c_{l}\\|{{\\bm{G}}_{l}}\\|_{l}^{\\dagger}$ by increasing any of the slack $c_{l}$ without paying a penalty in terms of the max. We can now read off the minimizers from Equations 52, 53 and 54:\n\n\\displaystyle{\\bm{T}}_{l} \\displaystyle=\\argmin_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle=-\\argmax_{\\|{{\\bm{T}}_{l}}\\|_{l}=1}\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle; \\displaystyle c_{l} \\displaystyle=\\frac{\\eta}{s_{l}}; \\displaystyle\\eta \\displaystyle=\\frac{1}{\\lambda}\\sum_{k=1}^{L}\\frac{1}{s_{k}}\\|{{\\bm{G}}_{k}}\\|_{k}^{\\dagger}.\n\nCombining, we obtain the overall minimizer for each $l=1,...,L$ via $\\Delta{\\bm{W}}_{l}=c_{l}\\cdot{\\bm{T}}_{l}=-\\frac{\\eta}{s_{l}}\\argmax\\,\\langle{\\bm{G}}_{l},{\\bm{T}}_{l}\\rangle$, where $\\eta$ is given by Equation 57, proving the result. ∎"
+    },
+    {
+      "section_id": "arxiv_2409.20325_v2_s0017",
+      "title": "Proposition 8: Proposition 8 ($\\ell_{1}\\to\\ell_{p}$ and $\\ell_{p}\\to\\ell_{\\infty}$ induced operator norms are tractable).",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "A2.SSx8",
+      "path": [
+        "Appendix B Proofs",
+        "Proposition 8: Proposition 8 ($\\ell_{1}\\to\\ell_{p}$ and $\\ell_{p}\\to\\ell_{\\infty}$ induced operator norms are tractable)."
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_ac8df401e7e341189b0e",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx8.1",
+          "text": ".",
+          "kind": "heading",
+          "char_start": 0,
+          "char_end": 1
+        },
+        {
+          "paragraph_id": "p_f64d39e5ffd09211a5a3",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx8.p1.1",
+          "text": "Let’s start with the $\\ell_{1}\\to\\ell_{p}$ operator norm. Here we observe that, in matrix-vector multiplication, each component of an input vector selects and scales a column of the matrix:",
+          "kind": "text",
+          "char_start": 3,
+          "char_end": 192
+        },
+        {
+          "paragraph_id": "p_ab3e199b39f3e2a4d071",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx20",
+          "text": "\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\|{{\\bm{M}}{\\bm{x}}}\\|_{p}=\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\Big\\|\\sum_{j}\\mathrm{col}_{j}({\\bm{M}}){\\bm{x}}_{j}\\Big\\|_{p} \\displaystyle\\leq\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\sum_{j}|{{\\bm{x}}_{j}}|\\cdot\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p} \\displaystyle\\leq\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\|{{\\bm{x}}}\\|_{1}\\cdot\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p} \\displaystyle=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p},",
+          "kind": "equation",
+          "char_start": 194,
+          "char_end": 669
+        },
+        {
+          "paragraph_id": "p_420da4938e29a37375d3",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx8.p1.2",
+          "text": "by the triangle inequality and Hölder’s inequality. But the upper bound in Equation 60 is attained by selecting the column index $j_{\\star}=\\argmax_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p}$ with the largest norm, then setting ${\\bm{x}}_{j_{\\star}}=1$ and the other input components to zero. So $\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p}.$",
+          "kind": "text",
+          "char_start": 671,
+          "char_end": 1048
+        },
+        {
+          "paragraph_id": "p_55a31feceac54418f2ec",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx8.p2.1",
+          "text": "Next, let’s deal with the $\\ell_{p}\\to\\ell_{\\infty}$ operator norm. Here we break up a matrix-vector product in terms of the dot product between the vector and the matrix rows:",
+          "kind": "text",
+          "char_start": 1050,
+          "char_end": 1226
+        },
+        {
+          "paragraph_id": "p_dc506d57c00097ae54db",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.EGx21",
+          "text": "\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{p}\\to\\ell_{\\infty}}=\\max_{\\|{{\\bm{x}}}\\|_{p}=1}\\|{{\\bm{M}}{\\bm{x}}}\\|_{\\infty} \\displaystyle=\\max_{\\|{{\\bm{x}}}\\|_{p}=1}\\max_{i}|{{\\bm{x}}^{\\top}\\mathrm{row}_{i}({\\bm{M}})}| \\displaystyle=\\max_{i}\\max_{\\|{{\\bm{x}}}\\|_{p}=1}|{{\\bm{x}}^{\\top}\\mathrm{row}_{i}({\\bm{M}})}| \\displaystyle=\\max_{i}\\|{\\mathrm{row}_{i}({\\bm{M}})}\\|_{p}^{\\dagger}.",
+          "kind": "equation",
+          "char_start": 1228,
+          "char_end": 1601
+        },
+        {
+          "paragraph_id": "p_0fe9a05ca8eb19d03cf0",
+          "page": null,
+          "bbox": null,
+          "element_id": "A2.SSx8.p2.2",
+          "text": "The proof is completed by recalling that the vector $\\ell_{p}$ norm is dual to the vector $\\ell_{q}$ norm for $1/p+1/q=1$. In other words, $\\|{\\cdot}\\|_{p}^{\\dagger}=\\|{\\cdot}\\|_{\\frac{p}{p-1}}$. ∎",
+          "kind": "text",
+          "char_start": 1603,
+          "char_end": 1800
+        }
+      ],
+      "text": ".\n\nLet’s start with the $\\ell_{1}\\to\\ell_{p}$ operator norm. Here we observe that, in matrix-vector multiplication, each component of an input vector selects and scales a column of the matrix:\n\n\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\|{{\\bm{M}}{\\bm{x}}}\\|_{p}=\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\Big\\|\\sum_{j}\\mathrm{col}_{j}({\\bm{M}}){\\bm{x}}_{j}\\Big\\|_{p} \\displaystyle\\leq\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\sum_{j}|{{\\bm{x}}_{j}}|\\cdot\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p} \\displaystyle\\leq\\max_{\\|{{\\bm{x}}}\\|_{1}=1}\\|{{\\bm{x}}}\\|_{1}\\cdot\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p} \\displaystyle=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p},\n\nby the triangle inequality and Hölder’s inequality. But the upper bound in Equation 60 is attained by selecting the column index $j_{\\star}=\\argmax_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p}$ with the largest norm, then setting ${\\bm{x}}_{j_{\\star}}=1$ and the other input components to zero. So $\\|{{\\bm{M}}}\\|_{\\ell_{1}\\to\\ell_{p}}=\\max_{j}\\|{\\mathrm{col}_{j}({\\bm{M}})}\\|_{p}.$\n\nNext, let’s deal with the $\\ell_{p}\\to\\ell_{\\infty}$ operator norm. Here we break up a matrix-vector product in terms of the dot product between the vector and the matrix rows:\n\n\\displaystyle\\|{{\\bm{M}}}\\|_{\\ell_{p}\\to\\ell_{\\infty}}=\\max_{\\|{{\\bm{x}}}\\|_{p}=1}\\|{{\\bm{M}}{\\bm{x}}}\\|_{\\infty} \\displaystyle=\\max_{\\|{{\\bm{x}}}\\|_{p}=1}\\max_{i}|{{\\bm{x}}^{\\top}\\mathrm{row}_{i}({\\bm{M}})}| \\displaystyle=\\max_{i}\\max_{\\|{{\\bm{x}}}\\|_{p}=1}|{{\\bm{x}}^{\\top}\\mathrm{row}_{i}({\\bm{M}})}| \\displaystyle=\\max_{i}\\|{\\mathrm{row}_{i}({\\bm{M}})}\\|_{p}^{\\dagger}.\n\nThe proof is completed by recalling that the vector $\\ell_{p}$ norm is dual to the vector $\\ell_{q}$ norm for $1/p+1/q=1$. In other words, $\\|{\\cdot}\\|_{p}^{\\dagger}=\\|{\\cdot}\\|_{\\frac{p}{p-1}}$. ∎"
+    }
+  ]
+}

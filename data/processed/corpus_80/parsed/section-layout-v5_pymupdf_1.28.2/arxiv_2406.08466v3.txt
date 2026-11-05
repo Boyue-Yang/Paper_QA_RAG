@@ -1,0 +1,6170 @@
+Front matter
+Scaling Laws in Linear Regression:
+
+Compute, Parameters, and Data
+
+Licong Lin* Jingfeng Wu† Sham M. Kakade‡ Peter L. Bartlett§ Jason D. Lee¶
+
+June 11, 2025
+
+Abstract
+Empirically, large-scale deep learning models often satisfy a neural scaling law: the test error of the trained model improves polynomially as the model size and data size grow. However, conventional wisdom suggests the test error consists of approximation, bias, and variance errors, where the variance error increases with model size. This disagrees with the general form of neural scaling laws, which predict that increasing model size monotonically improves performance.
+
+We study the theory of scaling laws in an infinite dimensional linear regression setup. Specifically, we consider a model with M parameters as a linear function of sketched covariates. The model is trained by one-pass stochastic gradient descent (SGD) using N data. Assuming the optimal parameter satisfies a Gaussian prior and the data covariance matrix has a power-law spectrum of degree a > 1, we show that the reducible part of the test error is Θ(M −(a−1) + N −(a−1)/a). The variance error, which increases with M, is dominated by the other errors due to the implicit regularization of SGD, thus disappearing from the bound. Our theory is consistent with the empirical neural scaling laws and verified by numerical simulation.
+
+1 Introduction
+Deep learning models, particularly those on a large scale, are pivotal in advancing the state-of-the-art across various fields. Recent empirical studies have shed light on the so-called neural scaling laws (see Kaplan et al., 2020; Hoffmann et al., 2022, for example), which suggest that the generalization performance of these models improves polynomially as both model size, denoted by M, and data size, denoted by N, increase. The neural scaling law quantitatively describes the population risk as:
+
+R(M, N) ≈R∗+ c1 M a1 + c2
+
+N a2 , (1)
+
+where R∗is a positive irreducible risk and c1, c2, a1, a2 are positive constants independent of M and N. For instance, by fitting the above formula with empirical measurements in standard large-scale language benchmarks, Hoffmann et al. (2022) estimated a1 ≈0.34 and a2 ≈0.28, while Besiroglu et al. (2024) estimated that a1 ≈0.35 and a2 ≈0.37. Though the exact exponents depend on the tasks, neural scaling laws in (1) are observed consistently in practice and are used as principled guidance to build state-of-the-art models, especially under a compute budget (Hoffmann et al., 2022).
+
+From the perspective of statistical learning theory, (1) is rather intriguing. Standard statistical learning bounds (see Mohri et al., 2018; Wainwright, 2019, for example) often decompose the population risk into the sum of irreducible error, approximation error, bias error, and variance error (some theory replaces bias and variance errors by optimization and generalization errors, respectively) as in the form of
+
+ 1
+
+ 1 M a1
+
+
+
+
+
+c(M)
+
+
+
+R(M, N) = R∗+ O
+
++ O
+
++ O
+
+, (2)
+
+N a2
+
+N a3
+
+| {z } approximation
+
+| {z } bias
+
+| {z } variance
+
+*UC Berkeley. Email: liconglin@berkeley.edu †UC Berkeley. Email: uuujf@berkeley.edu ‡Harvard University. Email: sham@seas.harvard.edu §UC Berkeley and Google DeepMind. Email: peter@berkeley.edu ¶Princeton University. Email: jasonlee@princeton.edu
+
+a=1.5
+
+a=2.0
+
+103
+
+1.6
+
+1.35
+
+1.30
+
+102
+
+1.5
+
+Model size (M)
+
+Model size (M)
+
+1.25
+
+1.4
+
+Risk
+
+Risk
+
+102
+
+1.20
+
+1.15
+
+1.3
+
+1.10
+
+1.2
+
+1.05
+
+101
+
+101
+
+102 103
+
+102 103
+
+Number of effective samples (Neff)
+
+Number of effective samples (Neff)
+
+Figure 1: The expected risk (Risk) of the last iterate of (SGD) versus the effective sample size Neff and the model size M for different power-law degrees a. The expected risk is computed by averaging over 1000 independent samples of (w∗, S). We fit the expected risk using the formula Risk ∼σ2 + c1/M a1 + c2/N a2 via minimizing the Huber loss as in Hoffmann et al. (2022). Parameters: σ = 1, γ = 0.1. Left: For a = 1.5, d = 20000, the fitted exponents are (a1, a2) = (0.54, 0.34) ≈(0.5, 0.33). Right: For a = 2, d = 2000, the fitted exponents are (a1, a2) = (1.07, 0.49) ≈(1.0, 0.5). Note that the values of (a1, a2) are close to our theoretical predictions (a −1, 1 −1/a) in both cases, verifying the sharpness of our risk bounds. More details can be found in Sections 4 and 5.
+
+where a1, a2, a3 are positive constants and c(M) is a measure of model complexity that typically increases with the model size M. In (2), the approximation error is induced by the mismatch of the best-in-class predictor and the best possible predictor, hence decreasing with the model size M. The bias error is induced by the mismatch of the expected algorithm output and the best-in-class predictor, hence decreasing with the data size N. The variance error measures the uncertainty of the algorithm output, which decreases with the data size N but increases with the model size M (since the model complexity c(M) increases).
+
+A mystery. The empirical neural scaling law (1) is incompatible with the typical statistical learning theory bound (2). While the two error terms in the neural scaling law (1) can be explained by the approximation and bias errors in the theoretical bound (2) respectively, it is not clear why the variance error is unobservable when fitting the neural scaling law empirically. This difference must be reconciled, otherwise, the statistical learning theory and the empirical scaling law make conflict predictions: as the model size M increases, the theoretical bound (2) predicts an increase of variance error that eventually causes an increase of the population risk, but the neural scaling law (1) predicts a decrease of the population risk. In other words, it remains unclear when to follow the prediction of the empirical scaling law (1) and when to follow that of the statistical learning bound (2).
+
+Certain prior works provided risk upper bounds that do not grow with model size (see for example (Rudi and Rosasco, 2017; Carratino et al., 2018)). Still, their results are insufficient for studying scaling law as those bounds require a large model size such that the approximation error is ignorable. Moreover, they do not provide instance-wise matching lower bounds to verify the tightness of the upper bounds. See a detailed discussion in Section 2.
+
+Our explanation. We investigate this issue in an infinite dimensional linear regression setup. We only assume access to M-dimensional sketched covariates given by a fixed Gaussian sketch and their responses. We consider a linear predictor with M trainable parameters, which is trained by one-pass stochastic gradient descent (SGD) with geometrically decaying stepsizes using N sketched data. Assuming that the spectrum of the data covariance matrix satisfies a power-law of degree a > 1 and that the optimal model parameters satisfy a Gaussian prior, we derive matching upper and lower bounds on the population risk achieved by the SGD output (see Theorem 4.1). Specifically, we show that
+
+min{M, (Nγ)1/a}
+
+ 1 M a−1
+
+
+
+ 1 (Nγ)(a−1)/a
+
+
+
+
+
++ ˜Θ
+
+, Var = ˜Θ
+
+R(M, N) = R∗+ Θ
+
+,
+
+N
+
+| {z } higher order, thus unobservable
+
+| {z } leading order given by the sum of Approx and Bias
+
+where γ = O(1) is the initial stepsize used in SGD and ˜Θ(·) hides log(N) factors. In our bound, the sum of the approximation and bias errors determines the order of the excess risk, while the variance error is of a strictly higher order and is therefore nearly unobservable when fitting R(M, N) as a function of M and N empirically. In addition, our analysis reveals that the small variance error is due to the implicit regularization effect of one-pass SGD (Zou et al., 2021). Our theory suggests that the empirical neural scaling law (1) is a simplification of the statistical learning bound (2) in a special regime when strong regularization (either implicit or explicit) is employed.
+
+Moreover, we generalize the above scaling law to (1) constant stepsize SGD with iterate average (see Theorem F.6), (2) cases where the optimal model parameter satisfies an anisotropic prior (see Theorem 4.2), and (3) where the spectrum of the data covariance matrix satisfies a logarithmic power law (see Theorem 4.3).
+
+Emprical evidence. Based on our theoretical results, we conjecture that the clean neural scaling law (1) observed in practice is due to the disappearance of variance error caused by strong regularization. Two pieces of empirical evidence to support our understanding. First, large language models that follow the scaling law (1) are often underfitted, as the models are trained over a single pass or a few passes over the data (Komatsuzaki, 2019; Muennighoff et al., 2023; Brown et al., 2020; Touvron et al., 2023). When models are underfitted, the variance error tends to be smaller. Second, when language models are trained with multiple passes (up to 7 passes), Muennighoff et al. (2023) found that the clean scaling law in (1) no longer holds and they proposed a more sophisticated scaling law to explain their data. This can be explained by a relatively large variance error caused by multiple passes.
+
+Notation. For two positive-valued functions f(x) and g(x), we write f(x) ≲g(x) (and f(x) = O(g(x))) or f(x) ≳g(x) (and f(x) = Ω(g(x))) if f(x) ≤cg(x) or f(x) ≥cg(x) holds for some absolute (if not otherwise specified) constant c > 0 respectively. We write f(x) ≂g(x) (and f(x) = Θ(g(x))) if f(x) ≲g(x) ≲f(x). For two vectors u and v in a Hilbert space, we denote their inner product by ⟨u, v⟩or u⊤v. For two matrices A and B of appropriate dimensions, we define their inner product by⟨A, B⟩:= tr(A⊤B). We use ∥· ∥to denote the operator norm for matrices and ℓ2-norm for vectors. For a positive semi-definite (PSD) matrix A and a vector v of appropriate dimension, we write ∥v∥2
+
+A := v⊤Av. For a symmetric matrix A, we use µj(A) to refer to the j-th eigenvalue of A and r(A) to refer to its rank. Finally, log(·) refers to logarithm base 2.
+
+2 Related work
+Empirical scaling laws. In recent years, the scaling laws of deep neural networks in compute, sample size, and model size have been widely studied across different models and domains (Hestness et al., 2017; Rosenfeld et al., 2019; Kaplan et al., 2020; Henighan et al., 2020; Hoffmann et al., 2022; Zhai et al., 2022; Muennighoff et al., 2023). The early work by Kaplan et al. (2020) first proposed the neural scaling laws of transformer-based models. They observed that the test loss exhibits a power-law decay in quantities including the amount of compute, sample size, and model size, and provided joint formulas in these quantities to predict the test loss. The proposed formulas were later generalized and refined in subsequent works (Henighan et al., 2020; Hoffmann et al., 2022; Alabdulmohsin et al., 2022; Caballero et al., 2022; Muennighoff et al., 2023). Notably, Hoffmann et al. (2022) proposed the Chinchilla law, that is, (1) with a1 ≈0.34 and a2 ≈0.28. The empirical observation guided them to allocate data and model size under a given compute budget. The Chinchilla law is further revised by Besiroglu et al. (2024). Motivated by the Chinchilla law, Muennighoff et al. (2023) considered the effect of multiple passes over training data and empirically fitted a more sophisticated scaling law that takes account of the effect of data reusing.
+
+Theory of scaling laws. Although neural scaling laws have been empirically observed over a broad spectrum of prob- lems, there is a relatively limited literature on understanding these scaling laws from a theoretical perspective (Sharma and Kaplan, 2020; Bahri et al., 2021; Maloney et al., 2022; Hutter, 2021; Wei et al., 2022; Michaud et al., 2024; Jain et al., 2024; Bordelon et al., 2024; Atanasov et al., 2024; Nam et al., 2024; Dohmatob et al., 2024). Among these works, Sharma and Kaplan (2020) showed that the test loss scales as N 4/d for regression on data with intrinsic dimension d. Hutter (2021) studied a toy problem under which a non-trivial power of N arises in the test loss. Jain et al. (2024) considered scaling laws in data selection. Bahri et al. (2021) considered a linear teacher-student model under a power-law spectrum assumption on the covariates, and they showed that the test loss of the ordinary least square estimator decreases following a power law in sample size N (resp. model size M) when the model size M (resp.
+
+sample size N) is infinite. Bordelon et al. (2024) considered a linear random feature model and analyzed the test loss of the solution found by (batch) gradient flow. They focused on the bottleneck regimes where two of the quantities N, M, T (training steps) are infinite and showed that the risk has a power-law decay in the remaining quantity. The problem in Bahri et al. (2021); Bordelon et al. (2024) can be viewed as a sketched linear regression model similar to ours. It should be noted that both Bahri et al. (2021) and Bordelon et al. (2024) only derived the dependence of population risk on one of the data size, model size, or training steps in the asymptotic regime where the remaining quantities go to infinity, and their derivations are based on statistical physics heuristics. In comparison, we prove matching (ignoring constant factors) upper and lower risk bounds jointly depending on the finite model size M and data size N.
+
+Implicit regularization of SGD. One-pass SGD in linear regression has been extensively studied in both the classical finite-dimensional setting (Polyak and Juditsky, 1992; Bach and Moulines, 2013; Défossez and Bach, 2015; Dieuleveut et al., 2017; Jain et al., 2018, 2017; Ge et al., 2019) and the modern high-dimensional setting (Dieuleveut and Bach, 2015; Berthier et al., 2020; Zou et al., 2023, 2021; Wu et al., 2022a,b; Varre et al., 2021). In particular, Zou et al. (2021) showed that SGD induces an implicit regularization effect that is comparable to, and in certain cases even more preferable than, the explicit regularization effect induced by ridge regression. This is one of the key motivations of our scaling law interpretation. From a technical perspective, we utilize the sharp finite-sample and dimension-free analysis of SGD developed by Zou et al. (2023); Wu et al. (2022a,b). Different from them, we consider a sequence of linear regression models with an increasing number of trainable parameters given by data sketch. Our main technical innovation is to sharply control the effect of data sketch. Some of our intermediate results, for example, tight bounds on the spectrum of the sketched data covariance under the power law (see Lemma 6.2), might be of independent interest.
+
+Prior works investigated linear regression with random features (Rudi and Rosasco, 2017; Carratino et al., 2018), which can be viewed as a kind of sketched features via random coordinate selection. They mainly focused on the small approximation error regime, where the model size (or the number of features) is much larger than the data size. In comparison, we treat both model size and data size as free variables. Moreover, we provide matching upper and lower bounds while prior works mainly focused on upper bounds. These two innovations are crucial for studying scaling laws that predict test error as a function of both model size and data size. Finally, in the comparable regimes with small or zero approximation error, our excess risk bounds recover the bounds in prior works (Rudi and Rosasco, 2017; Carratino et al., 2018; Pillaud-Vivien et al., 2018; Dieuleveut and Bach, 2015; Defilippis et al., 2024).
+
+3 Setup
+We denote a feature vector by x ∈H, where H is a Hilbert space that is either finite-dimensional or countably infinite-dimensional, with dimension d := dim(H). The corresponding label is denoted by y ∈R. In linear regression, we measure the population risk of a parameter w ∈H by the mean squared error,
+
+2, w ∈H,
+
+R(w) := E
+
+ 
+
+⟨x, w⟩−y
+
+where the expectation is over (x, y) ∼P for some distribution P on H × R.
+
+Definition 1 (Data covariance and optimal parameter). Let H := E[xx⊤] be the data covariance. Assume that tr(H) and all entries of H are finite. Let (λi)i≥0 be the eigenvalues of H sorted in non-increasing order. Let w∗∈arg minw R(w) be the optimal model parameter1. Assume that ∥w∗∥2
+
+H := (w∗)⊤Hw∗is finite.
+
+We only assume access to M-dimensional sketched covariates and their responses, that is, (Sx, y), where S ∈RM × H is a fixed sketch matrix. We focus on the Gaussian sketch matrix2, that is, entries of S are independently sampled from N
+
+ 
+
+0, 1/M 
+
+. We then consider linear predictors with M trainable parameters given by
+
+fv : H →R, x 7→⟨v, Sx⟩,
+
+where v ∈RM are the trainable parameters. Varying M should be viewed as a linear analog of varying the neural network model size. Our sketched linear regression setting is comparable to the teacher-student setting considered by Bahri et al. (2021); Bordelon et al. (2024).
+
+1If arg min R(·) is not unique, we choose w∗to be the minimizer with minimal H-norm. 2Our results can be extended to other sketching methods (see Woodruff et al., 2014, for example).
+
+We consider the training of fv via one-pass stochastic gradient descent (SGD), that is,
+
+ 
+
+
+
+vt := vt−1 −γt
+
+fvt−1(xt) −yt
+
+∇vfvt−1(xt)
+
+(SGD)
+
+x⊤
+
+t S⊤vt−1 −yt
+
+ 
+
+
+
+:= vt−1 −γt
+
+Sxt, t = 1, . . . , N,
+
+where (xt, yt)N
+
+t=1 are independent samples from P and (γt)N
+
+t=1 are the stepsizes. We consider a popular geometric decaying stepsize scheduler (Ge et al., 2019; Wu et al., 2022a),
+
+for t = 1, . . . , N, γt := γ/2ℓ, where ℓ= ⌊t/(N/ log(N))⌋. (3)
+
+Here, the initial stepsize γ is a hyperparameter for the SGD algorithm. Without loss of generality, we assume the initial parameter is v0 = 0. The output of the SGD algorithm is the last iterate vN. Our proof techniques apply to other stepsize schedulers (e.g., polynomial decay) as well, but we focus on geometric decay as it is known to achieve near minimax-optimal excess risk for the last iterate of SGD (Ge et al., 2019).
+
+Conditioning on a sketch matrix S ∈RM × H, each parameter v ∈RM induces a sketched predictor through x 7→⟨S⊤v, x⟩, and we denote its risk by
+
+2, v ∈RM.
+
+RM(v) := R(S⊤v) = E
+
+ 
+
+⟨Sx, v⟩−y
+
+By increasing M and N, we have a sequence of datasets and trainable parameters of increasing sizes, respectively. This prepares us to study the scaling law (1) in the sketched linear regression problem, that is, to understand RM(vN) as a function of both M and N.
+
+Risk decomposition. In a standard way, we decompose the risk achieved by vN, the last iterate of (SGD), to the sum of irreducible risk, approximization error, and excess risk as follows,
+
+RM(vN) = min R(·) | {z } Irreducible
+
++ min RM(·) −min R(·) | {z } Approx
+
++ RM(vN) −min RM(·) | {z } Excess
+
+. (4)
+
+We emphasize that the irreducible risk is independent of M and N and thus can be viewed as a constant; the approximation error is determined by the sketch matrix S, thus depends on M but is independent of N; the excess risk depends on both M and N as it is determined by the algorithm.
+
+4 Scaling laws
+We first demonstrate a scaling-law behavior when the data spectrum satisfies a power law.
+
+Assumption 1 (Distributional conditions). Assume the following about the data distribution.
+
+A. Gaussian design. Assume that x ∼N(0, H).
+
+B. Well-specified model. Assume that E[y|x] = x⊤w∗. Define σ2 := E(y −x⊤w∗)2.
+
+C. Parameter prior. Assume that w∗satisfies a prior such that E(w∗)⊗2 = I.
+
+Assumption 2 (Power-law spectrum). There exists a > 1 such that the eigenvalues of H satisfy λi ≂i−a, i > 0.
+
+Theorem 4.1 (Scaling law). Suppose that Assumptions 1 and 2 hold. Consider an M-dimensional sketched predictor trained by (SGD) with N samples. Let Neff := N/ log(N) and recall the risk decomposition in (4). Then there exists some a-dependent constant c > 0 such that when the initial stepsize γ ≤c, with probability at least 1 −e−Ω(M) over the randomness of the sketch matrix S, we have
+
+1. Irreducible := R(w∗) = σ2.
+
+2. Ew∗Approx ≂M 1−a.
+
+3. Suppose in addition σ2 ≳1. The expected excess risk (Excess) can be decomposed into a bias error (Bias) and a variance error (Var), namely,
+
+EExcess ≂Bias + σ2Var,
+
+where the expectation is over the randomness of w∗and (xi, yi)N
+
+i=1. Moreover, Bias and Var satisfy
+
+Bias ≲max
+
+M 1−a, (Neffγ)1/a−1
+
+
+
+,
+
+Bias ≳(Neffγ)1/a−1 when (Neffγ)1/a ≤M/c for some constant c > 0,
+
+Var ≂min
+
+M, (Neffγ)1/a
+
+
+
+/Neff.
+
+In all results, the hidden constants only depend on the power-law degree a. As a direct consequence, when σ2 ≂1, it holds with probability at least 1 −e−Ω(M) over the randomness of the sketch matrix S that
+
+ 1 M a−1
+
+
+
+ 1 (Neffγ)(a−1)/a
+
+
+
+ERM(vN) = σ2 + Θ
+
++ Θ
+
+,
+
+where the expectation is over the randomness of w∗and (xi, yi)N
+
+i=1.
+
+Theorem 4.1 shows a sharp (up to constant factors) scaling law risk bound under an isotroptic prior assumption and the power-law spectrum assumption. We emphasize that the scaling law bound in Theorem 4.1 holds for every M, N ≥1. We also remark that the sum of approximization and bias errors dominates ERM(vN) −σ2, whereas the variance error is of strict higher order in terms of both M and N, and is thus disappeared in the population risk bound.
+
+Optimal stepsize. Based on the tight scaling law in Theorem 4.1, we can calculate the optimal stepsize that minimizes the risk. Specifically, the optimal stepsize is γ ≂1 when Neff ≲M a and can be anything such that M a/Neff ≲γ ≲1 when Neff ≳M a. In both cases, choosing γ ≂1 is optimal. When the sample size is large such that Neff ≳M a, the optimal stepsize is relatively robust and can be chosen from a range.
+
+Allocation of data and model sizes. Following Hoffmann et al. (2022), we measure the compute complexity by MN as (SGD) queries M-dimensional gradients for N times. Given a total compute budget of MN = C, from Theorem 6.1 and Neff := N/ log(N), we see that the best population risk is achieved by setting γ = Θ(1), M = ˜Θ(C1/(a+1)), and N = ˜Θ(Ca/(a+1)). Our theory suggests setting a data size slightly larger than the model size when the compute budget is the bottleneck.
+
+Comparison with (Bordelon et al., 2024). The work by Bordelon et al. (2024) considered the scaling law of batch gradient descent (or gradient flow) on a teacher-student model (see their equation (14)). Their teacher-student model can be viewed as our sketched linear regression model. However, we consider one-pass SGD, therefore in our setting the number of gradient steps is equivalent to the data size. When we equalize the number of gradient steps and the data size in their equation (14) and set the parameter prior as Assumption 1C, their prediction is consistent with ours. However, our analysis shows the computational advantage of SGD over batch GD since each iteration requires only 1/N the compute. Bordelon et al. (2024) obtained the limit of the population risk as two out of the data size, model size, and the number of gradient steps go to infinity based on statistical physics heuristics. In comparison, we obtain upper and lower risk bounds that hold for any finite M and N and match ignoring a constant factor depending only on the spectrum power-law degree a.
+
+Average of the SGD iterates Results similar to Theorem 4.1 can also be established for the average of the iterates of online SGD with constant stepsize (Polyak and Juditsky, 1992; Dieuleveut et al., 2017; Jain et al., 2018, 2017; Zou et al., 2023). All results will be the same once replacing the effective sample size Neff in Theorem 4.1 to the sample size N. For more details see Theorem F.6 in Appendix F.
+
+4.1 Scaling law under source condition
+The isotropic parameter prior condition (Assumption 1C) in Theorem 4.1 can be generalized to the following anisotropic version (Caponnetto and De Vito, 2007).
+
+Assumption 3 (Source condition). Let (λi, vi)i>0 be the eigenvalues and eigenvectors of H. Assume w∗satisfies a prior such that
+
+for i̸ = j, E⟨vi, w∗⟩⟨vj, w∗⟩= 0; and for i > 0, Eλi⟨vi, w∗⟩2 ≂i−b, for some b > 1.
+
+A larger exponent b implies a faster decay of signal w∗and thus corresponds to a simpler task (Caponnetto and De Vito, 2007). Note that Assumption 1C satisfies Assumption 3 with b = a.
+
+Theorem 4.2 (Scaling law under source condition). In Theorem 4.1, suppose Assumption 1C is replaced by Assumption 3 with 1 < b < a + 1. Then there exists some a-dependent constant c > 0 such that when γ ≤c, with probability at least 1 −e−Ω(M) over the randomness of the sketch matrix S, we have
+
+M, (Neffγ)1/a
+
+
+
+min
+
+ 1 M b−1
+
+
+
+ 1 (Neffγ)(b−1)/a
+
+
+
+
+
+ERM(vN) = σ2 + Θ
+
++ Θ
+
++ Θ
+
+.
+
+Neff
+
+| {z } Var
+
+| {z } Approx+Bias
+
+where the expectation is over the randomness of w∗and (xi, yi)N
+
+i=1, and Θ(·) hides constants that may depend on (a, b).
+
+When 1 < b ≤a, the tasks are relatively hard (compared to when b = a), and the variance error is dominated by the sum of approximation and bias errors for all choices of M, N, and γ ≲1. In this case, Theorem 4.2 gives the same prediction about optimal stepsize and optimal allocation of data and model sizes under compute budget as Theorem 4.1.
+
+When a < b < a + 1, the tasks are relatively easy (compared to when b = a), and variance remains dominated by the sum of approximation and bias error if the stepsize is optimally tuned. Recall that γ ≲1, thus we can rewrite the risk bound in Theorem 4.2 as
+
+M, (Neffγ)1/a
+
+
+
+M, (Neffγ)1/a b−1 + min
+
+ERM(vN) −σ2 ≂ 1
+
+Neff
+
+
+
+min
+
+eff and N a/b−1
+
+/Neff M ≳N 1/b
+
+eff ≲γ ≲1,
+
+M, (Neffγ)1/a
+
+(
+
+
+
+min
+
+≂
+
+M, (Neffγ)1/a 1−b M ≲N 1/b
+
+eff or γ ≲N a/b−1
+
+
+
+min
+
+eff .
+
+Therefore the optimal stepsize and the risk under the optimal stepsize is
+
+γ ≂N a/b−1
+
+eff if M ≳N 1/b
+
+eff , and M a/Neff ≲γ ≲1 if M ≲N 1/b
+
+eff .
+
+Under the optimally tunned stepsize, the population risk is in the form of
+
+minγ ERM(vN) = σ2 + Θ(N (1−b)/b
+
+eff ) + Θ(M 1−b),
+
+which is again in the scaling law form (1). This is expected since an optimally tuned stepsize controls the variance error by adjusting the strength of the implicit bias of SGD. Under a fixed compute budget C = MN, our theory suggests to assign M = ˜Θ(C1/(b+1)) and N = ˜Θ(Cb/(b+1)), and set the stepsize to γ ≂˜Θ(C(a−b)/(b+1)).
+
+When b ≥a + 1, the tasks are even simpler. We provide upper and lower bounds in Appendix D.3. However, there exists a gap between the bounds, fixing which is left for future work.
+
+Moreover, we note that in the comparable regimes where M is large, the results in Theorem 4.2 match existing bounds on the risk of SGD iterates and ridge estimators (Pillaud-Vivien et al., 2018; Rudi and Rosasco, 2017).
+
+a=2.0
+
+a=2.0
+
+a=1.5
+
+a=1.5
+
+6 × 10 1
+
+k=-0.50 Risk
+
+k=-0.98 Risk
+
+k=-0.33 Risk
+
+k=-0.49 Risk
+
+4 × 10 1
+
+10 1
+
+4 × 10 1
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+3 × 10 1
+
+3 × 10 1
+
+10 1
+
+2 × 10 1
+
+2 × 10 1
+
+10 1
+
+102 103 104 105
+
+102 103 104 105
+
+101 102
+
+101 102
+
+Number of effective samples (Neff)
+
+Number of effective samples (Neff)
+
+Model size (M)
+
+Model size (M)
+
+(a) a = 1.5
+
+(b) a = 1.5
+
+(c) a = 2
+
+(d) a = 2
+
+Figure 2: The expected risk of the last iterate of (SGD) minus the irreducible risk versus the effective sample size and model size. Parameters σ = 1, γ = 0.1. (a), (b): a = 1.5, d = 10000; (c), (d): a = 2, d = 1000. The error bars denote the ±1 standard deviation of estimating the expected risk using 100 independent samples of (w∗, S). We use linear functions to fit the expected risk under the log-log scale and report the slope of the fitted lines (denoted by k).
+
+4.2 Scaling law under logarithmic power law
+We also derive the risk formula when the data covariance has a logarithmic power-law spectrum (Bartlett et al., 2020).
+
+Assumption 4 (Logarithmic power-law spectrum). There exists a > 1 such that the eigenvalues of H satisfy λi ≂ i−1 log−a(i + 1), i > 0.
+
+Theorem 4.3 (Scaling law under logarithmic power spectrum). In Theorem 4.1, suppose Assumption 2 is replaced by Assumption 4. Then with probability at least 1 −e−Ω(M) over the randomness of the sketch matrix S, we have
+
+M, Neffγ loga(Neffγ)
+
+
+
+min
+
+ 1 loga−1(M)
+
+
+
+ 1 loga−1(Neffγ)
+
+
+
+ERM(vN) = σ2 + Θ
+
+, Var ≂
+
++ Θ
+
+,
+
+Neff
+
+where the expectation is over the randomness of w∗and (xi, yi)N
+
+i=1.
+
+Theorem 4.3 provides a scaling law under the logarithmic power-law spectrum. Similar to Theorem 4.1, the variance error is dominated by the approximation and bias errors for all choices of M, N, and γ, and thus disappeared from the risk bound. Different from Theorem 4.1, here the population risk is a polynomial of log(M) and log(Neffγ).
+
+5 Experiments
+In this section, we examine the relation between the expected risk of the (SGD) output, the data size N, and the model size M when the covariates satisfy a power-law covariance spectrum. Although our results in Section 4 hold with high probability over S, for simplicity, we assume the expectation of the risk is taken over both w∗and S in our simulations. We adopt the model in Section 3 and train it using one-pass (SGD) with geometric decaying stepsize (3). We choose the dimension d sufficiently large to approximate the infinite-dimensional case, and the data are generated so that Assumption 1 is satisfied. Moreover, we choose the covariance H ∈Rd×d to be diagonal with Hii ∝ia and tr(H) = 1 for some a > 1. From Figure 1, we observe that the risk indeed follows a power-law formula jointly in the number of samples and the number of parameters. In addition, the fitted exponents are aligned with our theoretical predictions (a −1, 1 −1/a) in Theorem 4.1. Figure 2 shows the scaling of the expected risk in data size (or model size) when
+
+the model size (or data size) is relatively large. We see that the expected risk also satisfies a power-law decay with exponents matching our predictions. It is noteworthy that our simulations demonstrate stronger observations than the theoretical results in Theorem 4.1, which only establishes matching upper and lower bounds up to a constant factor. Additional simulation results on the risk of the average of (SGD) iterates can be found in Appendix F.
+
+6 Risk bounds under a general spectrum
+In this section, we present some general results on the upper and lower bounds of the risk of the output of (SGD). Due to the rotational invariance of the sketched matrix S, without loss of generality, we assume the covariance H ∈Rd×d is
+
+diagonal with non-increasing diagonal entries. Our main results in Section 4 are directly built on the general bounds introduced here.
+
+Assumption 5 (General distributional conditions). Assume the following about the data distribution.
+
+A. Hypercontractivity. There exists α ≥1 such that for every PSD matrix A it holds that
+Exx⊤Axx⊤⪯α tr(HA)H.
+
+B. Misspecified model. There exists σ2 > 0 such that E(y −x⊤w∗)2xx⊤⪯σ2H.
+
+It is clear that Assumption 1 implies Assumption 5 with α = 3.
+
+Excess risk decomposition. Conditioning on the sketch matrix S, the training of the sketched linear predictor can be viewed as an M-dimensional linear regression problem. We can therefore invoke existing SGD analysis (Wu et al., 2022a,b) to sharply control the excess risk by controlling the bias and variance errors. Specifically, let us define the (w∗-dependent) bias error as
+
+N Y
+
+2
+
+Bias(w∗) :=
+
+I −γtSHS⊤
+
+v∗
+
+SHS⊤, where v∗:= (SHS⊤)−1SHw∗, (5)
+
+ 
+
+t=1
+
+and the variance error as
+
+#{˜λj ≥1/(Neffγ)} + (Neffγ)2 P
+
+˜λj<1/(Neffγ) ˜λ2
+
+j Neff
+
+Var :=
+
+, Neff := N/ log(N), (6)
+
+M
+
+ ˜λj
+
+j=1 are eigenvalues of SHS⊤. We also let Bias := EBias(w∗), where the expectation is over the prior of w∗. Using the existing results on the output of (SGD) in Wu et al. (2022a,b), we show that the excess risk in (4) can be exactly decomposed as the sum of bias and variance errors under weak conditions.
+
+where
+
+Theorem 6.1 (Excess risk decomposition). Conditioning on the sketch matrix S, consider the excess risk in (4) induced by the output of (SGD). Assume v0 = 0. Then for any w∗∈H,
+
+cα tr(SHS⊤)
+
+1. Under Assumptions 5A and 5B and suppose γ ≤1/  
+
+
+
+for some constant c > 0, we have
+
+EExcess ≲Bias(w∗) +
+
+α∥w∗∥2
+
+H + σ2
+
+ 
+
+Var.
+
+cα tr(SHS⊤)) for some constant c > 0, we have
+
+2. Under the stronger Assumptions 1A and 1B and suppose γ ≤1/  
+
+EExcess ≳Bias(w∗) + σ2Var.
+
+In both results, the expectations of Excess are taken over (xt, yt)N
+
+t=1.
+
+H/σ2 ≲1, then the bias-variance decomposition of the excess risk is sharp up to constant factors.
+
+Assuming that the signal-to-noise ratio is upper bounded, that is, ∥w∗∥2
+
+The variance error is in a nice form and can be computed using the following important lemma on the spectrum of SHS⊤. Similar results for logarithmic power-law are also established in Lemma G.6 in Appendix G.
+
+Lemma 6.2 (Power law). Under Assumption 2, it holds with probability at least 1 −e−Ω(M) that
+
+µj(SHS⊤) ≂µj(H) ≂j−a, j = 1, . . . , M.
+
+For any 0 ≤k∗≤k† ≤∞, let Sk∗:k† ∈RM×(k†−k∗) denote the matrix formed by the k∗+ 1 −k†-th columns of S. We also abuse the notation k† : ∞for k† : d when d is finite. We let Hk∗:k† ∈R(k†−k∗)×(k†−k∗) be the submatrix of H formed by the k∗+ 1 −k†-th eigenvalues. For the approximation and bias error, we use the following upper and lower bounds to compute their values.
+
+Theorem 6.3 (A general upper bound). Suppose Assumption 5 holds. Assume v0 = 0, r(H) ≥2M and the initial stepsize satisfies γ < 1/(cα tr(SHS⊤)) for some constant c > 0. Then for any k1, k2 ≤M/3, with probability at least 1 −e−Ω(M)
+
+sP
+
+i>k1 λ2
+
+P
+
+i>k1 λi
+
+
+
+i M
+
+Approx ≲∥w∗
+
+∥w∗
+
+k1:∞∥2
+
+0:k1∥2,
+
+Hk1:∞+
+
+M + λk1+1 +
+
+#2
+
+"
+
+Bias(w∗) ≲∥w∗
+
+µM/2(Sk2:∞Hk2:∞S⊤
+
+0:k2∥2 2 Neffγ ·
+
+k2:∞) µM(Sk2:∞Hk2:∞S⊤
+
++ ∥w∗
+
+k2:∞∥2
+
+Hk2:∞.
+
+k2:∞)
+
+Theorem 6.4 (A general lower bound). Suppose Assumption 1 holds. Assume v0 = 0, r(H) ≥M and the initial stepsize γ < 1/
+
+c tr(SHS⊤)
+
+ 
+
+
+
+for some constant c > 0. Then
+
+d X
+
+µi(SH2S⊤)
+
+X
+
+Ew∗Approx ≳
+
+λi, Ew∗Bias(w∗) ≳
+
+µi(SHS⊤)
+
+i:˜λi<1/(Neffγ)
+
+i=M
+
+i=1 are eigenvalues of H in non-increasing order, (˜λi)M
+
+i=1 are eigenvalues of SHS⊤in non-increasing order.
+
+almost surely, where (λi)d
+
+7 Conclusion
+We analyze neural scaling laws in infinite-dimensional linear regression. We consider a linear predictor with M trainable parameters on the sketched covariates, which is trained by one-pass stochastic gradient descent with N data. Under a Gaussian prior assumption on the optimal model parameter and a power law (of degree a > 1) assumption on the spectrum of the data covariance, we derive matching upper and lower bounds on the population risk minus the irreducible error, that is, Θ(M −(a−1) + N −(a−1)/a). In particular, we show that the variance error, which increases with M, is of strictly higher order compared to the other errors, thus disappearing from the risk bound. We attribute the nice empirical formula of the neural scaling law to the non-domination of the variance error, which ultimately is an effect of the implicit regularization of SGD.
+
+Many directions remain open for future study. First, our work is limited to the linear model; it would be interesting to see whether similar scaling laws can be derived in more complex models, such as random feature models or two-layer networks. Second, we focus on one-pass SGD training, and it is unclear if similar results hold for other optimization methods like accelerated SGD or Adam. Additionally, from a technical perspective, many results in our work depend on the Gaussian assumption and the source condition of the data. Investigating how these assumptions can be relaxed would also be valuable.
+
+Acknowledgements
+We gratefully acknowledge the support of the NSF for FODSI through grant DMS-2023505, of the NSF and the Simons Foundation for the Collaboration on the Theoretical Foundations of Deep Learning through awards DMS-2031883 and #814639, and of the ONR through MURI award N000142112431. JDL acknowledges support of the NSF CCF 2002272, NSF IIS 2107304, and NSF CAREER Award 2144994. SMK acknowledges a gift from the Chan Zuckerberg Initiative Foundation to establish the Kempner Institute for the Study of Natural and Artificial Intelligence; support from ONR under award N000142212377, and NSF under award IIS 2229881.
+
+Bibliography
+Ibrahim M Alabdulmohsin, Behnam Neyshabur, and Xiaohua Zhai. Revisiting neural scaling laws in language and
+
+vision. Advances in Neural Information Processing Systems, 35:22300–22312, 2022.
+
+Alexander B Atanasov, Jacob A Zavatone-Veth, and Cengiz Pehlevan. Scaling and renormalization in high-dimensional
+
+regression. arXiv preprint arXiv:2405.00592, 2024.
+
+Francis Bach and Eric Moulines. Non-strongly-convex smooth stochastic approximation with convergence rate o(1/n).
+
+Advances in neural information processing systems, 26:773–781, 2013.
+
+Yasaman Bahri, Ethan Dyer, Jared Kaplan, Jaehoon Lee, and Utkarsh Sharma. Explaining neural scaling laws. arXiv
+
+preprint arXiv:2102.06701, 2021.
+
+Peter L Bartlett, Philip M Long, Gábor Lugosi, and Alexander Tsigler. Benign overfitting in linear regression.
+
+Proceedings of the National Academy of Sciences, 2020.
+
+Raphaël Berthier, Francis Bach, and Pierre Gaillard. Tight nonparametric convergence rates for stochastic gradient
+
+descent under the noiseless linear model. Advances in Neural Information Processing Systems, 33:2576–2586, 2020.
+
+Tamay Besiroglu, Ege Erdil, Matthew Barnett, and Josh You. Chinchilla scaling: A replication attempt. arXiv preprint
+
+Blake Bordelon, Alexander Atanasov, and Cengiz Pehlevan. A dynamical model of neural scaling laws. arXiv preprint
+
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan,
+
+Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.
+
+Ethan Caballero, Kshitij Gupta, Irina Rish, and David Krueger. Broken neural scaling laws. arXiv preprint arXiv:2210.14891, 2022.
+
+Andrea Caponnetto and Ernesto De Vito. Optimal rates for the regularized least-squares algorithm. Foundations of
+
+Computational Mathematics, 7:331–368, 2007.
+
+Luigi Carratino, Alessandro Rudi, and Lorenzo Rosasco. Learning with sgd and random features. Advances in neural
+
+information processing systems, 31, 2018.
+
+Leonardo Defilippis, Bruno Loureiro, and Theodor Misiakiewicz. Dimension-free deterministic equivalents for random
+
+feature regression. arXiv preprint arXiv:2405.15699, 2024.
+
+Alexandre Défossez and Francis Bach. Averaged least-mean-squares: Bias-variance trade-offs and optimal sampling
+
+distributions. In Artificial Intelligence and Statistics, pages 205–213, 2015.
+
+Aymeric Dieuleveut and Francis R. Bach. Non-parametric stochastic approximation with large step sizes. The Annals
+
+of Statistics, 2015.
+
+Aymeric Dieuleveut, Nicolas Flammarion, and Francis Bach. Harder, better, faster, stronger convergence rates for
+
+least-squares regression. The Journal of Machine Learning Research, 18(1):3520–3570, 2017.
+
+Elvis Dohmatob, Yunzhen Feng, Pu Yang, Francois Charton, and Julia Kempe. A tale of tails: Model collapse as a
+
+change of scaling laws. arXiv preprint arXiv:2402.07043, 2024.
+
+Rong Ge, Sham M Kakade, Rahul Kidambi, and Praneeth Netrapalli. The step decay schedule: A near optimal,
+
+geometrically decaying learning rate procedure for least squares. Advances in neural information processing systems, 32, 2019.
+
+Tom Henighan, Jared Kaplan, Mor Katz, Mark Chen, Christopher Hesse, Jacob Jackson, Heewoo Jun, Tom B
+
+Brown, Prafulla Dhariwal, Scott Gray, et al. Scaling laws for autoregressive generative modeling. arXiv preprint arXiv:2010.14701, 2020.
+
+Joel Hestness, Sharan Narang, Newsha Ardalani, Gregory Diamos, Heewoo Jun, Hassan Kianinejad, Md Mostofa Ali Pat-
+
+wary, Yang Yang, and Yanqi Zhou. Deep learning scaling is predictable, empirically. arXiv preprint arXiv:1712.00409, 2017.
+
+Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las
+
+Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, et al. Training compute-optimal large language models. arXiv preprint arXiv:2203.15556, 2022.
+
+Marcus Hutter. Learning curve theory. arXiv preprint arXiv:2102.04074, 2021.
+
+Ayush Jain, Andrea Montanari, and Eren Sasoglu. Scaling laws for learning with real and surrogate data. arXiv preprint
+
+Prateek Jain, Praneeth Netrapalli, Sham M Kakade, Rahul Kidambi, and Aaron Sidford. Parallelizing stochastic gradient
+
+descent for least squares regression: mini-batching, averaging, and model misspecification. The Journal of Machine Learning Research, 18(1):8258–8299, 2017.
+
+Prateek Jain, Sham M. Kakade, Rahul Kidambi, Praneeth Netrapalli, Venkata Krishna Pillutla, and Aaron Sidford. A
+
+Markov Chain Theory Approach to Characterizing the Minimax Optimality of Stochastic Gradient Descent (for Least Squares). In 37th IARCS Annual Conference on Foundations of Software Technology and Theoretical Computer Science (FSTTCS 2017), 2018.
+
+Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec
+
+Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361, 2020.
+
+Aran Komatsuzaki. One epoch is all you need. arXiv preprint arXiv:1906.06669, 2019.
+
+Alexander Maloney, Daniel A Roberts, and James Sully. A solvable model of neural scaling laws. arXiv preprint
+
+Eric Michaud, Ziming Liu, Uzay Girit, and Max Tegmark. The quantization model of neural scaling. Advances in
+
+Neural Information Processing Systems, 36, 2024.
+
+Mehryar Mohri, Afshin Rostamizadeh, and Ameet Talwalkar. Foundations of machine learning. MIT press, 2018.
+
+Niklas Muennighoff, Alexander M Rush, Boaz Barak, Teven Le Scao, Aleksandra Piktus, Nouamane Tazi,
+
+Sampo Pyysalo, Thomas Wolf, and Colin Raffel. Scaling data-constrained language models. arXiv preprint arXiv:2305.16264, 2023.
+
+Yoonsoo Nam, Nayara Fonseca, Seok Hyeong Lee, and Ard Louis. An exactly solvable model for emergence and
+
+scaling laws. arXiv preprint arXiv:2404.17563, 2024.
+
+Loucas Pillaud-Vivien, Alessandro Rudi, and Francis Bach. Statistical optimality of stochastic gradient descent on hard
+
+learning problems through multiple passes. Advances in Neural Information Processing Systems, 31, 2018.
+
+Boris T Polyak and Anatoli B Juditsky. Acceleration of stochastic approximation by averaging. SIAM journal on
+
+control and optimization, 30(4):838–855, 1992.
+
+Jonathan S Rosenfeld, Amir Rosenfeld, Yonatan Belinkov, and Nir Shavit. A constructive prediction of the generalization
+
+error across scales. arXiv preprint arXiv:1909.12673, 2019.
+
+Alessandro Rudi and Lorenzo Rosasco. Generalization properties of learning with random features. Advances in neural
+
+information processing systems, 30, 2017.
+
+Utkarsh Sharma and Jared Kaplan. A neural scaling law from the dimension of the data manifold. arXiv preprint
+
+William Swartworth and David P Woodruff. Optimal eigenvalue approximation via sketching. In Proceedings of the
+
+55th Annual ACM Symposium on Theory of Computing, pages 145–155, 2023.
+
+Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste
+
+Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971, 2023.
+
+Aditya Vardhan Varre, Loucas Pillaud-Vivien, and Nicolas Flammarion. Last iterate convergence of SGD for least-
+
+squares in the interpolation regime. In Advances in Neural Information Processing Systems, 2021.
+
+Martin J Wainwright. High-dimensional statistics: A non-asymptotic viewpoint, volume 48. Cambridge University
+
+Press, 2019.
+
+Alexander Wei, Wei Hu, and Jacob Steinhardt. More than a toy: Random matrix models predict how real-world neural
+
+representations generalize. In Proceedings of the 39th International Conference on Machine Learning, volume 162 of Proceedings of Machine Learning Research, 2022.
+
+David P Woodruff et al. Sketching as a tool for numerical linear algebra. Foundations and Trends® in Theoretical
+
+Computer Science, 10(1–2):1–157, 2014.
+
+Jingfeng Wu, Difan Zou, Vladimir Braverman, Quanquan Gu, and Sham M. Kakade. Last iterate risk bounds of sgd
+
+with decaying stepsize for overparameterized linear regression. The 39th International Conference on Machine Learning, 2022a.
+
+Jingfeng Wu, Difan Zou, Vladimir Braverman, Quanquan Gu, and Sham M. Kakade. The power and limitation
+
+of pretraining-finetuning for linear regression under covariate shift. The 36th Conference on Neural Information Processing Systems, 2022b.
+
+Xiaohua Zhai, Alexander Kolesnikov, Neil Houlsby, and Lucas Beyer. Scaling vision transformers. In Proceedings of
+
+the IEEE/CVF conference on computer vision and pattern recognition, pages 12104–12113, 2022.
+
+Difan Zou, Jingfeng Wu, Vladimir Braverman, Quanquan Gu, Dean P Foster, and Sham Kakade. The benefits of
+
+implicit regularization from sgd in least squares problems. Advances in Neural Information Processing Systems, 34: 5456–5468, 2021.
+
+Difan Zou, Jingfeng Wu, Vladimir Braverman, Quanquan Gu, and Sham M Kakade. Benign overfitting of constant-
+
+stepsize sgd for linear regression. Journal of Machine Learning Research, 24(326):1–58, 2023.
+
+Appendix
+and that
+
+(D⊤⊗C) ◦(B⊤⊗A) ◦X =
+
+(D⊤B⊤) ⊗(CA)
+
+ 
+
+
+
+◦X
+
+= CAXBD.
+
+For simplicity, we denote
+
+A⊗2 := A ⊗A.
+
+Comments on Assumption 2, 3 and 4 Due to the rotational invariance of the Gaussian sketched matrix S, throughout the appendix, we assume w.l.o.g. that the covariance of the input covariates H is diagonal with the (i, i)-th entry being the i-th eigenvalue. Specifically, Assumption 3 can be rewritten as
+
+Assumption 6 (Source condition). Assume H = (hij)i,j≥1 is a diagonal matrix with diagonal entries in non-increasing order, and w∗satisfies a prior such that
+
+for i̸ = j, Ew∗
+
+j = 0; and for i > 0, Eλiw∗2
+
+i ≂i−b, for some b > 1.
+
+i w∗
+
+Now that we assume H is diagonal. We make the following notations. Define
+
+Hk∗:k† := diag(λk∗+1, . . . , λk†) ∈R(k†−k∗)2,
+
+where 0 ≤k∗≤k† are two integers, and we allow k† = ∞. For example,
+
+H0:k = diag(λ1, . . . , λi), Hk:∞= diag(λk+1, . . . ).
+
+Similarly, for a vector w ∈H, we have
+
+k†)⊤∈Rk†−k∗.
+
+wk∗:k† := (wk∗+1, . . . , w∗
+
+A.2 Approximation error
+Recall the risk decomposition in (4),
+
+RM(vN) = min R(·) | {z } Irreducible
+
++ min RM(·) −min R(·) | {z } Approx
+
++ RM(vN) −min RM(·) | {z } Excess
+
+.
+
+Lemma A.1 (Approximization error). Conditional on the sketch matrix S, the minimizer of RM(v) is given by
+
+v∗:= (SHS⊤)−1SHw∗,
+
+and the approximation error in (4) is
+
+Approx := min RM(·) −min R(·)
+
+1 2 w∗ 2 . (7)
+
+
+
+1 2 
+
+1 2 S⊤  SHS⊤−1SH
+
+I −H
+
+=
+
+H
+
+Moreover, Approx ≤∥w∗∥2
+
+H almost surely over the randomness of S.
+
+Proof of Lemma A.1. Recall that the risk
+
+2
+
+R(w) := E
+
+ 
+
+⟨x, w⟩−y
+
+is a quadratic function and that w∗is the minimizer of R(·), so we have
+
+Ex⊗2
+
+w∗= Exy ⇔Hw∗= Exy,
+
+ 
+
+and
+
+2 + R(w∗)
+
+R(w) = E
+
+⟨x, w⟩−⟨x, w∗⟩
+
+ 
+
+1 2 (w −w∗)∥2 + R(w∗).
+
+= ∥H
+
+Recall that the risk in a restricted subspace
+
+2
+
+RM(v) := R(S⊤v) = E
+
+ 
+
+⟨Sx, v⟩−y
+
+is also a quadratic function, so its minimizer is given by
+
+E(Sx)⊗2−1ESxy
+
+v∗=
+
+ 
+
+SHS⊤−1SHw∗.
+
+ 
+
+=
+
+Therefore, the approximation error is
+
+Approx := RM(v∗) −R(w∗)
+
+= R(S⊤v∗) −R(w∗)
+
+1 2 (S⊤v∗−w∗)∥2
+
+= ∥H
+
+1 2 (S⊤  SHS⊤−1SHw∗−w∗)∥2
+
+= ∥H
+
+1 2 w∗ 2 .
+
+
+
+1 2 
+
+1 2 S⊤  SHS⊤−1SH
+
+I −H
+
+=
+
+H
+
+Finally, since
+
+1 2 2
+
+
+
+1 2 S⊤  SHS⊤−1SH
+
+1 2 S⊤  SHS⊤−1SH
+
+1 2 ⪯I,
+
+I −H
+
+= I −H
+
+it follows that Approx ≤∥w∗∥2
+
+H.
+
+A.3 Bias-variance decomposition
+The excess risk in (4) can be viewed as the SGD excess risk in an M-dimensional (misspecified) linear regression problem. We will utilize Corollary 3.4 in (Wu et al., 2022b) to get a bias-variance decomposition of the excess risk. The following two lemmas check the related assumptions for Corollary 3.4 in (Wu et al., 2022b) in our setup.
+
+Lemma A.2 (Hypercontractivity and the misspecified noise under sketched feature). Suppose that Assumptions 5A and 5B hold. Conditioning on the sketch matrix S, for every PSD matrix A ∈RM×M, we have
+
+E(Sx)⊗2A(Sx)⊗2 ⪯α tr
+
+SHS⊤A
+
+SHS⊤.
+
+ 
+
+
+
+Moreover, for the minimizer of RM(v), that is, v∗defined in Lemma A.1, we have
+
+2(Sx)⊗2 ⪯2(σ2 + α∥w∗∥2
+
+E
+
+y −⟨v∗, Sx⟩
+
+H)SHS⊤.
+
+ 
+
+The expectation in the above is over (x, y).
+
+Proof of Lemma A.2. The first part is a direct application of Assumption 5A:
+
+E(Sx)⊗2A(Sx)⊗2 = S
+
+Exx⊤(S⊤AS)xx⊤
+
+S⊤
+
+ 
+
+HS⊤AS
+
+S⊤
+
+ 
+
+ 
+
+
+
+
+
+⪯S
+
+α tr
+
+H
+
+SHS⊤A
+
+SHS⊤.
+
+ 
+
+
+
+= α tr
+
+For the second part, we first show that
+
+2x⊗2 ⪯2E
+
+2x⊗2 + 2E⟨w∗−S⊤v∗, x⟩2x⊗2
+
+E
+
+y −⟨v∗, Sx⟩
+
+y −⟨w∗, x⟩
+
+ 
+
+ 
+
+⪯2σ2H + 2α⟨H, (w∗−S⊤v∗)⊗2⟩H,
+
+where the last inequality is by Assumptions 5A and 5B. From the proof of Lemma A.1, we know that
+
+⟨H, (w∗−S⊤v∗)⊗2⟩= Approx ≤∥w∗∥2
+
+H, almost surely.
+
+So we have
+
+2x⊗2 ⪯2(σ2 + α∥w∗∥2
+
+E
+
+y −⟨v∗, Sx⟩
+
+ 
+
+H)H.
+
+Left and right multiplying both sides with S and S⊤, we obtain the second claim.
+
+Lemma A.3 (Gaussianity and well-specified noise under sketched features). Suppose that Assumptions 1A and 1B hold. Conditional on the sketch matrix S, we have
+
+Sx ∼N(0, SHS⊤).
+
+Moreover, for the minimizer of RM(v), that is, v∗defined in Lemma A.1, we have
+
+E[y|Sx] = ⟨Sx, v∗⟩, E(y −⟨Sx, v∗⟩)2 = σ2 + Approx ≥σ2.
+
+Proof of Lemma A.3. The first claim is a direct consequence of Assumption 1A.
+
+For the second claim, by Assumption 1A and Lemma A.1, we have
+
+E[y|x] = ⟨x, w∗⟩
+
+= ⟨x, S⊤v∗⟩+ ⟨x, w∗−S⊤v∗⟩
+
+= ⟨x, S⊤v∗⟩+ ⟨x,
+
+I −(SHS⊤)−1SH
+
+w∗⟩
+
+
+
+
+
+= ⟨H−1
+
+2 x, H 1 2 S⊤v∗⟩+ ⟨H−1 2 x, 
+
+1 2 S⊤(SHS⊤)−1SH 1 2  H
+
+1 2 w∗⟩
+
+I −H
+
+1 2 H−1 2 x, v∗⟩+ ⟨ 
+
+1 2 S⊤(SHS⊤)−1SH 1 2  H−1
+
+2 x, H 1 2 w∗⟩. (8)
+
+= ⟨SH
+
+I −H
+
+Notice that
+
+H−1
+
+2 x ∼N(0, I),
+
+by Assumption 1A and that
+
+1 2  I −H
+
+1 2 S⊤(SHS⊤)−1SH 1 2  = 0,
+
+SH
+
+therefore
+
+1 2 H−1 2 x is independent of 
+
+1 2 S⊤(SHS⊤)−1SH 1 2  H−1
+
+2 x.
+
+I −H
+
+Sx = SH
+
+Taking expectation over the second random vector in (8), we find
+
+1 2 H−1 2 x, v∗⟩= ⟨Sx, v∗⟩.
+
+E[y|Sx] = EE[y|x] = ⟨SH
+
+It remains to show
+
+E(y −⟨Sx, v∗⟩)2 = σ2 + Approx.
+
+This follows from the proof of Lemma A.1. Specifically,
+
+E(y −⟨Sx, v∗⟩)2 = R(S⊤v∗)
+
+= Approx + R(w∗)
+
+= Approx + σ2
+
+≥σ2,
+
+where the second equality is by the definition of Approx and the third equality is by Assumption 1B. We have completed the proof.
+
+A.4 Proof of Theorem 6.1
+
+We now use the results in (Wu et al., 2022a,b) for SGD to obtain the following bias-variance decomposition on the excess risk.
+
+Theorem A.4 (Excess risk bounds). Consider the excess risk in (4) induced by the output of (SGD). Let
+
+Neff := N/ log(N), SNR := (∥w∗∥2
+
+H + ∥v0∥2
+
+SHS⊤)/σ2.
+
+Then conditioning on the sketch matrix S, for any w∗∈H
+
+1. Under Assumptions 5A and 5B, we have
+
+N Y
+
+2
+
+SHS⊤+ (1 + αSNR)σ2 · Deff
+
+EExcess ≲
+
+I −γtSHS⊤
+
+(v0 −v∗)
+
+ 
+
+Neff
+
+t=1
+
+when γ ≲ 1 cα tr(SHS⊤) for some constant c > 0.
+
+2. Under Assumptions 1A and 1B, we have
+
+N Y
+
+2
+
++ σ2 · Deff
+
+EExcess ≳
+
+I −γtSHS⊤
+
+(v0 −v∗)
+
+ 
+
+Neff
+
+SHS⊤
+
+t=1
+
+when γ ≲ 1 c tr(SHS⊤) for some constant c > 0.
+
+In both results, the expectation is over (xt, yt)N
+
+t=1, and
+
+Deff := #{˜λj ≥1/(Neffγ)} + (Neffγ)2 X
+
+˜λ2
+
+j,
+
+˜λj<1/(Neffγ)
+
+where (˜λj)M
+
+j=1 are eigenvalue of SHS⊤.
+
+Theorem 6.1 follows immediately by Lemma A.1 and by setting v0 = 0 and plugging the definition of Bias(w∗) and Var into Theorem A.4.
+
+Proof of Theorem A.4. This follows from Corollary 3.4 in (Wu et al., 2022b) for a linear regression problem with population data given by (Sx, y). Note that the data covariance becomes SHS⊤and the optimal model parameter becomes v∗.
+
+For the upper bound, Lemma A.2 verifies Assumptions 1A and 2 in (Wu et al., 2022b), with the noise level being
+
+˜σ2 = 2(σ2 + α∥w∗∥2
+
+H).
+
+Then we can apply the upper bound in Corollary 3.4 in (Wu et al., 2022b) (setting their index set K = ∅) to get
+
+N Y
+
+2
+
+SHS⊤+ ˜σ2)Deff
+
+EExcess ≲
+
+I −γtSHS⊤
+
+(v0 −v∗)
+
+SHS⊤+ (∥v∗−v0∥2
+
+ 
+
+.
+
+Neff
+
+t=1
+
+We verify that
+
+1 2 S⊤v∗∥2 + 2∥v0∥2 SHS⊤
+
+∥v∗−v0∥2
+
+SHS⊤≤2∥H
+
+1 2 S⊤(SHS⊤)−1SHw∗∥2 + 2∥v0∥2 SHS⊤
+
+= 2∥H
+
+1 2 w∗∥2 + 2∥v0∥2 SHS⊤
+
+≤2∥H
+
+= 2∥w∗∥2
+
+H + 2∥v0∥2
+
+SHS⊤,
+
+which implies that
+
+SHS⊤+ 2(σ2 + α∥w∗∥2
+
+(∥v∗−v0∥2
+
+SHS⊤+ ˜σ2) ≤2∥w∗∥2
+
+H + 2∥v0∥2
+
+H)
+
+≲(1 + αSNR)σ2.
+
+Substituting, we get the upper bound.
+
+For the lower bound, Lemma A.3 shows Sx is Gaussian, therefore it satisfies Assumption 1B in Wu et al. (2022b) with β = 1. Besides, Lemma A.3 shows that the linear regression problem is well-specified, with the noise level being
+
+˜σ2 = σ2 + Approx ≥σ2.
+
+Although the lower bound in Corollary 3.4 in Wu et al. (2022b) is stated for Gaussian additive noise (see their Assumption 2’), it is easy to check that the lower bound holds for any well-specified noise as described by Lemma A.3. Using the lower bound in Corollary 3.4 in Wu et al. (2022b), we obtain
+
+N Y
+
+2
+
+SHS⊤+ ˜σ2 Deff
+
+EExcess ≳
+
+I −γtSHS⊤
+
+(v0 −v∗)
+
+ 
+
+.
+
+Neff
+
+t=1
+
+Plugging in ˜σ2 ≥σ2 gives the desired lower bound.
+
+A.5 Proofs of Lemma 6.2, Theorem 6.3 and 6.4
+Lemma 6.2 is proved in Lemma G.4. Theorem 6.3 follows from Lemma C.1 and D.1. Theorem 6.4 follows from Lemma C.2 and D.2.
+
+B Proofs in Section 4
+B.1 Proof of Theorem 4.1
+
+Proof of part 1. By Assumption 1B and the definition of R(·), we have
+
+R(w) = E(⟨x, w⟩−y)2 = E(⟨x, w⟩−E[y | x])2 + E(y −E[y | x])2
+
+= E(⟨x, w⟩−⟨x, w∗⟩)2 + σ2 ≥σ2.
+
+Note that the equality holds if and only if w = w∗. Therefore we have min R(·) = R(w∗) = σ2.
+
+Proof of part 2. Part 2 of Theorem 4.1 follows immediately from Lemma C.2.
+
+Proof of part 3. We choose Bias(w∗), Var as defined in Eq. (5) and (6) and let Bias := Ew∗Bias(w∗). Part 3 of Theorem 4.1 follows directly from the decomposition of the excess risk in Theorem 6.1 (note that E∥w∗∥2
+
+H/σ2 ≲1), and the matching bounds in Lemma D.3 and E.1.
+
+It remains to verify the stepsize assumption required in Lemma D.3. Since we have from Lemma G.4 that
+
+1 tr(SHS⊤) = 1 PM
+
+≥ c1 PM
+
+≥ c2 PM
+
+i=1 i−a ≥c3
+
+i=1 ˜λi
+
+i=1 λi
+
+for some a-dependent constants c1, c2, c3 > 0 with probability at least 1 −e−Ω(M), it follows that for any constant c > 1, we can choose γ ≤c0 for some a-dependent c0 such that γ ≤ 1 c tr(SHS⊤). Therefore, we have verified the stepsize assumption.
+
+Finally, the last claim in Theorem 4.1 follows directly from combining the previous three parts and Theorem 6.1, noting σ2 ≲1. and
+
+Var ≂min{M, (Neffγ)1/a}
+
+≲(Neffγ)1/a
+
+≲(Neffγ)1/a−1 ≲Bias + Approx
+
+Neff
+
+Neff
+
+under the stepsize assumption γ ≲1. Here the hidden constants may depend on a.
+
+B.2 Proof of Theorem 4.2
+
+Similar to the proof of Theorem 4.1, we have min R(·) = σ2 under Assumption 1B. Moreover, by Lemmas C.5, D.4 and E.1, we have with probability at least 1 −e−Ω(M) that
+
+Ew∗Approx ≂M 1−b,
+
+Bias ≲max
+
+M 1−b, (Neffγ)(1−b)/a
+
+
+
+,
+
+Bias ≳(Neffγ)(1−b)/a when (Neffγ)1/a ≤M/3,
+
+Var ≂min
+
+M, (Neffγ)1/a
+
+
+
+/Neff,
+
+when the stepsize γ ≤c for some a-dependent constant c > 0. Here the hidden constants in the bounds may depend only on (a, b). Combining the bounds on Approx, Bias, Var yields Theorem 4.2.
+
+B.3 Proof of Theorem 4.3
+
+Similar to the proof of Theorem 4.1, we have min R(·) = σ2 under Assumption 1B. Notice that we have γ ≲1 implies γ ≲1/(tr(SHS⊤)) with probability at least 1 −e−Ω(M) by Lemma G.6. It follows from Lemma C.6, D.5 and E.2 that
+
+Ew∗Approx ≂log1−a M,
+
+log1−a M, log1−a(Neffγ)
+
+Bias ≲max
+
+
+
+,
+
+Bias ≳log1−a(Neffγ) when (Neffγ)1/a ≤M c for some small constant c > 0,
+
+Var ≂min{M, (Neffγ)/ loga(Neffγ)}
+
+≲(Neffγ)/ loga(Neffγ)
+
+Neffγ = log−a(Neffγ)
+
+Neff
+
+with probability at least 1 −e−Ω(M) when the stepsize γ ≤c for some a-dependent constant c > 0. Since Var ≲Bias and log1−a(Neffγ) ≲log1−a M when (Neffγ)1/a ≳M c, putting the bounds together gives Theorem 4.3.
+
+C Approximation error
+In this section, we derive upper and lower bounds for the approximation error in (4) (and 7). We will also show that the upper and lower bounds match up to constant factors in several examples.
+
+C.1 An upper bound
+Lemma C.1 (An upper bound on the approximation error). Given any k ≤d such that r(H) ≥k + M, the approximation error in (4) (and 7) satisfies
+
+0:kw∗ 0:k ⊤⟩
+
+Approx ≲∥w∗
+
+Hk:∞+ ⟨[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1, w∗
+
+k:∞∥2
+
+almost surely, where Ak := Sk:∞Hk:∞S⊤
+
+k:∞. If in addition k ≤M/2, then with probability 1 −e−Ω(M)
+
+sP
+
+i>k λ2
+
+P
+
+i>k λi
+
+
+
+i M
+
+Approx ≲∥w∗
+
+∥w∗
+
+k:∞∥2
+
+0:k∥2,
+
+Hk:∞+
+
+M + λk+1 +
+
+where (λi)p
+
+i=1 are eigenvalues of H in non-increasing order.
+
+Proof of Lemma C.1. Write the singular value decomposition H = UΛU⊤, where Λ := diag{λ1, λ2, . . . , λd} with λ1 ≥λ2 ≥. . . λd ≥0 and UU⊤= I. Define ˜S := SU, ˜w∗:= U⊤w∗. Then by Lemma A.1 the approximation error
+
+Approx = Approx(S, H, w∗) satisfies
+
+1 2 w∗ 2
+
+
+
+1 2 
+
+1 2 S⊤  SHS⊤−1SH
+
+Approx(S, H, w∗) =
+
+I −H
+
+H
+
+1 2 U⊤w∗ 2
+
+
+
+1 2 ˜S⊤ ˜SΛ˜S⊤−1SΛ 1 2 U⊤ UΛ
+
+I −UΛ
+
+=
+
+1 2 U⊤w∗ 2
+
+U
+
+
+
+1 2 ˜S⊤ ˜SΛ˜S⊤−1SΛ 1 2 
+
+I −Λ
+
+=
+
+Λ
+
+1 2 ˜w∗ 2 = Approx(˜S, Λ, ˜w∗).
+
+
+
+1 2 ˜S⊤ ˜SΛ˜S⊤−1SΛ 1 2 
+
+I −Λ
+
+=
+
+Λ
+
+d= S by rotational invariance of standard Gaussian variables, it suffices to analyze the case where H = Λ is a diagonal matrix, as the results may transfer to general H by replacing ˜w∗with w∗.
+
+Since ˜S
+
+Therefore, from now on we assume w.l.o.g. that H is a diagonal matrix with non-increasing diagonal entries. Define A := SHS⊤.
+
+By definition of Approx, we have
+
+1 2 w∗ 2
+
+
+
+1 2 
+
+1 2 S⊤  SHS⊤−1SH
+
+I −H
+
+Approx =
+
+H
+
+[H1/2S⊤A−1SH1/2 −Id]⊗2, H1/2w∗w∗⊤H1/2
+
+=
+
+.
+
+Moreover, for any k ∈[d]
+
+!
+
+H1/2
+
+0:k S⊤ 0:k H1/2
+
+H1/2S⊤A−1SH1/2 −Id =
+
+A−1 
+
+
+
+Sk:∞H1/2
+
+k:∞ Sk:∞H1/2
+
+−Id
+
+k:∞
+
+k:∞S⊤
+
+k:∞
+
+!
+
+H1/2
+
+0:k S⊤ 0:kA−1Sk:∞H1/2 k:∞ H1/2
+
+0:k S⊤ 0:kA−1S0:kH1/2 0:k −Ik H1/2
+
+=
+
+k:∞A−1S0:kH1/2
+
+0:k H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞−Id−k
+
+ U V V⊤ W
+
+
+
+=:
+
+(9)
+
+Therefore
+
+ U2 + VV⊤ UV + VW V⊤U + WV⊤ W2 + V⊤V
+
+U2 + VV⊤ 0 0 W2 + V⊤V
+
+
+
+
+
+[H1/2S⊤A−1SH1/2 −Ip]⊗2 =
+
+⪯2
+
+,
+
+and hence
+
+* U2 + VV⊤ 0 0 W2 + V⊤V
+
++
+
+
+
+, H1/2w∗w∗⊤H1/2
+
+Approx ≤2
+
+U2 + VV⊤, H1/2
+
+W2 + V⊤V, H1/2
+
+0:k w∗,0:kw⊤ ∗,0:kH1/2
+
+∗,k:∞H1/2
+
+k:∞w∗,k:∞w⊤
+
+= 2
+
++ 2
+
+.
+
+k:∞
+
+0:k
+
+We claim the following results which we will prove at the end of the proof.
+
+W2 + V⊤V, H1/2
+
+∗,k:∞H1/2
+
+k:∞w∗,k:∞w⊤
+
+≤∥w∗
+
+k:∞∥2
+
+Hk:∞, (10)
+
+k:∞
+
+U2 + VV⊤, H1/2
+
+0:k w∗,0:kw⊤ ∗,0:kH1/2
+
+0:kw∗ 0:k ⊤⟩. (11)
+
+= ⟨[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1, w∗
+
+0:k
+
+Note that in claim (11) the inverse A−1
+
+k exists almost surely since r(Hk:∞) ≥r(H) −k ≥M by our assumption and Sk:∞∈RM×(d−k) is a random gaussian projection onto RM. First part of Lemma C.1 follows immediately from combining claim (10) and (11).
+
+To prove the second part of Lemma C.1, first note that with probability 1 −e−Ω(M) we have
+
+sP
+
+i>k λ2
+
+P
+
+i>k λi
+
+k ) = ∥Ak∥−1 ≥c/
+
+
+
+i M
+
+µmin(A−1
+
+M + λk+1 +
+
+forc some constant c > 0 by Lemma G.2. Moreover, by the concentration of the Gaussian variance matrix (see e.g., Theorem 6.1 in Wainwright (2019)), we have S⊤
+
+0:kS0:k ⪰Ik/5 with probability 1 −e−Ω(M) when M/k ≥2. Combining the last two arguments, we obtain
+
+sP
+
+i>k λ2
+
+0:kS0:k/ P
+
+i>k λi
+
+
+
+i M
+
+0:kA−1 k S0:k ⪰cS⊤
+
+S⊤
+
+M + λk+1 +
+
+sP
+
+i>k λ2
+
+P
+
+i>k λi
+
+
+
+i M
+
+≳Ik/
+
+M + λk+1 +
+
+,
+
+and therefore
+
+0:kw∗ 0:k ⊤⟩≤⟨[S⊤
+
+0:kw∗ 0:k ⊤⟩
+
+⟨[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1, w∗
+
+0:kA−1 k S0:k]−1, w∗
+
+≤∥[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1∥∥w∗
+
+0:k∥2
+
+sP
+
+i>k λ2
+
+P
+
+i>k λi
+
+
+
+i M
+
+≲
+
+∥w∗
+
+0:k∥2 (12)
+
+M + λk+1 +
+
+with probability 1 −e−Ω(M). Combining Eq. (12) with the first part of Lemma C.1 completes the proof.
+
+Proof of claim (10) Note that
+
+−Id−k ⪯W = H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞−Id−k
+
+= H1/2
+
+0:k + Sk:∞Hk:∞S⊤ k:∞)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞(S0:kH0:kS⊤
+
+k:∞−Id−k
+
+⪯H1/2
+
+k:∞)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞(Sk:∞Hk:∞S⊤
+
+k:∞−Id−k ⪯0d−k,
+
+where the last inequality uses the fact that the norm of projection matrices is no greater than one. Therefore, we have ∥W∥2 ≤1. Now, it remains to show
+
+W2 + V⊤V = −W, (13)
+
+as claim (10) is a direct consequence of Eq. (13) and the fact that ∥W∥≤1.
+
+By definition of W in Eq. (9), we have
+
+W2 = (H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞−Id−k)2
+
+= Id−k −2H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞+ H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞A−1Sk:∞Hk:∞S⊤
+
+k:∞
+
+= Id−k −2H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞+ H1/2
+
+k:∞A−1AkA−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞.
+
+By definition of V in Eq. (9), we have
+
+V⊤V = H1/2
+
+0:k)A−1Sk:∞H1/2 k:∞.
+
+k:∞S⊤
+
+k:∞A−1(S0:kH0:kS⊤
+
+Since S0:kH0:kS⊤
+
+0:k + Ak = A, it follows that
+
+W2 + V⊤V = Id−k −2H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞+ H1/2
+
+k:∞A−1AA−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞
+
+= Id−k −H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞= −W.
+
+Proof of claim (11) It suffices to show U2 + V⊤V = [H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1. Using the definition of U in Eq. (9), we obtain
+
+U = H1/2
+
+0:k S⊤ 0:kA−1S0:kH1/2 0:k −Ik
+
+= H1/2
+
+0:k S⊤ 0:kA−1 k S0:kH1/2
+
+0:k −H1/2 0:k S⊤ 0:kA−1 k S0:k[H−1
+
+0:kA−1 k S0:kH1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:k −Ik
+
+= H1/2
+
+0:kH1/2 0:k −Ik,
+
+0:k S⊤ 0:kA−1 k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1
+
+where the second line uses Woodbury’s matrix identity, namely
+
+A−1 = [S0:kH0:kS⊤
+
+0:k + Ak]−1 = A−1 k −A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k .
+
+Continuing the calculation of U, we have
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+U = H1/2
+
+0:k S⊤ 0:kA−1 k S0:k[H−1
+
+0:k −Ik
+
+0:k + S⊤ 0:kA−1 k S0:k]−1 −Ik)H−1/2
+
+= H1/2
+
+0:k (S⊤ 0:kA−1 k S0:k[H−1
+
+0:k
+
+= −H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k .
+
+Therefore,
+
+U2 = H−1/2
+
+0:k[H−1 0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1
+
+0:k . (14)
+
+Since
+
+0:k S⊤ 0:kA−1 = H1/2 0:k S⊤ 0:kA−1 k −H1/2
+
+H1/2
+
+0:k S⊤ 0:kA−1 k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k
+
+= H−1/2
+
+0:k [H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k
+
+by Woodbury’s matrix indentity, it follows from the definition of V in Eq. (9) that
+
+VV⊤= H1/2
+
+0:k S⊤ 0:kA−1Sk:∞Hk:∞S⊤ k:∞A−1S0:kH1/2
+
+0:k
+
+= H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:kA−1 k (Sk:∞Hk:∞S⊤
+
+k:∞)A−1
+
+k S0:k[H−1
+
+0:k [H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:k
+
+= H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k S0:k[H−1
+
+0:k . (15)
+
+Combining Eq. (14) and (15) yields
+
+U2 + VV⊤= H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k , (16)
+
+and therefore
+
+U2 + VV⊤, H1/2
+
+0:k w∗,0:kw⊤ ∗,0:kH1/2
+
+0:kw∗ 0:k ⊤⟩.
+
+= ⟨[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1, w∗
+
+0:k
+
+C.2 A lower bound
+For the approximation error Approx, we have the following result.
+
+Lemma C.2 (Lower bound on the approximation error). When r(H) ≥M, under Assumption 1C, the approximation error in (4) (and 7) satisfies
+
+d X
+
+Ew∗Approx ≳
+
+λi,
+
+i=M
+
+where (λi)d
+
+i=1 are eigenvalues of H in non-increasing order.
+
+Proof of Lemma C.2. For any k ≤d, following the proof of Lemma C.1, we have
+
+[H1/2S⊤A−1SH1/2 −Id]⊗2, H1/2w∗(w∗)⊤H1/2
+
+Approx =
+
+and
+
+!
+
+H1/2
+
+0:k S⊤ 0:kA−1Sk:∞H1/2 k:∞ H1/2
+
+0:k S⊤ 0:kA−1S0:kH1/2 0:k −Ik H1/2
+
+H1/2S⊤A−1SH1/2 −Id =
+
+k:∞A−1S0:kH1/2
+
+0:k H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞−Id−k
+
+ U V V⊤ W
+
+
+
+=:
+
+. (17)
+
+Therefore
+
+ U2 + VV⊤ UV + VW V⊤U + WV⊤ W2 + V⊤V
+
+
+
+[H1/2S⊤A−1SH1/2 −Id]⊗2 =
+
+and
+
+U2 + VV⊤, H1/2
+
+W2 + V⊤V, H1/2
+
+0:k w∗ 0:kw∗ 0:kH1/2 0:k
+
+k:∞H1/2
+
+Ew∗Approx = Ew∗
+
++ Ew∗
+
+0:k w∗ k:∞w∗
+
+k:∞
+
+UV + VW, H1/2
+
+0:k w∗ 0:kw∗ k:∞H1/2
+
++ 2Ew∗
+
+k:∞
+
+= tr((U2 + VV⊤)H0:k) + tr((W2 + V⊤V)Hk:∞),
+
+where the last line uses the fact that Ew∗(w∗)⊗2 = Id. Using Eq. (13) and (16) in the proof of Lemma C.1, we further obtain
+
+Ew∗Approx = tr(H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k H0:k) −tr(WHk:∞)
+
+= tr([H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1) −tr(WHk:∞)
+
+≥−tr(WHk:∞) =: T3.
+
+where Ak := Sk:∞Hk:∞S⊤
+
+k:∞. For T3, we further have
+
+T3 = tr(H1/2
+
+k:∞[Id−k −H1/2
+
+k:∞A−1Sk:∞H1/2
+
+k:∞]H1/2
+
+k:∞S⊤
+
+k:∞)
+
+≥tr(H1/2
+
+k:∞[Id−k −H1/2
+
+k Sk:∞H1/2
+
+k:∞]H1/2
+
+k:∞A−1
+
+k:∞S⊤
+
+k:∞)
+
+d−k X
+
+µi(Id−k −H1/2
+
+k Sk:∞H1/2
+
+k:∞A−1
+
+k:∞S⊤
+
+≥
+
+k:∞) · µd+1−k−i(Hk:∞),
+
+i=1
+
+where the second line is due to A ⪰Ak (and hence −A−1 ⪰−A−1
+
+k ), the third line follows from Von-Neuman’s inequality. Since M := Id−k −H1/2
+
+k:∞is a projection matrix such that M2 = M and tr(Id−k − M) = M, it follows that M has M eigenvalues 0 and d −k −M eigenvalues 1. Therefore, we further have
+
+k Sk:∞H1/2
+
+k:∞A−1
+
+k:∞S⊤
+
+d−k X
+
+d X
+
+T3 ≥
+
+µi(M) · µd+1−k−i(Hk:∞) ≥
+
+λi
+
+i=1
+
+i=k+M
+
+for any k ≤d. Letting k = 0 maximizes the lower bound and concludes the proof.
+
+C.3 A lower bound under Assumption 3
+Lemma C.3 (Lower bound on the approximation error under Assumption 3). Under Assumption 3, the approximation error in (4) (and 7) satisfies
+
+d X
+
+Ew∗Approx ≳
+
+λiia−b,
+
+i=M
+
+where (λi)d
+
+i=1 are eigenvalues of H in non-increasing order and the inequality hides some (a, b)-dependent constant.
+
+Proof of Lemma C.3. The proof is essentially the same as the proof of Lemma C.2 but we include it here for com- pleteness. Let Hw := E[w∗w∗⊤] be the covariance of the prior on w∗. Following the proof of Lemma C.2, we have
+
+U2 + VV⊤, H1/2
+
+W2 + V⊤V, H1/2
+
+0:k w∗ 0:kw∗ 0:kH1/2 0:k
+
+k:∞H1/2
+
+Ew∗Approx = Ew∗
+
++ Ew∗
+
+0:k w∗ k:∞w∗
+
+k:∞
+
+UV + VW, H1/2
+
+0:k w∗ 0:kw∗ k:∞H1/2
+
++ 2Ew∗
+
+k:∞
+
+= tr((U2 + VV⊤)H0:kHw
+
+0:k) + tr((W2 + V⊤V)Hk:∞Hw k:∞),
+
+where the last line uses Assumption 3 and notice that H, Hw are both diagonal. Next, similar to the proof of Lemma C.2, using Eq. (13) and (16), we derive
+
+Ew∗Approx = tr(H−1/2
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1/2
+
+0:k [H−1
+
+0:k H0:kHw
+
+0:k) −tr(WHk:∞Hw k:∞)
+
+= tr([H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1Hw
+
+0:k) −tr(WHk:∞Hw k:∞)
+
+k:∞) =: ˜T3
+
+≥−tr(WHk:∞Hw
+
+k:∞. For ˜T3, following the same argument for T3 in the proof of Lemma C.2, we have
+
+where Ak := Sk:∞Hk:∞S⊤
+
+d−k X
+
+µi(Id−k −H1/2
+
+k Sk:∞H1/2
+
+˜T3 ≥
+
+k:∞A−1
+
+k:∞S⊤
+
+k:∞) · µd+1−k−i(Hk:∞Hw
+
+k:∞)
+
+i=1
+
+d X
+
+d X
+
+µi(HHw) ≳
+
+ia−bλi,
+
+≥
+
+i=k+M
+
+i=k+M
+
+for any k ≤d where the last inequality uses Assumption 3. Setting k = 0 maximizes the lower bound and concludes the proof.
+
+C.4 Examples on matching bounds for Approx
+In this section, we derive matching upper and lower bounds for Approx (defined in Eq. 4 and 7) in three concrete examples: power-law spectrum (Lemma C.4), power-law spectrum with source condition (Lemma C.5) and logarithmic power-law spectrum (Lemma D.5).
+
+Lemma C.4 (Bounds on Approx under the power-law spectrum). Suppose Assumption 1C and 2 hold. Then with probability at least 1 −e−Ω(M) over the randomness of S
+
+M 1−a ≲Ew∗Approx ≲M 1−a.
+
+Here, the hidden constants only depend on the power-law degree a.
+
+Proof of Lemma C.4. For the upper bound, by Lemma C.1 and noting Ew∗2
+
+i = 1 for all i, we have with probability at least 1 −e−Ω(M)
+
+sP
+
+i>k1 λ2
+
+P
+
+i>k1 λi
+
+
+
+i M
+
+X
+
+Ew∗Approx ≲
+
+· k1
+
+λi +
+
+M + λk1+1 +
+
+k>k1
+
+s
+
+k1−a
+
+k1−2a
+
+
+
+≲k1−a
+
+1 M + k−a
+
+1 M
+
+1 +
+
+1 +
+
+k1
+
+ k1
+
+
+
+≲
+
+k1−a
+
+M + 1
+
+1
+
+for any given k1 ≤M/2. Here the hidden constants depend on a. Therefore, letting k1 = M/2 in the upper bound yields
+
+Ew∗Approx ≲M 1−a
+
+with probability at least 1 −e−Ω(M).
+
+For the lower bound, we have from Lemma C.2 that
+
+∞ X
+
+i−a ≳M 1−a.
+
+Ew∗Approx ≳
+
+i=M
+
+This completes the proof.
+
+Lemma C.5 (Bounds on Approx under the source condition). Suppose Assumption 3 hold. Then with probability at least 1 −e−Ω(M) over the randomness of S
+
+M 1−b ≲Ew∗Approx ≲M 1−b.
+
+Here, the hidden constants only depend on the power-law degrees a, b.
+
+i ≂ia−b for all i, we have with probability at least 1 −e−Ω(M)
+
+Proof of Lemma C.5. For the upper bound, by Lemma C.1 and noting Ew∗2
+
+sP
+
+i>k1 λ2
+
+P
+
+i>k1 λi
+
+
+
+λiia−b +
+
+i M
+
+X
+
+Approx ≲
+
+· k1+a−b 1
+
+M + λk1+1 +
+
+k>k1
+
+s
+
+k1−a
+
+k1−2a
+
+
+
+≲k1−b
+
+1 M + k−a
+
+k1+a−b
+
+1 M
+
+1 +
+
+1 +
+
+1
+
+ k1
+
+
+
+≲
+
+k1−b
+
+M + 1
+
+1
+
+for any given k1 ≤M/2. Here the hidden constants depend on a, b. Moreover, choosing k1 = M/2 in the upper bound gives
+
+Ew∗Approx ≲M 1−b
+
+with probability at least 1 −e−Ω(M).
+
+For the lower bound, we have from Lemma C.3 that
+
+∞ X
+
+i−a · ia−b ≳M 1−b.
+
+Ew∗Approx ≳
+
+i=M
+
+This completes the proof.
+
+Lemma C.6 (Bounds on Approx under the logarithmic power-law spectrum). Suppose Assumption 4 hold. Then with probability at least 1 −e−Ω(M) over the randomness of S
+
+log1−a M ≲Ew∗Approx ≲log1−a M.
+
+Here, the hidden constants only depend on the power-law degree a.
+
+Proof of Lemma C.6. For the upper bound, by Lemma C.1 and noting Ew∗2
+
+i = 1 for all i, we have with probability at least 1 −e−Ω(M)
+
+sP
+
+i>k1 λ2
+
+P
+
+i>k1 λi
+
+
+
+i M
+
+X
+
+Approx ≲
+
+λi +
+
+M + λk1+1 +
+
+k1
+
+k>k1
+
+s
+
+log1−a k1
+
+k1−2a
+
+
+
+≲log1−a k1 +
+
+1 log−a k1 +
+
+M + k−1
+
+1 M
+
+k1
+
+r
+
+
+
+
+
+1 + k1 M + 1 log k1
+
++ 1 log k1
+
+k1 M
+
+log1−a k1
+
+≲
+
+≲log1−a k1
+
+i ≲1/(k1 log2a k1). Choosing k1 = M/2, we obtain
+
+i>k1 λ2
+
+for any given k1 ≤M/2, where the third line uses P
+
+Ew∗Approx ≲log1−a M
+
+with probability at least 1 −e−Ω(M). Here the hidden constants depend on a, b.
+
+For the lower bound, we have from Lemma C.2 that
+
+∞ X
+
+∞ X
+
+i−1 log−a i ≳log1−a M.
+
+Ew∗Approx ≳
+
+λi ≳
+
+i=M
+
+i=M
+
+Therefore, we have established matching upper and lower bounds for Approx.
+
+D Bias error
+In this section, we derive upper and lower bounds for Bias(w∗) defined in Eq. (5). Moreover, we show that the upper and lower bounds match up to constant factors in concrete examples.
+
+D.1 An upper bound
+Lemma D.1 (Upper bound on the bias term). Suppose the initial stepsize γ ≤ 1 c tr(SHS⊤) for some constant c > 1. Then for any w∗∈H and k ∈[d] such that r(H) ≥k + M, the bias term in (5) satisfies
+
+Bias(w∗) ≲ 1 Neffγ ∥v∗∥2
+
+2.
+
+Moreover, for any k ≤M/3 such that r(H) ≥k + M, the bias term satisfies
+
+#2
+
+"
+
+Bias(w∗) ≲∥w∗
+
+0:k∥2 2 Neffγ ·
+
+µM/2(Ak)
+
++ ∥w∗
+
+k:∞∥2
+
+Hk:∞
+
+µM(Ak)
+
+with probability 1 −e−Ω(M), where Ak := Sk:∞Hk:∞S⊤
+
+k:∞, {µi(Ak)}M
+
+i=1 denote the eigenvalues of Ak in non- increasing order for some constant c > 1.
+
+Proof of Lemma D.1. Similar to the proof of Lemma C.1, we can without loss of generality assume the covariance matrix H = diag{λ1, λ2, . . . , λd} where λi ≥λj for any i ≥j. Let SH1/2 = ˜U
+
+ ˜Λ1/2 0  ˜V⊤be the singular value decomposition of SHS⊤, where ˜Λ := diag{˜λ1, ˜λ2, . . . , ˜λM} is a diagonal matrix with diagonal entries in non-increasing order. Define Ak := Sk:∞Hk:∞S⊤
+
+k:∞. Then it follows from similar arguments as in Lemma C.1 that Ak is invertible.
+
+Since
+
+˜λ1 c PM
+
+∥γtSHS⊤∥2 = γt˜λ1 ≤γ˜λ1 ≤
+
+≤1
+
+i=1 ˜λi
+
+for some constant c > 1 by the stepsize assumption, it follows that IM −γtSHS⊤≻0M for all t ∈[N]. Therefore, it can be verified that
+
+N Y
+
+N Y
+
+(IM −γtSHS⊤) ⪯(IM −γSHS⊤)NeffSHS⊤(IM −γSHS⊤)Neff =: M,
+
+(IM −γtSHS⊤)SHS⊤
+
+t=1
+
+t=1
+
+and by definition of Bias(w∗) in Eq. (5), we have
+
+N Y
+
+2
+
+2
+
+I −γSHS⊤Neffv∗
+
+Bias(w∗) ≂
+
+I −γtSHS⊤
+
+v∗
+
+ 
+
+ 
+
+SHS⊤≤
+
+SHS⊤
+
+t=1
+
+= ⟨M, v∗⊗2⟩. (18)
+
+Note that the eigenvalues of M are {˜λi(1 −γ˜λi)2Neff}M
+
+i=1. Since the function f(x) = x(1 −γx)2Neff is maximized at x0 = 1/[(2Neff + 1)γ] for x ∈[0, 1/γ] with f(x0) ≲1/(Neffγ), it follows that
+
+∥M∥2 ≤c/(Neffγ) (19)
+
+for some constant c > 0. The first part of Lemma D.1 follows immediately.
+
+SHS⊤−1SHw∗. Substituting
+
+Now we prove the second part of Lemma D.1. Recall that v∗=
+
+ 
+
+ S0:kH0:k Sk:∞Hk:∞
+
+
+
+SH =
+
+into v∗, we obtain
+
+⟨M, v∗⊗2⟩= ⟨M, ((SHS⊤)−1SHw∗)⊗2⟩
+
+= w∗⊤HS⊤(SHS⊤)−1M(SHS⊤)−1SHw∗
+
+≤2T1 + 2T2,
+
+where
+
+T1 := (w∗
+
+0:k)⊤H0:kS⊤ 0:k(SHS⊤)−1M(SHS⊤)−1S0:kH0:kw∗ 0:k, (20)
+
+T2 := (w∗
+
+k:∞)⊤Hk:∞S⊤
+
+k:∞(SHS⊤)−1M(SHS⊤)−1Sk:∞Hk:∞w∗
+
+k:∞. (21)
+
+We claim the following results which we prove later. With probability 1 −e−Ω(M)
+
+#2
+
+"
+
+T1 ≤c∥w∗
+
+0:k∥2 2 Neffγ ·
+
+µM/2(Ak)
+
+(22a)
+
+µM(Ak)
+
+for some constant c > 0.
+
+T2 ≤∥w∗
+
+k:∞∥2
+
+Hk:∞. (22b)
+
+Combining Eq. (22a), (22b) gives the second part of Lemma D.1.
+
+Proof of claim (22a) By definition of T1, we have
+
+T1 ≤∥H0:kS⊤
+
+0:k(SHS⊤)−1M(SHS⊤)−1S0:kH0:k∥2 · ∥w∗ 0:k∥2 2.
+
+Moreover,
+
+∥H0:kS⊤
+
+0:k(SHS⊤)−1M(SHS⊤)−1S0:kH0:k∥2
+
+≤∥M∥2 · ∥(SHS⊤)−1S0:kH0:k∥2
+
+2
+
+≤ c Neffγ ∥(SHS⊤)−1S0:kH0:k∥2
+
+2
+
+for some constant c > 0, where the last line uses Eq. (19).
+
+It remains to show
+
+∥(SHS⊤)−1S0:kH0:k∥2 ≤c · µM/2(Ak)
+
+µM(Ak) (23)
+
+for some constant c > 0 with probability 1 −e−Ω(M). Since SHS⊤= S0:kH0:kS⊤
+
+0:k + Ak, we have
+
+(SHS⊤)−1S0:kH0:k = (A−1
+
+k −A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k )S0:kH0:k
+
+= A−1
+
+k S0:kH0:k −A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1S⊤
+
+0:kA−1 k S0:kH0:k
+
+= A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1H−1
+
+0:kH0:k
+
+= A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1, (24)
+
+where the second line uses Woodbury’s identity. Since
+
+H−1
+
+0:k + S⊤ 0:kA−1 k S0:k ⪰S⊤
+
+0:kA−1 k S0:k,
+
+it follows that
+
+∥[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1∥2 ≤∥[S⊤
+
+0:kA−1 k S0:k]−1∥2.
+
+Therefore, with probability at least 1 −e−Ω(M)
+
+∥A−1
+
+k S0:k[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1∥2 ≤∥A−1
+
+k ∥2 · ∥S0:k∥2 · ∥[H−1
+
+0:k + S⊤ 0:kA−1 k S0:k]−1∥2
+
+≤∥A−1
+
+0:kA−1 k S0:k]−1∥2
+
+k ∥2 · ∥S0:k∥2 · ∥[S⊤
+
+≤ ∥A−1
+
+0:kA−1 k S0:k) ≲ ∥A−1
+
+k ∥2 · ∥S0:k∥2 µmin(S⊤
+
+k ∥2 µmin(S⊤
+
+0:kA−1 k S0:k)
+
+q
+
+∥S⊤
+
+where the last inequality follows from the fact that ∥S0:k∥2 =
+
+0:kS0:k∥2 ≤c for some constant c > 0 when
+
+k ≤M/2 with probability at least 1 −e−Ω(M). Since S0:k is independent of Ak and the distribution of S0:k is rotationally invariant, we may write S⊤
+
+iid ∼N(0, Ik/M) and (ˆλi)M
+
+0:kA−1 k S0:k = PM
+
+1 ˆλM−i˜si˜s⊤
+
+i , where ˜si
+
+i=1 are
+
+i=1
+
+eigenvalues of Ak in non-increasing order. Therefore, for k ≤M/3
+
+M/2 X
+
+M/2 X
+
+M X
+
+1 ˆλM−i
+
+1 ˆλM−i
+
+i ⪰ 1 ˆλM/2
+
+i ⪰ cIk ˆλM/2
+
+0:kA−1 k S0:k =
+
+S⊤
+
+˜si˜s⊤
+
+˜si˜s⊤
+
+˜si˜s⊤
+
+i ⪰
+
+(25)
+
+i=1
+
+i=1
+
+i=1
+
+for some constant c > 0 with probability at least 1 −e−Ω(M), where in the last line we again use the concentration properties of Gaussian covariance matrices (see e.g., Theorem 6.1 in Wainwright (2019)). As a direct consequence, we have
+
+0:k + S⊤ 0:kA−1 k S0:k]−1∥2 ≤c · µM/2(Ak)
+
+∥A−1
+
+k S0:k[H−1
+
+µM(Ak)
+
+with probability at least 1 −e−Ω(M) for some constant c > 0. This concludes the proof.
+
+Proof of claim (22b) By definition of T2 in Eq. (21), we have
+
+⊤Hk:∞S⊤
+
+T2 = w∗
+
+k:∞(SHS⊤)−1/2(IM −γSHS⊤)2Neff(SHS⊤)−1/2Sk:∞Hk:∞w∗
+
+k:∞ ≤w∗
+
+k:∞
+
+⊤Hk:∞S⊤
+
+k:∞(SHS⊤)−1Sk:∞Hk:∞w∗
+
+k:∞
+
+k:∞
+
+≤∥H1/2
+
+k:∞(SHS⊤)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞∥· ∥w∗
+
+k:∞∥2
+
+Hk:∞ ≤∥w∗
+
+k:∞∥2
+
+Hk:∞,
+
+where the last line follows from
+
+∥H1/2
+
+k:∞(SHS⊤)−1Sk:∞H1/2
+
+k:∞∥2 = ∥H1/2
+
+0:k + Sk:∞Hk:∞S⊤ k:∞)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞S⊤
+
+k:∞(S0:kH0:kS⊤
+
+k:∞∥2
+
+≤∥H1/2
+
+k Sk:∞H1/2
+
+k:∞A−1
+
+k:∞S⊤
+
+k:∞∥2 ≤1.
+
+D.2 A lower bound
+Lemma D.2 (Lower bound on the bias term). Suppose w∗follows some prior distribution and the initial stepsize γ ≤ 1 c tr(SHS⊤) for some constant c > 2. Let Hw := Ew∗w∗⊤. Then the bias term in Eq. (5) satisfies
+
+µi(SHHwHS⊤)
+
+X
+
+Ew∗Bias(w∗) ≳
+
+µi(SHS⊤)
+
+i:˜λi<1/(γNeff)
+
+almost surely.
+
+Proof of Lemma D.2. Let MN := SHS⊤(I −2γSHS⊤2Neff. Adopt the notations in the proof of Lemma D.1. By definition of the bias term, we have
+
+N Y
+
+2
+
+Bias(w∗) ≂
+
+I −γtSHS⊤
+
+v∗
+
+ 
+
+SHS⊤
+
+t=1
+
+N/Neff Y
+
+(I −γNefftSHS⊤2Neff, v∗⊗2⟩
+
+= ⟨SHS⊤
+
+t=1
+
+N/Neff X
+
+γNefftSHS⊤2Neff, v∗⊗2⟩
+
+≥⟨SHS⊤(I −
+
+t=1
+
+≥⟨SHS⊤(I −2γSHS⊤2Neff, v∗⊗2⟩= ⟨MN, v∗⊗2⟩, (26)
+
+where the third line uses IM−2γtSHS⊤≻0M for all t ∈[N] established in the proof of Lemma D.1, PN/Neff
+
+i=1 γNeffi ≤ 2γ, and the fact that (1 −w)(1 −v) ≥1 −w −v for w, v > 0. Substituting the definition of v∗in Eq. (5) into the expression, we obtain
+
+Ew∗Bias(w∗) ≳Ew∗⟨MN, v∗⊗2⟩= Ew∗⟨MN, ((SHS⊤)−1SHw∗)⊗2⟩
+
+= tr(HS⊤(SHS⊤)−1MN(SHS⊤)−1SHHw)
+
+= tr((SHS⊤)−1MN(SHS⊤)−1SHHwHS⊤)
+
+M X
+
+µM−i+1((SHS⊤)−1MN(SHS⊤)−1) · µi(SHHwHS⊤),
+
+≥
+
+i=1
+
+where the last line uses Von Neumann’s trace inequality. Continuing the calculation, we have
+
+M X
+
+µi(SHHwHS⊤) µi((SHS⊤)2MN
+
+Ew∗Bias(w∗) ≳
+
+−1)
+
+i=1
+
+M X
+
+µi(SHHwHS⊤)
+
+=
+
+
+
+(SHS⊤)(I −2γSHS⊤−2Neff
+
+µi
+
+i=1
+
+µi(SHHwHS⊤)
+
+X
+
+≳
+
+µi(SHS⊤) ,
+
+i:˜λi<1/(γNeff)
+
+i (A−1) for any positive definite matrix A ∈RM×M, and the second line follows from the definition of MN and the fact that (1 −λγNeff)−2Neff ≲1 when λ < 1/(γNeff).
+
+where the first inequality uses µM+i−1(A) = µ−1
+
+D.3 Examples on matching bounds for Bias(w∗)
+In this section, we derive matching upper and lower bounds for Bias(w∗) in (5) in three scenarios: power-law spectrum (Lemma D.3), power-law spectrum with source condition (Lemma D.4) and logarithmic power-law spectrum (Lemma D.5). Recall that we define Bias := Ew∗Bias(w∗).
+
+Lemma D.3 (Bounds on Bias under the power-law spectrum). Suppose Assumption 1C and 2 hold and the initial stepsize γ ≤ 1 c tr(SHS⊤) for some constant c > 2. Then with probability at least 1 −e−Ω(M) over the randomness of S
+
+Ew∗Bias(w∗) ≲max
+
+(Neffγ)1/a−1, M 1−a
+
+
+
+,
+
+and
+
+Ew∗Bias(w∗) ≳(Neffγ)1/a−1
+
+when (Neffγ)1/a ≤M/c for some constant c > 0. Here, all the (hidden) constants depend only on the power-law degree a.
+
+Proof of Lemma D.3. For the upper bound, using Lemma G.5, D.1 and the assumption that Ew∗2
+
+i = 1 for all i > 0, with probability at least 1 −e−Ω(M), we have
+
+"
+
+#
+
+∥w∗
+
+0:k2∥2 2 Neffγ + ∥w∗
+
+Ew∗Bias(w∗) ≲Ew∗
+
+k2:∞∥2
+
+Hk2:∞
+
+≲ k2 Neffγ +
+
+X
+
+λi
+
+k>k2
+
+≂ k2 Neffγ + k1−a
+
+2
+
+≲max
+
+(Neffγ)1/a−1, M 1−a
+
+
+
+,
+
+where in the last inequality, we choose k2 = [M/3] ∧(Neffγ)1/a to minimize the upper bound.
+
+When (Neffγ)1/a ≤M/3, combining Lemma D.2 and G.4 gives the lower bound
+
+µi(SHHwHS⊤)
+
+µi(SH2S⊤)
+
+X
+
+X
+
+Ew∗Bias(w∗) ≳
+
+µi(SHS⊤) =
+
+µi(SHS⊤) ,
+
+i:˜λi<1/(Neffγ)
+
+i:˜λi<1/(Neffγ)
+
+i−2a
+
+i−a ≳(Neffγ)1/a−1
+
+X
+
+X
+
+≳
+
+i−a =
+
+˜λi<1/(Neffγ),i≤M
+
+λi<1/(Neffγ),i≤M
+
+with probability at least 1 −e−Ω(M). Here, the hidden constants depend only on a.
+
+Lemma D.4 (Bounds on Bias under the source condition). Suppose Assumption 3 hold and the initial stepsize γ ≤ 1 c tr(SHS⊤) for some constant c > 2. Then with probability at least 1 −e−Ω(M) over the randomness of S
+
+Ew∗Bias(w∗) ≲max
+
+(Neffγ)(1−b)/a, M 1−b
+
+
+
+,
+
+and
+
+Ew∗Bias(w∗) ≳(Neffγ)(1−b)/a
+
+when (Neffγ)1/a ≤M/c for some constant c > 0. Moreover, when b ≥a + 1, with probability at least 1 −e−Ω(M)
+
+over the randomness of S
+
+Ew∗Bias(w∗) ≲log Neff · max
+
+(Neffγ)(1−b)/a, M 1−b
+
+
+
+In all results, the hidden constants depend only on a, b.
+
+i ≂ia−b for all i > 0, with probability at least 1 −e−Ω(M), we have
+
+Proof of Lemma D.4. For the upper bound, using Lemma G.5, D.1 and the assumption that (w.l.o.g.) Ew∗2
+
+"
+
+#
+
+∥w∗
+
+0:k2∥2 2 Neffγ + ∥w∗
+
+Ew∗Bias(w∗) ≲Ew∗
+
+k2:∞∥2
+
+Hk2:∞
+
+≲k1+a−b
+
+X
+
+λi · ia−b
+
+2 Neffγ +
+
+k>k2
+
+≲k1+a−b
+
+2 Neffγ + k1−b
+
+2
+
+≲max
+
+(Neffγ)(1−b)/a, M 1−b
+
+
+
+when b < a + 1, where in the last inequality, we choose k2 = [M/3] ∧(Neffγ)1/a to minimize the upper bound.
+
+When (Neffγ)1/a ≤M/c for some large constant c > 0, combining Lemma D.2 and G.4 yields the lower bound
+
+µi(SHHwHS⊤)
+
+µi(SH(a+b)/aS⊤)
+
+X
+
+X
+
+Ew∗Bias(w∗) ≳
+
+µi(SHS⊤) ≂
+
+µi(SHS⊤) ,
+
+i:˜λi<1/(Neffγ)
+
+i:˜λi<1/(Neffγ)
+
+i−(a+b)
+
+i−b ≳(Neffγ)(1−b)/a
+
+X
+
+X
+
+≳
+
+i−a =
+
+˜λi<1/(Neffγ),i≤M
+
+λi<1/(Neffγ),i≤M
+
+with probability at least 1 −e−Ω(M). Here, the hidden constants depend only on a, b.
+
+Upper bound when b ≥a + 1. Following the previous derivations, when b = a + 1, we have with probability at least 1 −e−Ω(M)
+
+"
+
+#
+
+∥w∗
+
+0:k2∥2 2 Neffγ + ∥w∗
+
+Ew∗Bias(w∗) ≲Ew∗
+
+k2:∞∥2
+
+Hk2:∞
+
+≲log k2
+
+Neffγ + k1−b
+
+2
+
+≲log(Neffγ)
+
+Neffγ + M 1−b
+
+where the last line follows by setting k2 = [M/3] ∧(Neffγ)1/a. When b > a + 1, we have with probability at least 1 −e−Ω(M)
+
+"
+
+#
+
+∥w∗
+
+0:k2∥2 2 Neffγ + ∥w∗
+
+Ew∗Bias(w∗) ≲Ew∗
+
+k2:∞∥2
+
+Hk2:∞
+
+≲ 1 Neffγ + k1−b
+
+2
+
+≲ 1 Neffγ + M 1−b,
+
+where the last follows by chooing k2 = M/3 to minimize the upper bound.
+
+Note that there exist non-constant gaps between the upper and lower bounds on the bias term (plus the approximation error term, Lemma C.5) in the simple regime where b ≥a + 1. We leave a more precise analysis of the bias term for future work.
+
+Lemma D.5 (Bounds on Bias under the logarithmic power-law spectrum). Suppose Assumption 4 hold and the initial stepsize γ ≤ 1 c tr(SHS⊤) for some constant c > 2. Let ¯k := inf{k : k loga k ≥Neffγ}. Then with probability at least
+
+1 −e−Ω(M) over the randomness of S
+
+log1−a(Neffγ), log1−a M
+
+Ew∗Bias(w∗) ≲max
+
+
+
+,
+
+and
+
+Ew∗Bias(w∗) ≳log1−a(Neffγ)
+
+when (Neffγ) ≤M c for some sufficiently small constant c > 0. Here, all constants depend only on the power-law degree a.
+
+Proof of Lemma D.5. For the upper bound, using Lemma G.7, D.1 and the assumption that Ew∗2
+
+i = 1 for all i > 0, with probability at least 1 −e−Ω(M), we have
+
+"
+
+#
+
+∥w∗
+
+0:k2∥2 2 Neffγ + ∥w∗
+
+Ew∗Bias(w∗) ≲Ew∗
+
+k2:∞∥2
+
+Hk2:∞
+
+≲ k2 Neffγ +
+
+X
+
+λi
+
+k>k2
+
+≂ k2 Neffγ + log1−a k2
+
+log1−a(Neffγ), log1−a M
+
+≲max
+
+
+
+,
+
+(Neffγ)/ loga(Neffγ)
+
+
+
+
+
+where in the last inequality, we choose k2 = [M/3] ∧
+
+to minimize the upper bound.
+
+Recall k∗≂M/ log M (for example we may define k∗= inf{k : k log k ≥M}) in Lemma G.6. Combining Lemma D.2 and G.6 gives the lower bound
+
+µi(SHHwHS⊤)
+
+µi(SH2S⊤)
+
+X
+
+X
+
+Ew∗Bias(w∗) ≳
+
+µi(SHS⊤) ≂
+
+µi(SHS⊤) ,
+
+i:˜λi<1/(Neffγ)
+
+i:˜λi<1/(Neffγ)
+
+i−2 log−2a i
+
+i−1 log−a i
+
+X
+
+X
+
+≳
+
+i−1 log−a i =
+
+˜λi<1/(Neffγ),i≤k∗
+
+λi<1/(Neffγ),i≤k∗
+
+k∗ X
+
+i−1 log−a i
+
+≳
+
+i=Neffγ
+
+≳log1−a(Neffγ) −log1−a(k∗)
+
+≳log1−a(Neffγ) −c1 log1−a(M)
+
+with probability at least 1−e−Ω(M) for some constant c1 > 0. Here, the (hidden) constants depend only on a. Therefore, when (Neffγ)1/a ≤M c for some sufficiently small constant c > 0, we have
+
+Ew∗Bias(w∗) ≳log1−a(Neffγ) −c1 log1−a(M) ≳log1−a(Neffγ).
+
+with probability at least 1 −e−Ω(M).
+
+E Variance error
+In this section, we present matching upper and lower bounds on the variance term Var defined in (6) under the power-law or logarithmic power-law spectrum.
+
+Lemma E.1 (Matching bounds on Var under power-law spectrum). Under Assumption 2, Var defined in Eq. (6) satisfies
+
+Var ≂min{M, (Neffγ)1/a}
+
+Neff
+
+with probability at least 1 −e−Ω(M) over the randomness of S. Here, the hidden constants only depend on a.
+
+Proof of Lemma E.1. By the definition of Var in Eq. (6) and Lemma G.4, we have
+
+#{˜λj ≥1/(Neffγ)} + (Neffγ)2 P
+
+˜λj<1/(Neffγ) ˜λ2
+
+j Neff
+
+Var =
+
+M, (Neffγ)1/a + (Neffγ)2 · (Neffγ)(1−2a)/a
+
+
+
+≂min
+
+Neff
+
+≂min{M, (Neffγ)1/a}
+
+Neff
+
+with probability at least 1 −e−Ω(M) over the randomness of S. Here the hidden constants may depend on a.
+
+Lemma E.2 (Matching bounds on Var under logarithmic power-law spectrum). Under Assumption 4, Var defined in Eq. (6) satisfies
+
+Var ≂min{M, ¯k}
+
+≂min{M, (Neffγ)/ loga(Neffγ)}
+
+Neff
+
+Neff
+
+with probability at least 1 −e−Ω(M) over the randomness of S, where ¯k := inf{k : k loga k ≥(Neffγ)} and ≂hides constants that only depend on a.
+
+Proof of Lemma E.2. Define k∗= inf{k : k log k ≥M} and let
+
+˜D := #{˜λj ≥1/(Neffγ)} + (Neffγ)2 X
+
+˜λ2
+
+j.
+
+˜λj<1/(Neffγ)
+
+By the definition of Var in (6) and Lemma G.6, we have
+
+#{˜λj ≥1/(Neffγ)} + (Neffγ)2 P
+
+˜λj<1/(Neffγ) ˜λ2
+
+j Neff
+
+Var =
+
+˜D Neff
+
+≂min{M, ¯k}
+
+=
+
+Neff
+
+with probability at least 1 −e−Ω(M) over the randomness of S, where the second line follows from
+
+˜D ≳#{˜λj ≥1/(Neffγ)} ≂ Neffγ loga(Neffγ), and
+
+˜D ≲ Neffγ loga(Neffγ) + (Neffγ)2
+
+1 j2 ≲ Neffγ loga(Neffγ)
+
+X
+
+log2a(Neffγ) ·
+
+j:˜λj<1/(Neffγ)
+
+when ¯k ≲M.
+
+F Expected risk of the average of (SGD) iterates
+In this section, we study the expected risk of the average of (SGD) iterates. Namely, we consider a fixed stepsize (SGD) procedure where γt = γ and define ¯vN := PN−1
+
+i=0 vi/N. Our goal is to derive matching upper and lower bounds R(¯vN) in terms of the sample size N and model size M. Compared with the last iterate of (SGD) with geometrically decaying stepsizes, we show that the average of (SGD) iterates with a fixed stepsize achieves a better risk, in the sense that the effective sample size Neff is replaced by N in the bounds (c.f. Theorem 4.1). This may give improvement up to logarithmic factors.
+
+We start with invoking the following result in Zou et al. (2023).
+
+Theorem F.1 (A variant of Theorem 2.1 and 2.2 in (Zou et al., 2023)). Suppose Assumption 1 hold. Consider an M-dimensional sketched predictor trained by fixed stepsize (SGD) with N samples. Let ¯vN := PN−1
+
+i=0 vi/N be the average of the iterations of SGD. Assume v0 = 0 and σ2 ≳1. Conditional on S and suppose the stepsize γ < 1/(c tr(SHS⊤)) for some constant c > 0, then there exist Approx, Bias, Var such that
+
+ERM(¯vN) −σ2 ≂Ew∗Approx + Bias + σ2Var,
+
+where the expectation of RM is over w∗and (xi, yi)N
+
+i=1 and
+
+Approx := Eξ2
+
+1 2 w∗ 2 ,
+
+
+
+1 2 
+
+1 2 S⊤  SHS⊤−1SH
+
+I −H
+
+=
+
+H
+
+Ew∗(T1 + T3) ≲Bias ≲Ew∗(T2 + T4),
+
+Var ≂Deff,N
+
+N ,
+
+and
+
+T1 := 1 γ2N 2 tr
+
+I −(I −γSHS⊤)N/42
+
+
+
+
+
+(SHS⊤)−1B0
+
+, (27a)
+
+T2 := 1 γ2N 2 tr
+
+I −(I −γSHS⊤)N2
+
+
+
+
+
+(SHS⊤)−1B0
+
+, (27b)
+
+T3 := 1 γN 2 tr
+
+
+
+I −(I −γSHS⊤)N/4
+
+
+
+· tr  
+
+I −(I −γSHS⊤)N/42
+
+B0
+
+, (27c)
+
+T4 := 1 γN tr
+
+· Deff,N N , (27d)
+
+B0 −(I −γSHS⊤)NB0(I −γSHS⊤)N
+
+ 
+
+B0 := v∗v∗⊤, (27e)
+
+Deff,N := #{˜λj ≥1/(Nγ)} + (Nγ)2 X
+
+˜λ2
+
+j, (27f)
+
+˜λj<1/(Nγ)
+
+where (˜λj)M
+
+j=1 are eigenvalue of SHS⊤.
+
+See Section F.2.1 for the proof.
+
+For Ti(i = 1, 2, 3, 4), we also have the following upper (and lower) bounds.
+
+Lemma F.2 (Lower bound on T1). Under the assumptions and notations in Theorem F.1, we have
+
+µi(SH2S⊤)
+
+X
+
+Ew∗T1 ≳
+
+µi(SHS⊤)
+
+i:˜λi<1/(γN)
+
+almost surely, where (˜λi)N
+
+i=1 are eigenvalues of SHS⊤in non-increasing order.
+
+See the proof in Section F.2.2.
+
+Lemma F.3 (Upper bound on T2). Under the assumptions and notations in Theorem F.1, for any k ≤M/3 such that r(H) ≥k + M, we have with probability at least 1 −e−Ω(M) that
+
+hµM/2(Ak)
+
+T2 ≲ 1 Nγ
+
+i2
+
+· ∥w∗ 0:k∥2 + ∥w∗ k:∞∥2
+
+Hk:∞,
+
+µM(Ak)
+
+where Ak := Sk:∞Hk:∞S⊤
+
+k:∞.
+
+See the proof in Section F.2.3.
+
+Lemma F.4 (Lower bound on T3). Under the assumptions and notations in Theorem F.1, we have
+
+µi(SH2S⊤)
+
+Ew∗T3 ≳Deff,N
+
+N · X
+
+µi(SHS⊤)
+
+i:˜λi<1/(γN)
+
+almost surely, where (˜λi)M
+
+i=1 are eigenvalues of SHS⊤in non-increasing order.
+
+See the proof in Section F.2.4.
+
+Lemma F.5 (Upper bound on T4). Under the assumptions and notations in Theorem F.1 and assume r(H) ≥M, we have
+
+H · Deff,N
+
+T4 ≲∥w∗∥2
+
+N
+
+almost surely, where Ak := Sk:∞Hk:∞S⊤
+
+k:∞.
+
+See the proof in Section F.2.5.
+
+With these results at hand, we are ready to derive upper and lower bounds for the risk of the average of (SGD) iterates.
+
+a=1.5
+
+a=2.0
+
+103
+
+1.30
+
+1.5
+
+1.25
+
+Model size (M)
+
+Model size (M)
+
+1.4
+
+102
+
+1.20
+
+Risk
+
+Risk
+
+102
+
+1.3
+
+1.15
+
+1.10
+
+1.2
+
+1.05
+
+1.1
+
+101
+
+101
+
+102 103 104
+
+102 103 104
+
+Number of samples (N)
+
+Number of samples (N)
+
+Figure 3: The expected risk (Risk) of the average of iterates of (SGD) versus the sample size N and the model size M for different power-law degrees a. The expected risk is computed by averaging over 1000 independent samples of (w∗, S). We fit the expected risk using the formula Risk ∼σ2 + c1/M a1 + c2/N a2 via minimizing the Huber loss as in Hoffmann et al. (2022). Parameters: σ = 1, γ = 0.1. Left: For a = 1.5, d = 20000, the fitted exponents are (a1, a2) = (0.59, 0.33) ≈(0.5, 0.33). Right: For a = 2, d = 2000, the fitted exponents are (a1, a2) = (1.09, 0.49) ≈(1.0, 0.5). Note that the values of (a1, a2) are close to our theoretical predictions (a −1, 1 −1/a) in both cases.
+
+F.1 Matching bounds for the average of (SGD) iterates under power-law spectrum
+In this section, we derive upper and lower bounds for the expected risk under the power-law spectrum. Our main result (Theorem F.6) follows directly from Theorem F.1 and the bounds on Ti(i = 1, 2, 3, 4) in Lemmas F.2 to F.5.
+
+Theorem F.6 (Scaling law for average iterates of SGD). Suppose Assumption 1 and 2 hold and σ2 ≲1. Then there exists some a-dependent constant c > 0 such that when γ ≤c, with probability at least 1−e−Ω(M) over the randomness of the sketch matrix S, we have
+
+ERM(¯vN) = σ2 + Θ
+
+M 1−a
+
+(Nγ)1/a−1
+
+ 
+
+ 
+
++ Θ
+
+,
+
+where the expectation is over the randomness of w∗and (xi, yi)N
+
+i=1, and Θ(·) hides constants that may depend on a.
+
+See the proof in Section F.2.6.
+
+Compared with Theorem 4.1, Theorem F.6 suggests that the average of (SGD) achieves a smaller risk in the sketched linear model—the (Neffγ)1/a is replaced by (Nγ)1/a in the bound for the bias term. This is intuitive since the sum of stepsizes P
+
+t γt ≂Nγ for the fixed stepsize scheduler.
+
+t γt ≂Neffγ for the geometrically decaying stepsize scheduler while P
+
+We also verify the observations in Theorem F.6 via simulations. We adopt the same model and setup as in Section 5 but use the average of iterates of fixed stepsize (SGD) (denoted by ¯vN) as the predictor. From Figure 3 and 4 we see that the expected risk ER(¯vN) also scales following a power-law relation in both sample size N and model size M. Moreover, the fitted exponents match our theoretical predictions in Theorem F.6.
+
+F.2 Proofs
+F.2.1 Proof of Theorem F.1
+
+Similar to the proof of Theorem A.4, we have the decomposition
+
+R(¯vN) = σ2 + Approx + ∥¯vN −v∗∥2
+
+SHS⊤.
+
+t=1 can also be viewed as the SGD iterates on the model y = ⟨Sx, v∗⟩+ ξ + ϵ, where the noise satisfies
+
+Note that (vt)N
+
+E(ξ + ϵ)2 = R(v∗) = Eξ2 + σ2.
+
+a=1.5
+
+a=2.0
+
+a=2.0
+
+a=1.5
+
+k=-0.32 Risk
+
+k=-0.49 Risk
+
+k=-1.00 Risk
+
+k=-0.50 Risk
+
+4 × 10 1
+
+10 1
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+E M(vN) min ( )
+
+10 1
+
+3 × 10 1
+
+2 × 10 1
+
+10 1
+
+10 2
+
+102 103 104 105
+
+102 103 104 105
+
+101 102
+
+101 102
+
+Number of samples (N)
+
+Number of samples (N)
+
+Model size (M)
+
+Model size (M)
+
+(a) a = 1.5
+
+(b) a = 1.5
+
+(c) a = 2
+
+(d) a = 2
+
+Figure 4: The expected risk of the average of iterates of (SGD) minus the irreducible risk versus the effective sample size and model size. Parameters σ = 1, γ = 0.1. (a), (b): a = 1.5, d = 10000; (c), (d): a = 2, d = 1000. The errobars denotes the ±1 standard deviation of estimating the expected risk using 100 independent samples of (w∗, S). We use linear functions to fit the expected risk under log-log scale and report the slope of the fitted lines (denoted by k).
+
+Therefore, the upper and lower bounds on Bias, Var follow directly from the proof of Theorem 2.1, 2.2 and related lemmas (Lemma B.6, B.11, C.3, C.5) in Zou et al. (2023).
+
+F.2.2 Proof of Lemma F.2
+
+For any positive definite matrix A ∈RM×M, let
+
+f1(A) := (I −(I −γA)N/4)2A−1/γ2/N 2.
+
+Since γ ≤1/(c tr(SHS⊤)), we have f1(SHS⊤) ⪰0. By definition of T1 and recalling v∗= (SHS⊤)−1SHw∗, we have with probability at least 1 −e−Ω(M) that
+
+Ew∗T1 = Ew∗[w∗⊤HS⊤(SHS⊤)−1f1(SHS⊤)(SHS⊤)−1SHw∗]
+
+[(SHS⊤)−1f1(SHS⊤)(SHS⊤)−1](SH2S⊤)
+
+ 
+
+
+
+= tr
+
+.
+
+Following the proof of Lemma D.2 (by Von Neumann’s trace inequality), we have
+
+M X
+
+µi(SH2S⊤)
+
+Ew∗T1 ≥
+
+
+
+
+
+(SHS⊤)2f1(SHS⊤)−1
+
+µi
+
+i=1
+
+µi(SH2S⊤)
+
+X
+
+≥
+
+
+
+
+
+(SHS⊤)2f1(SHS⊤)−1
+
+µi
+
+i:˜λi<1/(γN)
+
+µi(SH2S⊤)
+
+X
+
+≳
+
+µi(SHS⊤) ,
+
+i:˜λi<1/(γN)
+
+where the third inequality is due to
+
+λ/f1(λ) ≲ λ2γ2N 2
+
+(1 −(1 −γλ)N/4)2 ≲ N 2
+
+i=0 (1 −γλ)i)2 ≲ 1 (1 −γλ)2N ≲1
+
+(PN/4−1
+
+when λ < 1/(Nγ).
+
+F.2.3 Proof of Lemma F.3
+
+By definition of T2, the fact that 1 −xN = (1 −x) PN−1
+
+i=0 xi, and recalling v∗= (SHS⊤)−1SHw∗, we have
+
+T2 = w∗⊤HS⊤f2(SHS⊤)SHw∗,
+
+0:k ⊤H0:kS⊤
+
+⊤Hk:∞S⊤
+
+≤2[w∗
+
+0:kf2(SHS⊤)S0:kH0:kw∗ 0:k | {z } T21
+
++ w∗
+
+k:∞f2(SHS⊤)Sk:∞Hk:∞w∗
+
+],
+
+k:∞ | {z } T22
+
+k:∞
+
+i=0 (I −γA)i]2/A/N 2 for any symmetric matrix A ∈RM×M. Moreover, we have
+
+where f2(A) := [PN−1
+
+0:k ⊤H0:kS⊤
+
+T21 = w∗
+
+0:kf2(SHS⊤)S0:kH0:kw∗ 0:k ≤∥f2(SHS⊤)(SHS⊤)2∥· ∥(SHS⊤)−1S0:kH0:kw∗
+
+0:k∥2.
+
+Using the assumption on the stepsize that γ ≤1/(c tr(SHS⊤)), we have
+
+h N−1 X
+
+1 N 2
+
+(1 −γλ)ii2
+
+∥f2(SHS⊤)(SHS⊤)2∥≤ max λ∈[0,1/γ]
+
+λ
+
+i=0
+
+h N−1 X
+
+1 N 2γ
+
+(1 −γλ)ii
+
+· (1 −(1 −γλ)N)
+
+= max λ∈[0,1/γ]
+
+i=0
+
+≤ 1 N 2γ · N · 1 = 1 Nγ . (28)
+
+Combining Eq. (28) with Eq. (23) in the proof of Lemma D.1 (note that we assume k ≤M/3), we obtain
+
+hµM/2(Ak)
+
+T21 ≤c 1
+
+i2
+
+· ∥w∗ 0:k∥2
+
+Nγ
+
+µM(Ak)
+
+for some constant c > 0 with probability at least 1 −e−Ω(M). For T22, we have
+
+⊤Hk:∞S⊤
+
+T22 = w∗
+
+k:∞f2(SHS⊤)Sk:∞Hk:∞w∗
+
+k:∞
+
+k:∞
+
+≤∥f2(SHS⊤)SHS⊤∥· ∥(SHS⊤)−1/2(Sk:∞H1/2
+
+k:∞)H1/2
+
+k:∞w∗
+
+k:∞∥2
+
+k:∞∥2 · ∥w∗
+
+≤∥f2(SHS⊤)SHS⊤∥· ∥(SHS⊤)−1/2Sk:∞H1/2
+
+k:∞∥2
+
+Hk:∞.
+
+Since ∥f2(SHS⊤)SHS⊤∥= ∥[PN−1
+
+i=0 (I −γSHS⊤)i]2/N 2∥≤1 by the assumption γ ≤1/(c tr(SHS⊤)), and
+
+k:∞∥2 = ∥H1/2
+
+∥(SHS⊤)−1/2Sk:∞H1/2
+
+k:∞(SHS⊤)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞∥
+
+= ∥H1/2
+
+0:k + Sk:∞Hk:∞S⊤ k:∞)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞(S0:kH0:kS⊤
+
+k:∞∥
+
+≤∥H1/2
+
+k:∞)−1Sk:∞H1/2
+
+k:∞S⊤
+
+k:∞(Sk:∞Hk:∞S⊤
+
+k:∞∥= 1,
+
+it follows that T22 ≤∥w∗
+
+k:∞∥2
+
+Hk:∞. Combining the bounds on T21, T22 completes the proof.
+
+F.2.4 Proof of Lemma F.4
+
+Let f3(A) := (I −(I −γA)N/4)/γ/N 2 for any positive definite matrix A ∈RM×M. Following the same arguments as in the proof of Lemma F.2, we have f3(SHS⊤) ⪰0 and
+
+h 1 γN 2 tr
+
+
+
+I −(I −γSHS⊤)N/4
+
+i
+
+Ew∗
+
+B0
+
+= Ew∗[w∗⊤HS⊤(SHS⊤)−1f3(SHS⊤)(SHS⊤)−1SHw∗]
+
+= tr((SHS⊤)−1f3(SHS⊤)(SHS⊤)−1SH2S⊤).
+
+Moreover,
+
+M X
+
+µi(SH2S⊤)
+
+Ew∗T1 ≥
+
+
+
+
+
+(SHS⊤)2f3(SHS⊤)−1
+
+µi
+
+i=1
+
+µi(SH2S⊤)
+
+X
+
+≥
+
+
+
+
+
+(SHS⊤)2f3(SHS⊤)−1
+
+µi
+
+i:˜λi<1/(γN)
+
+µi(SH2S⊤)
+
+≳1
+
+X
+
+µi(SHS⊤) , (29)
+
+N
+
+i:˜λi<1/(γN)
+
+where the third inequality is due to
+
+λ/f3(λ) ≲ λγN 2
+
+1 −(1 −γλ)N/4 ≲ N 2 PN/4−1
+
+i=0 (1 −γλ)i ≲ N (1 −γλ)N ≲N
+
+when λ < 1/(Nγ). Note that
+
+4 ≥1 −e−1 4 ≥1 5, ˜λi ≥ 1 γN ,
+
+(
+
+N
+
+1 −(1 −1 N )
+
+5 · γ˜λi, ˜λi < 1 γN , ≥1
+
+1 −(1 −γ˜λi) N
+
+5 min{Nγ˜λi, 1}. (30)
+
+4 ≥
+
+4 · γ˜λi −N(N−4) 32 · γ2˜λ2 i ≥N
+
+N
+
+We thus have
+
+M X
+
+M X
+
+4 ]2 ≳
+
+ 
+
+I −(I −γSHS⊤)N/42
+
+N
+
+[1 −(1 −γ˜λi)
+
+min{(Nγ˜λi)2, 1}
+
+tr
+
+=
+
+i=1
+
+i=1
+
+= #{˜λi ≥ 1 Nγ } + N 2γ2 X
+
+˜λ2
+
+i = Deff,N. (31)
+
+˜λi<1/(Nγ)
+
+Combining Eq. (31) and (29) completes the proof.
+
+F.2.5 Proof of Lemma F.5
+
+Substituting v∗= (SHS⊤)−1SHw∗in the expression of T4 and noting v0 = 0, we have
+
+T4 = 1 γN tr
+
+· Deff,N N
+
+B0 −(I −γSHS⊤)NB0(I −γSHS⊤)N
+
+ 
+
+= 1 γN tr
+
+· Deff,N N
+
+w∗⊤HS⊤(SHS⊤)−1
+
+I −(I −γSHS⊤)2N
+
+(SHS⊤)−1SHw∗
+
+ 
+
+· Deff,N N , (32)
+
+w∗⊤HS⊤f4(SHS⊤)SHw∗
+
+ 
+
+=: tr
+
+A−1/(Nγ) for any symmetric matrix A ∈RM×M. Moreover,
+
+where f4(A) := A−1
+
+I −(I −γA)2N
+
+w∗⊤HS⊤f4(SHS⊤)SHw∗
+
+ 
+
+tr
+
+≤∥f4(SHS⊤)SHS⊤∥· ∥(SHS⊤)−1/2SH1/2∥2 · ∥w∗∥2
+
+H ≤∥f4(SHS⊤)SHS⊤∥· ∥w∗∥2
+
+H.
+
+Since
+
+2N−1 X
+
+∥f4(SHS⊤)SHS⊤∥= 1
+
+(I −γSHS⊤)i∥≤2
+
+N ∥
+
+i=0
+
+by our assumption on the stepsize, it follows that
+
+w∗⊤HS⊤f4(SHS⊤)SHw∗
+
+≲∥w∗∥2
+
+ 
+
+tr
+
+H. (33)
+
+Combining Eq. (32) and (33) we find
+
+H · Deff,N
+
+T4 ≲∥w∗∥2
+
+N .
+
+F.2.6 Proof of Theorem F.6
+
+First, by Lemma G.4 we have 1/ tr(SHS⊤) ≳c1 for some a-dependent c1 > 0 with probability at least 1 −e−Ω(M). Therefore we may choose c sufficiently small so that γ ≤c implies γ ≲1/ tr(SHS⊤) with probability at least
+
+1 −e−Ω(M). Now, suppose we have γ ≲1/ tr(SHS⊤). Following the notations in Theorem F.1, we claim the following bounds on Approx, Bias, Var:
+
+EApprox ≂M 1−a (34a)
+
+Var ≂min
+
+M, (Nγ)1/a
+
+
+
+/N. (34b)
+
+Bias ≲max
+
+M 1−a, (Nγ)1/a−1
+
+
+
+, (34c)
+
+Bias ≳(Nγ)1/a−1 when (Nγ)1/a ≤M/c for some constant c > 0, (34d)
+
+with probability at least 1 −e−Ω(M). Putting the bounds together yields Theorem F.6.
+
+Proof of claim (34a) Note that our definition of Approx in Thereom F.1 is the same as that in Eq. (4) (and 7). Therefore the claim follows immediately from Lemma C.4.
+
+Proof of claim (34b) This follows from the proof of Lemma E.1 with Neff replaced by N.
+
+Proof of claim (34c) By Theorem F.1, Lemma F.3 and F.5, we have
+
+#2
+
+"
+
+Bias ≲Ew∗∥w∗
+
+µM/2(Sk2:∞Hk2:∞S⊤
+
+0:k2∥2 2 Nγ ·
+
+k2:∞) µM(Sk2:∞Hk2:∞S⊤
+
+Hk2:∞+ σ2 Deff,N
+
++ Ew∗∥w∗
+
+k2:∞∥2
+
+N ,
+
+k2:∞)
+
+#2
+
+"
+
+µM/2(Sk2:∞Hk2:∞S⊤
+
+k2:∞) µM(Sk2:∞Hk2:∞S⊤
+
+≲k2
+
+2 + Deff,N
+
++ k1−a
+
+Nγ
+
+N
+
+k2:∞)
+
+with probability at least 1 −e−Ω(M) for any k2 ≤M/3. Choosing k2 = min{M/3, (Nγ)1/a} and using Lemma G.4 and claim (34b), we obtain
+
+M, (Nγ)1/a
+
+
+
++ min
+
+Bias ≲max
+
+N ≲max
+
+M 1−a, (Nγ)1/a−1
+
+M 1−a, (Nγ)1/a−1
+
++ (Nγ)1/a−1
+
+
+
+
+
+≲max
+
+M 1−a, (Nγ)1/a−1
+
+
+
+with probability at least 1 −e−Ω(M).
+
+Proof of claim (34d) By Theorem F.1 and Lemma F.2, we have
+
+µi(SH2S⊤)
+
+X
+
+Ew∗Bias ≳
+
+µi(SHS⊤) .
+
+i:˜λi<1/(γN)
+
+When (Nγ)1/a ≤M/c for some large constant c > 0, we have from Lemma G.4 that
+
+i−2a
+
+i−a ≳[(Nγ)1/a]1−a = (Nγ)1/a−1
+
+X
+
+X
+
+Ew∗Bias ≳
+
+i−a =
+
+i:˜λi<1/(γN)
+
+i:˜λi<1/(γN)
+
+with probability at least 1 −e−Ω(M).
+
+G Concentration lemmas
+
+
+G.1 General concentration results
+Lemma G.1. Suppose that S ∈RM×d is such that 3
+
+Sij ∼N(0, 1/M).
+
+3We allow d = ∞.
+
+Let (λi)i≥1 be the eigenvalues of H in non-increasing order. Let (˜λi)M
+
+i=1 be the eigenvalues of SHS⊤in non-increasing order. Then there exists a constant c > 1 such that for every M ≥0 and every 0 ≤k ≤M, with probability ≥1 −e−Ω(M) −e−Ω(k), we have
+
+sP
+
+r
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+˜λj −
+
+ ≤c ·
+
+
+
+k M · λj + λk+1 +
+
+i M
+
+for every j ≤M,
+
+λj +
+
+.
+
+M
+
+As a direct consequence, for k ≤M/c2, we have
+
+P
+
+P
+
+i>k λi
+
+i>k λi
+
+˜λj −
+
+ ≤1
+
+
+
+2 · 
+
+
+
+for every j ≤M,
+
++ c1 · λk+1,
+
+λj +
+
+λj +
+
+M
+
+M
+
+where c1 = c + 2c2.
+
+Proof of Lemma G.1. We have the following decomposition motivated by Swartworth and Woodruff (2023) (see their Section 3.4, Proof of Theorem 1).
+
+SHS⊤= S0:kH0:kS⊤
+
+0:k + Sk:∞Hk:∞S⊤ k:∞
+
+0:k + P
+
+P
+
+i>k λi
+
+i>k λi
+
+= S0:kH0:kS⊤
+
+M · IM + Sk:∞Hk:∞S⊤ k:∞−
+
+M · IM.
+
+We remark that this decomposition idea has been implicitly used in Bartlett et al. (2020) to control the eigenvalues of a Gram matrix. In fact, we will use techniques from Bartlett et al. (2020) to obtain a sharper bound than that presented in Swartworth and Woodruff (2023).
+
+For the upper bound, we have
+
+0:k + P
+
+P
+
+i>k λi
+
+i>k λi
+
+Sk:∞Hk:∞S⊤
+
+
+
+
+
+SHS⊤
+
+S0:kH0:kS⊤
+
+ 
+
+≤µj
+
+M · IM
+
+k:∞−
+
+M · IM
+
+µj
+
++
+
+2
+
+P
+
+P
+
+i>k λi
+
+i>k λi
+
+M · IM + Sk:∞Hk:∞S⊤
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+k:∞−
+
+M · IM
+
+= µj
+
++
+
+2
+
+sP
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+i M
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+≤µj
+
+M · IM + c1 ·
+
++
+
+λk+1 +
+
+,
+
+where the last inequality is by Lemma G.2. For j ≤k, using Lemma G.3, we have
+
+r
+
+k M · λj.
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+≤λj + c2 ·
+
+µj
+
+For k < j ≤M, we have
+
+r
+
+k M · λj.
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+= 0 ≤λj + c2 ·
+
+µj
+
+Putting these together, we have the following for every j = 1, . . . , M:
+
+sP
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+i M
+
+SHS⊤
+
+S0:kH0:kS⊤
+
+ 
+
+ 
+
+0:k 
+
+≤µj
+
+M · IM + c1 ·
+
+µj
+
++
+
+λk+1 +
+
+sP
+
+r
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+k M · λj + λk+1 +
+
+i M
+
+≤λj +
+
+M · IM + c ·
+
+.
+
+Similarly, we can show the lower bound. By the decomposition, we have
+
+0:k + P
+
+P
+
+i>k λi
+
+i>k λi
+
+Sk:∞Hk:∞S⊤
+
+
+
+
+
+SHS⊤
+
+S0:kH0:kS⊤
+
+ 
+
+≥µj
+
+M · IM
+
+−
+
+k:∞−
+
+M · IM
+
+µj
+
+P
+
+P
+
+i>k λi
+
+i>k λi
+
+M · IM − Sk:∞Hk:∞S⊤
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+k:∞−
+
+M · IM
+
+= µj
+
++
+
+sP
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+i M
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+≥µj
+
+M · IM −c1 ·
+
++
+
+λk+1 +
+
+,
+
+where the last inequality is by Lemma G.2. For j ≤k, using Lemma G.3, we have
+
+r
+
+k M · λj.
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+≥λj −c2 ·
+
+µj
+
+For k < j ≤M, we have
+
+r
+
+k M · λj,
+
+S0:kH0:kS⊤
+
+ 
+
+0:k 
+
+= 0 ≥λj −λk+1 −c2 ·
+
+µj
+
+where the last inequality is due to λj ≤λk for j ≥k. Putting these together, we have
+
+sP
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+i M
+
+SHS⊤
+
+S0:kH0:kS⊤
+
+ 
+
+ 
+
+0:k 
+
+≥µj
+
+M · IM −c1 ·
+
+µj
+
++
+
+λk+1 +
+
+sP
+
+r
+
+!
+
+i>k λ2
+
+P
+
+i>k λi
+
+k M · λj + λk+1 +
+
+i M
+
+≥λj +
+
+M · IM −c ·
+
+.
+
+So far, we have proved the first claim. To show the second claim, we simply apply
+
+r
+
+k M ≤1
+
+2 for k ≤M/c2,
+
+c ·
+
+and
+
+sP
+
+rP
+
+i>k λ2
+
+i>k λi
+
+i M ≤c ·
+
+c ·
+
+M · λk+1
+
+2 · P
+
+i>k λi
+
+≤1
+
+M + 2c2 · λk+1,
+
+in the first claim.
+
+Lemma G.2 (Tail concentration, Lemma 26 in Bartlett et al. (2020)). For any k ≥0, with probability at least 1 −e−Ω(M), we have
+
+sP
+
+i>k λ2
+
+P
+
+i>k λi
+
+Sk:∞Hk:∞S⊤
+
+i M .
+
+2 ≲λk+1 +
+
+k:∞−
+
+M · IM
+
+Moreover, the minimum eigenvalue of Sk:∞Hk:∞S⊤
+
+k:∞satisfies
+
+k:∞) ≳λk+2M
+
+µmin(Sk:∞Hk:∞S⊤
+
+with probability at least 1 −e−Ω(M).
+
+Proof of Lemma G.2. The first part of Lemma G.2 is a version of Lemma 26 in (Bartlett et al., 2020) (see their proof). We provide proof here for completeness.
+
+We write S ∈RM×p as
+
+
+
+
+
+0, 1 M · IM
+
+ 
+
+
+
+, si ∼N
+
+, i ≥1.
+
+s1 . . . sp
+
+S =
+
+Since Gaussian distribution is rotational invariance, without loss of generality, we may assume
+
+H = diag{λ1, . . . , λp}.
+
+Then we have
+
+X
+
+Sk:∞Hk:∞S⊤
+
+λisis⊤
+
+k:∞=
+
+i .
+
+i>k
+
+Fixing a unit vector v ∈RM, then
+
+2,
+
+X
+
+v⊤Sk:∞Hk:∞S⊤
+
+s⊤
+
+ 
+
+k:∞v =
+
+λi
+
+i v
+
+i>k
+
+where each s⊤
+
+i v is (1/M)-subGaussian. By Bernstein’s inequality, we have, with probability ≥1 −δ,
+
+sX
+
+P
+
+i>k λi
+
+≲1
+
+
+
+
+
+λk+1 · log 1
+
+i · log 1
+
+2 −
+
+X
+
+s⊤
+
+λ2
+
+ 
+
+M ·
+
+i v
+
+δ +
+
+.
+
+λi
+
+M
+
+δ
+
+i>k
+
+i>k
+
+By a union bound and net argument on SM−1, we have, with probability ≥1 −δ, for every unit vector v ∈RM,
+
+!
+
+sX
+
+P
+
+i>k λi
+
+≲1
+
+
+
+
+
+
+
+M + log 1
+
+M + log 1
+
+2 −
+
+X
+
+s⊤
+
+λ2
+
+ 
+
+M ·
+
+λk+1 ·
+
+i ·
+
+λi
+
+i v
+
++
+
+.
+
+M
+
+δ
+
+δ
+
+i>k
+
+i>k
+
+So with probability at least 1 −e−Ω(M), we have
+
+!
+
+P
+
+i>k λi
+
+Sk:∞Hk:∞S⊤
+
+sX
+
+2 ≲1
+
+λ2
+
+k:∞−
+
+M · IM
+
+M ·
+
+λk+1 · M +
+
+i · M
+
+i>k
+
+sP
+
+i>k λ2
+
+i M ,
+
+≂λk+1 +
+
+which completes the proof of the first part of Lemma G.2.
+
+To prove the second part of Lemma G.2, it suffices to note that
+
+2M+k X
+
+2M+k X
+
+Sk:∞Hk:∞S⊤
+
+λisis⊤
+
+sis⊤
+
+k:∞⪰
+
+i ⪰λ2M+k ·
+
+i ⪰cλ2M+k · IM
+
+i=k+1
+
+i=k+1
+
+for some constant c > 1 with probability at least 1 −e−Ω(M), where the last line follows from concentration properties of Gaussian covariance matrices (see e.g., Thereom 6.1 Wainwright (2019)).
+
+Lemma G.3 (Head concentration). With probability at least 1 −e−Ω(M) −e−Ω(k), we have
+
+r
+
+k M · λj.
+
+0:k) −λj| ≲
+
+for every j ≤k, |µj(S0:kH0:kS⊤
+
+0:k is indentical to the spectrum of H1/2 0:k S⊤ 0:kS0:kH1/2 0:k . We will bound the latter. We start with bounding the spectrum of S0:kS⊤
+
+Proof of Lemma G.3. Note that the spectrum of S0:kH0:kS⊤
+
+0:k. To this end, we write S⊤ 0:k ∈Rk×M as
+
+
+
+
+
+0, 1 M · Ik
+
+S⊤
+
+0:k =  s1 . . . sM
+
+
+
+, si ∼N
+
+, i = 1, . . . , M.
+
+Then repeating the argument in Lemma G.2, we have, with probability ≥1 −δ, for every unit vector v ∈Rk,
+
+M X
+
+2 −1
+
+0:kS0:kv −1 =
+
+v⊤S⊤
+
+s⊤
+
+ 
+
+i v
+
+i=1
+
+s
+
+!
+
+1 · 
+
+
+
+
+
+≲1
+
+k + log 1
+
+k + log 1
+
+M ·
+
+M ·
+
++
+
+δ
+
+δ
+
+r
+
+k + log(1/δ)
+
+≲
+
+M .
+
+So we have, with probability ≥1 −e−Ω(k),
+
+r
+
+k M .
+
+2 ≲
+
+S⊤
+
+0:kS0:k −Ik
+
+This implies that
+
+r
+
+k M · µj
+
+H1/2
+
+0:k S⊤ 0:kS0:kH1/2 0:k 
+
+H1/2
+
+0:k H1/2 0:k 
+
+H1/2
+
+0:k H1/2 0:k 
+
+ 
+
+ 
+
+ 
+
+≤µj
+
++ c1 ·
+
+µj
+
+r
+
+k M · λj,
+
+= λj + c1 ·
+
+and that
+
+r
+
+k M · µj
+
+H1/2
+
+0:k S⊤ 0:kS0:kH1/2 0:k 
+
+H1/2
+
+0:k H1/2 0:k 
+
+H1/2
+
+0:k H1/2 0:k 
+
+ 
+
+ 
+
+ 
+
+≥µj
+
+−c1 ·
+
+µj
+
+r
+
+k M · λj.
+
+= λj −c1 ·
+
+We have completed the proof.
+
+G.2 Concentration results under power-law spectrum
+Lemma G.4 (Eigenvalues of SHS⊤under power-law spectrum). Suppose Assumption 2 hold. There exist a-dependent constants c2 > c1 > 0 such that
+
+c1j−a ≤µj(SHS⊤) ≤c2j−a
+
+with probability at least 1 −e−Ω(M).
+
+Proof of Lemma G.4. Let (˜λi)M
+
+i=1 denote the eigenvalues of SHS⊤in non-increasing order. Using Lemma G.1 with k = M/c for some sufficiently large constant c and noting that P
+
+i>k i−a ≂k1−a, we have
+
+1 2 · (j−a + ˜c1M −a) −˜c2 · M −a ≤˜λj ≤3 2 · (j−a + ˜c1M −a) + ˜c2 · M −a
+
+for every j ∈[M] for some constants ˜ci, i ∈[2] with probability at least 1 −e−Ω(M). Therefore, for all j ≤M/˜c for some sufficiently large constant ˜c > 1, we have
+
+˜λj ∈[˜c3j−a, ˜c4j−a]
+
+with probability at least 1 −e−Ω(M) for some constants ˜c3, ˜c4 > 0. For j ∈[M/˜c, M], by monotonicity of the eigenvalues, we have
+
+k−a
+
+jM
+
+≤˜c5M −a ≤˜c5j−a
+
+˜λj ≤˜λ⌊M/˜c⌋≤˜c4
+
+˜c
+
+for some sufficiently large constant ˜c5 > ˜c4 with probability at least 1 −e−Ω(M). Moreover, using Lemma G.2 with k = 0, we obtain
+
+k:∞) ≥˜c6˜λ2M ≥˜c7(M/˜c)−a ≥˜c8j−a
+
+˜λj ≥˜λM ≥µmin(Sk:∞Hk:∞S⊤
+
+with probability at least 1 −e−Ω(M) for some constants ˜c6, ˜c7, ˜c8 > 0. Combining the bounds for j ≤M/˜c and j ∈[M/˜c, M] completes the proof.
+
+Lemma G.5 (Ratio of eigenvalues of Sk:∞Hk:∞S⊤
+
+k:∞under power-law spectrum). Suppose Assumption 2 hold. There exists some a-dependent constant c > 0 such that for any k ≥1, the ratio between the M/2-th and M-th eigenvalues
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+k:∞) ≤c
+
+with probability at least 1 −e−Ω(M).
+
+Proof of Lemma G.5. We prove the lemma under two scenarios where k is relatively small (or large) compared with M.
+
+Let c > 0 be some sufficiently large constant. Applying Lemma G.1 with Hk:∞replacing H, for k0 = M/c, we have
+
+P
+
+i>k0 λi+k
+
+2 · 
+
+
+
+k:∞) ≤3
+
+µM/2(Sk:∞Hk:∞S⊤
+
++ c1 · λk0+1+k,
+
+λM/2+k +
+
+M
+
+2 + k −a + (k0 + k)1−a
+
+ M
+
+≲
+
+M + (k0 + 1 + k)−a
+
+1 ∨k M
+
+≲(k ∨M)−a + (k ∨M)−a 
+
++ (k ∨M)−a
+
+
+
+1 ∨k M
+
+≲(k ∨M)−a 
+
+
+
+(35)
+
+with probability at least 1 −e−Ω(M) for some constant c1 > 0.
+
+Case 1: k ≲M From Lemma G.2, we have
+
+k:∞) ≳λk+2M ≳(k ∨M)−a.
+
+µmin(Sk:∞Hk:∞S⊤
+
+with probability at least 1 −e−Ω(M). Therefore
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+k:∞) ≲1
+
+with probability at least 1 −e−Ω(M) when k/M ≲1.
+
+Case 2: k ≳M On the other hand, when k is relatively large, using Lemma G.1 with Hk:∞replacing H again, we obtain
+
+P
+
+i>k0 λi+k
+
+2 · 
+
+
+
+k:∞) ≥1
+
+µM(Sk:∞Hk:∞S⊤
+
+−c1 · λk0+1+k,
+
+λM+k +
+
+M
+
+−a + (k0 + k)1−a
+
+h 
+
+i
+
+−c3 · (k0 + 1 + k)−a
+
+≥c2
+
+M + k
+
+M
+
+with probability at least 1−e−Ω(M)−e−Ω(k0), where c1, c2, c3 > 0 are some universal constants. Choosing k0 = M/c2
+
+for some sufficiently large constant c > 0, we further obtain
+
+1 + k M
+
+−ah
+
+i
+
+µM(Sk:∞Hk:∞S⊤
+
+−c5(M + k)−a
+
+ 
+
+k:∞) ≥c4
+
+M + k
+
+1 ∨k M
+
+−ah
+
+i
+
+−c7(M ∨k)−a (36)
+
+ 
+
+≥c6
+
+M ∨k
+
+with probability at least 1 −e−Ω(M), where (ci)7
+
+i=4 are a-dependent constants. Since
+
+1 ∨k M
+
+−c7(M ∨k)−a ≥c6
+
+2 (k ∨M)−a  1 ∨k M
+
+−ah
+
+i
+
+ 
+
+
+
+M ∨k
+
+c6
+
+when k is large, i.e., k/M > ˜c for some sufficiently large a-dependent constant ˜c > 0 that may depend on (ci)7
+
+i=1, we have from Eq. (35) and (36) that
+
+1 ∨k M
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) ≲(k ∨M)−a 
+
+
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+ ≲1
+
+1 ∨k M
+
+(k ∨M)−a 
+
+with probability at least 1 −e−Ω(M).
+
+G.3 Concentration results under logarithmic power-law spectrum
+Lemma G.6 (Theorem 6 in (Bartlett et al., 2020)). Suppose Assumption 4 hold. Then there exist some a-dependent constants c, ˜c > 0 such that, with probability at least 1 −e−Ω(M)
+
+[c · j−1 log−a(j + 1), ˜c · j−1 log−a(j + 1)] j ≤k∗,
+
+(
+
+µj(SHS⊤) ∈
+
+[c · M −1 log1−a(M), ˜c · M −1 log1−a(M)] k∗< j ≤M,
+
+where k∗≂M/ log(M). Also, there exists some a-dependent constants c1, c2 > 0 such that
+
+c1 j log2a(j + 1) ≤µj(SH2S⊤) ≤ c2 j log2a(j + 1)
+
+with probability at least 1 −e−Ω(M).
+
+Proof of Lemma G.6. The proof is adapted from the proof of Theorem 6 in (Bartlett et al., 2020). We include it here for completeness.
+
+First part of Lemma G.6. In Lemma G.1, for some constant c > 1, choose
+
+
+
+
+
+X
+
+k∗:= min
+
+k ≥0 :
+
+λi ≥c · M · λk+1
+
+.
+
+i>k
+
+Then with probability ≥1 −e−Ω(M), we have:
+
+P
+
+P
+
+i>k∗λi
+
+i>k∗λi
+
+· 
+
+
+
+
+
+
+
+for every 1 ≤j ≤M, 1 c1
+
+≤˜λj ≤c1 ·
+
+λj +
+
+λj +
+
+,
+
+M
+
+M
+
+where c1 > 1 is a constant.
+
+When λj ≂j−1 log−a(j + 1), we have
+
+k∗≂M/ log(M),
+
+and
+
+X
+
+λi ≂log1−a(k∗) ≂log1−a(M).
+
+i>k∗
+
+Therefore, we have
+
+P
+
+i>k∗λi
+
+˜λj ≂λj +
+
+M
+
+j−1 log−a(j + 1) j ≤k∗,
+
+(
+
+≂
+
+M −1 log1−a(M) k∗< j ≤M,
+
+where k∗≂M/ log(M).
+
+Second part of Lemma G.6. Let ¯λi denote the i-th eigenvalue of SH2S⊤for i ∈[M]. Using Lemma G.1 with k = M/c for some sufficiently large constant c0 and noting that P
+
+i>k i−2 log−2a(i + 1) ≲k−1 log−2a k, we have
+
+i ≂P
+
+i>k λ2
+
+1 2 · j−2 log−2a(j + 1) −˜c2 · M −2 log−2a M
+
+≤¯λj ≤3
+
+2 · (j−2 log−2a(j + 1) + ˜c1M −2 log−2a M) + ˜c2 · M −2 log−2a M
+
+for every j ∈[M] for some constants ˜ci, i ∈[2] with probability at least 1 −e−Ω(M). Therefore, for all j ≤M/˜c for some sufficiently large constant ˜c > 1, we have
+
+¯λj ∈[˜c3 · j−2 log−2a(j + 1), ˜c4 · j−2 log−2a(j + 1)]
+
+with probability at least 1 −e−Ω(M) for some constants ˜c3, ˜c4 > 0. For j ∈[M/˜c, M], by monotonicity of the eigenvalues, we have
+
+k−2
+
+jM
+
+log−2a jM
+
+≤˜c5M −2 log−2a M ≤˜c6 · j−2 log−2a(j + 1)
+
+k
+
+¯λj ≤¯λ⌊M/˜c⌋≤˜c4
+
+˜c
+
+˜c
+
+for some constants c5, c6 > 0 with probability at least 1 −e−Ω(M). Moreover, using Lemma G.2 with k = 0, we obtain
+
+k:∞) ≥˜c7¯λ2M ≥˜c8 · j−2 log−2a(j + 1)
+
+¯λj ≥¯λM ≥µmin(Sk:∞H2
+
+k:∞S⊤
+
+with probability at least 1 −e−Ω(M) for some constants ˜c7, ˜c8 > 0 when j ∈[M/˜c, M]. Combining the bounds for j ≤M/˜c and j ∈[M/˜c, M] completes the proof.
+
+Lemma G.7 (Ratio of eigenvalues of Sk:∞Hk:∞S⊤
+
+k:∞under logarithmic power-law spectrum). Suppose Assumption 4 hold. There exists some a-dependent constant c > 0 such that for any k ≥1, the ratio between the M/2-th and M-th eigenvalues
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+k:∞) ≤c
+
+with probability at least 1 −e−Ω(M).
+
+Proof of Lemma G.7. Similar to the proof of Lemma G.5, we prove the lemma under two scenarios where k is relatively small (or large) compared with M.
+
+Let c > 0 be some sufficiently large constant. Applying Lemma G.1 with Hk:∞replacing H, for k0 = M/c, we have
+
+P
+
+i>k0 λi+k
+
+2 · 
+
+
+
+k:∞) ≤3
+
+µM/2(Sk:∞Hk:∞S⊤
+
++ c1 · λk0+1+k,
+
+λM/2+k +
+
+M
+
++ log1−a(k0 + k)
+
+M + log−a(k0 + 1 + k)
+
+ M
+
+2 + k −1 log−a  M
+
+≲
+
+2 + k 
+
+k0 + 1 + k
+
+≲log−a(M + k)
+
+(M + k) + log1−a(M + k)
+
+M ≲log1−a(M + k)
+
+M (37)
+
+with probability at least 1 −e−Ω(M) for some constant c1 > 0.
+
+Case 1: k ≲M. Applying Lemma G.1 with Hk:∞replacing H, for k0 = M/c, we have
+
+P
+
+i>k0 λi+k
+
+2 · 
+
+
+
+k:∞) ≳1
+
+µM(Sk:∞Hk:∞S⊤
+
+−c1 · λk0+1+k,
+
+λM+k +
+
+M
+
++ log1−a(k0 + k)
+
+M −clog−a(k0 + 1 + k)
+
+−1 log−a  
+
+≳
+
+ 
+
+
+
+M + k
+
+M + k
+
+k0 + 1 + k
+
+≳log−a(M + k)
+
+(M + k) + log1−a(M + k)
+
+M −˜clog−a(M)
+
+M
+
+≳log1−a M
+
+M
+
+with probability at least 1 −e−Ω(M). Therefore,
+
+i.hlog1−a M
+
+hlog1−a(M + k)
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+i
+
+k:∞) ≲
+
+≲1
+
+M
+
+M
+
+with probability at least 1 −e−Ω(M) when k/M ≲1.
+
+Case 2: k ≳M. On the other hand, when k is relatively large, using Lemma G.1 with Hk:∞replacing H and k0 = M/c again, we obtain
+
+P
+
+i>k0 λi+k
+
+2 · 
+
+
+
+k:∞) ≥1
+
+µM(Sk:∞Hk:∞S⊤
+
+−c1 · λk0+1+k,
+
+λM+k +
+
+M
+
++ log1−a(k0 + k)
+
+log−a(k0 + 1 + k)
+
+−1 log−a  
+
+≳
+
+ 
+
+
+
+M −c2
+
+M + k
+
+M + k
+
+k0 + 1 + k
+
++ log1−a(M + k)
+
+log−a(M + k)
+
+≳k−1 log−a  
+
+
+
+M −c3
+
+k
+
+M + k
+
+≳log1−a(M + k)
+
+M
+
+with probability at least 1 −e−Ω(M), where c1, c2, c3 > 0 are some a-dependent constants. Therefore,
+
+hlog1−a(M + k)
+
+i.hlog1−a(M + k)
+
+µM/2(Sk:∞Hk:∞S⊤
+
+k:∞) µM(Sk:∞Hk:∞S⊤
+
+i
+
+k:∞) ≲
+
+≲1
+
+M
+
+M
+
+with probability at least 1 −e−Ω(M) when k/M ≳1.
+

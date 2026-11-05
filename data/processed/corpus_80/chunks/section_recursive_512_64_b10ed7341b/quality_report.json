@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "needs_review": [],
+  "failed_papers": [],
+  "limitations": [
+    "PDF heading and column detection are heuristic; inspect representative parsed documents.",
+    "Tables, equations and figures retain extracted text/captions but are not structurally reconstructed or OCRed.",
+    "cl100k_base is a baseline tokenizer, not an assertion about the future embedding model.",
+    "max_tokens applies to chunk text only; account for any added metadata prefix when embedding."
+  ]
+}

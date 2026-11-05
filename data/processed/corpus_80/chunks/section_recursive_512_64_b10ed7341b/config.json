@@ -1,0 +1,28 @@
+{
+  "config": {
+    "max_tokens": 512,
+    "overlap_tokens": 64,
+    "tokenizer_name": "cl100k_base",
+    "include_references": false,
+    "include_front_matter": false
+  },
+  "parser": "section-layout-v2",
+  "chunker": "recursive-spans-v1",
+  "sources": [
+    [
+      "arxiv_1706.03762",
+      "v7",
+      "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697"
+    ],
+    [
+      "arxiv_2207.09238",
+      "v1",
+      "8f6b10db99c0487599ed88cb5a03fe2c48c13709706765ca9b72c9b23e6c1910"
+    ],
+    [
+      "arxiv_1701.06538",
+      "v1",
+      "2567713d198a376b65b92f0c60b9f58c8c5f66755530b92203533a17c4ec4b8e"
+    ]
+  ]
+}

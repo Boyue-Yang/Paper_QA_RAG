@@ -1,0 +1,598 @@
+Abstract [body]
+Several recently proposed stochastic optimization methods that have been successfully used in training deep networks such as RMSprop, Adam, Adadelta, Nadam are based on using gradient updates scaled by square roots of exponential moving averages of squared past gradients. In many applications, e.g. learning with large output spaces, it has been empirically observed that these algorithms fail to converge to an optimal solution (or a critical point in nonconvex settings). We show that one cause for such failures is the exponential moving average used in the algorithms. We provide an explicit example of a simple convex optimization setting where Adam does not converge to the optimal solution, and describe the precise problems with the previous analysis of Adam algorithm. Our analysis suggests that the convergence issues can be fixed by endowing such algorithms with “long-term memory” of past gradients, and propose new variants of the Adam algorithm which not only fix the convergence issues but often also lead to improved empirical performance.
+
+1 Introduction [body]
+Stochastic gradient descent (Sgd) is the dominant method to train deep networks today. This method iteratively updates the parameters of a model by moving them in the direction of the negative gradient of the loss evaluated on a minibatch. In particular, variants of Sgd that scale coordinates of the gradient by square roots of some form of averaging of the squared coordinates in the past gradients have been particularly successful, because they automatically adjust the learning rate on a per-feature basis. The first popular algorithm in this line of research is Adagrad (Duchi et al., 2011; McMahan & Streeter, 2010), which can achieve significantly better performance compared to vanilla Sgd when the gradients are sparse, or in general small.
+
+Although Adagrad works well for sparse settings, its performance has been observed to deteriorate in settings where the loss functions are nonconvex and gradients are dense due to rapid decay of the learning rate in these settings since it uses all the past gradients in the update. This problem is especially exacerbated in high dimensional problems arising in deep learning. To tackle this issue, several variants of Adagrad, such as RMSprop (Tieleman & Hinton, 2012), Adam (Kingma & Ba, 2015), Adadelta (Zeiler, 2012), Nadam (Dozat, 2016), etc, have been proposed which mitigate the rapid decay of the learning rate using the exponential moving averages of squared past gradients, essentially limiting the reliance of the update to only the past few gradients. While these algorithms have been successfully employed in several practical applications, they have also been observed to not converge in some other settings. It has been typically observed that in these settings some minibatches provide large gradients but only quite rarely, and while these large gradients are quite informative, their influence dies out rather quickly due to the exponential averaging, thus leading to poor convergence.
+
+In this paper, we analyze this situation in detail. We rigorously prove that the intuition conveyed in the above paragraph is indeed correct; that limiting the reliance of the update on essentially only the past few gradients can indeed cause significant convergence issues. In particular, we make the following key contributions:
+
+• We elucidate how the exponential moving average in the RMSprop and Adam algorithms can cause non-convergence by providing an example of simple convex optimization problem where RMSprop and Adam provably do not converge to an optimal solution. Our analysis easily extends to other algorithms using exponential moving averages such as Adadelta and Nadam as well, but we omit this for the sake of clarity. In fact, the analysis is flexible enough to extend to other algorithms that employ averaging squared gradients over essentially a fixed size window (for exponential moving averages, the influences of gradients beyond a fixed window size becomes negligibly small) in the immediate past. We omit the general analysis in this paper for the sake of clarity.
+
+• The above result indicates that in order to have guaranteed convergence the optimization algorithm must have “long-term memory” of past gradients. Specifically, we point out a problem with the proof of convergence of the Adam algorithm given by Kingma & Ba (2015). To resolve this issue, we propose new variants of Adam which rely on long-term memory of past gradients, but can be implemented in the same time and space requirements as the original Adam algorithm. We provide a convergence analysis for the new variants in the convex setting, based on the analysis of Kingma & Ba (2015), and show a data-dependent regret bound similar to the one in Adagrad.
+
+• We provide a preliminary empirical study of one of the variants we proposed and show that it either performs similarly, or better, on some commonly used problems in machine learning.
+
+2 Preliminaries [body]
+Notation.
+
+We use $\mathcal{S}_{d}^{+}$ to denote the set of all positive definite $d\times d$ matrices. With slight abuse of notation, for a vector $a\in\mathbb{R}^{d}$ and a positive definite matrix $M\in\mathbb{R}^{d}\times\mathbb{R}^{d}$, we use $a/M$ to denote $M^{-1}a$, $\|M_{i}\|_{2}$ to denote $\ell_{2}$-norm of $i^{th}$ row of M and $\sqrt{M}$ to represent $M^{1/2}$. Furthermore, for any vectors $a,b\in\mathbb{R}^{d}$, we use $\sqrt{a}$ for element-wise square root, $a^{2}$ for element-wise square, $a/b$ to denote element-wise division and $\max(a,b)$ to denote element-wise maximum. For any vector $\theta_{i}\in\mathbb{R}^{d}$, $\theta_{i,j}$ denotes its $j^{\text{th}}$ coordinate where $j\in[d]$. The projection operation $\Pi_{\mathcal{F},A}(y)$ for $A\in\mathcal{S}_{+}^{d}$ is defined as $\arg\min_{x\in\mathcal{F}}\|A^{1/2}(x-y)\|$ for $y\in\mathbb{R}^{d}$. Finally, we say $\mathcal{F}$ has bounded diameter $D_{\infty}$ if $\|x-y\|_{\infty}\leq D_{\infty}$ for all $x,y\in\mathcal{F}$.
+
+Optimization setup.
+
+A flexible framework to analyze iterative optimization methods is the online optimization problem in the full information feedback setting. In this online setup, at each time step $t$, the optimization algorithm picks a point (i.e. the parameters of the model to be learned) $x_{t}\in\mathcal{F}$, where $\mathcal{F}\in\mathbb{R}^{d}$ is the feasible set of points. A loss function $f_{t}$ (to be interpreted as the loss of the model with the chosen parameters in the next minibatch) is then revealed, and the algorithm incurs loss $f_{t}(x_{t})$. The algorithm’s regret at the end of $T$ rounds of this process is given by $R_{T}=\sum_{i=1}^{T}f_{t}(x_{t})-\min_{x\in\mathcal{F}}\sum_{i=1}^{T}f_{t}(x)$. Throughout this paper, we assume that the feasible set $\mathcal{F}$ has bounded diameter and $\|\nabla f_{t}(x)\|_{\infty}$ is bounded for all $t\in[T]$ and $x\in\mathcal{F}$.
+
+Our aim to is to devise an algorithm that ensures $R_{T}=o(T)$, which implies that on average, the model’s performance converges to the optimal one. The simplest algorithm for this setting is the standard online gradient descent algorithm (Zinkevich, 2003), which moves the point $x_{t}$ in the opposite direction of the gradient $g_{t}=\nabla f_{t}(x_{t})$ while maintaining the feasibility by projecting onto the set $\mathcal{F}$ via the update rule $x_{t+1}=\Pi_{\mathcal{F}}(x_{t}-\alpha_{t}g_{t})$, where $\Pi_{\mathcal{F}}(y)$ denotes the projection of $y\in\mathbb{R}^{d}$ onto the set $\mathcal{F}$ i.e., $\Pi_{\mathcal{F}}(y)=\min_{x\in\mathcal{F}}\|x-y\|$, and $\alpha_{t}$ is typically set to $\alpha/\sqrt{t}$ for some constant $\alpha$. The aforementioned online learning problem is closely related to the stochastic optimization problem: $\min_{x\in\mathcal{F}}\mathbb{E}_{z}[f(x,z)]$, popularly referred to as empirical risk minimization (ERM), where $z$ is a training example drawn training sample over which a model with parameters $x$ is to be learned, and $f(x,z)$ is the loss of the model with parameters $x$ on the sample $z$. In particular, an online optimization algorithm with vanishing average regret yields a stochastic optimization algorithm for the ERM problem (Cesa-Bianchi et al., 2004). Thus, we use online gradient descent and stochastic gradient descent (Sgd) synonymously.
+
+Generic adaptive methods setup.
+
+We now provide a framework of adaptive methods that gives us insights into the differences between different adaptive methods and is useful for understanding the flaws in a few popular adaptive methods. Algorithm 1 provides a generic adaptive framework that encapsulates many popular adaptive methods. Note the algorithm is still abstract because the “averaging” functions $\phi_{t}$ and $\psi_{t}$ have not been specified. Here $\phi_{t}:\mathcal{F}^{t}\rightarrow{\mathbb{R}}^{d}$ and $\psi_{t}:\mathcal{F}^{t}\rightarrow\mathcal{S}_{+}^{d}$. For ease of exposition, we refer to $\alpha_{t}$ as step size and $\alpha_{t}V_{t}^{-1/2}$ as learning rate of the algorithm and furthermore, restrict ourselves to diagonal variants of adaptive methods encapsulated by Algorithm 1 where $V_{t}=\text{diag}(v_{t})$ . We first observe that standard stochastic gradient algorithm falls in this framework by using:
+
+\phi_{t}(g_{1},\dots,g_{t})=g_{t}\ \text{ and }\ \psi_{t}(g_{1},\dots,g_{t})=\mathbb{I},
+
+and $\alpha_{t}=\alpha/\sqrt{t}$ for all $t\in[T]$. While the decreasing step size is required for convergence, such an aggressive decay of learning rate typically translates into poor empirical performance. The key idea of adaptive methods is to choose averaging functions appropriately so as to entail good convergence. For instance, the first adaptive method Adagrad (Duchi et al., 2011), which propelled the research on adaptive methods, uses the following averaging functions:
+
+\displaystyle\phi_{t}(g_{1},\dots,g_{t})=g_{t}\ \text{ and }\ \psi_{t}(g_{1},\dots,g_{t})=\frac{\text{diag}(\sum_{i=1}^{t}g_{i}^{2})}{t},
+
+and step size $\alpha_{t}=\alpha/\sqrt{t}$ for all $t\in[T]$. In contrast to a learning rate of $\alpha/\sqrt{t}$ in Sgd, such a setting effectively implies a modest learning rate decay of $\alpha/\sqrt{\sum_{i}g_{i,j}^{2}}$ for $j\in[d]$. When the gradients are sparse, this can potentially lead to huge gains in terms of convergence (see Duchi et al. (2011)). These gains have also been observed in practice for even few non-sparse settings.
+
+Algorithm 1 Generic Adaptive Method Setup
+
+Input: $x_{1}\in\mathcal{F}$, step size $\{\alpha_{t}>0\}_{t=1}^{T}$, sequence of functions $\{\phi_{t},\psi_{t}\}_{t=1}^{T}$
+for $t=1$ to $T$ do
+$g_{t}=\nabla f_{t}(x_{t})$
+$m_{t}=\phi_{t}(g_{1},\dots,g_{t})$ and $V_{t}=\psi_{t}(g_{1},\dots,g_{t})$
+$\hat{x}_{t+1}=x_{t}-\alpha_{t}m_{t}/\sqrt{V_{t}}$
+$x_{t+1}=\Pi_{\mathcal{F},\sqrt{V}_{t}}(\hat{x}_{t+1})$
+end for
+
+Adaptive methods based on Exponential Moving Averages.
+
+Exponential moving average variants of Adagrad are popular in the deep learning community. RMSprop, Adam, Nadam, and Adadelta are some prominent algorithms that fall in this category. The key difference is to use an exponential moving average as function $\psi_{t}$ instead of the simple average function used in Adagrad. Adam, a particularly popular variant, uses the following averaging functions:
+
+Footnote: 1 1 Here, for simplicity, we remove the debiasing step used in the version of Adam used in the original paper by Kingma & Ba (2015). However, our arguments also apply to the debiased version as well.
+
+\displaystyle\phi_{t}(g_{1},\dots,g_{t})=(1-\beta_{1})\sum_{i=1}^{t}\beta_{1}^{t-i}g_{i}\ \text{ and }\ \psi_{t}(g_{1},\dots,g_{t})=(1-\beta_{2})\text{diag}(\sum_{i=1}^{t}\beta_{2}^{t-i}g_{i}^{2}),
+
+for some $\beta_{1},\beta_{2}\in[0,1)$. This update can alternatively be stated by the following simple recursion:
+
+\displaystyle m_{t,i}=\beta_{1}m_{t-1,i}+(1-\beta_{1})g_{t,i}\text{ and }v_{t,i}=\beta_{2}v_{t-1,i}+(1-\beta_{2})g_{t,i}^{2}
+
+and $m_{0,i}=0$ and $v_{0,i}=0$ for all $i\in[d]$. and $t\in[T]$. A value of $\beta_{1}=0.9$ and $\beta_{2}=0.999$ is typically recommended in practice. We note the additional projection operation in Algorithm 1 in comparison to Adam. When $\mathcal{F}=\mathbb{R}^{d}$, the projection operation is an identity operation and this corresponds to the algorithm in (Kingma & Ba, 2015). For theoretical analysis, one requires $\alpha_{t}=1/\sqrt{t}$ for $t\in[T]$, although, a more aggressive choice of constant step size seems to work well in practice. RMSprop, which appeared in an earlier unpublished work (Tieleman & Hinton, 2012) is essentially a variant of Adam with $\beta_{1}=0$. In practice, especially in deep learning applications, the momentum term arising due to non-zero $\beta_{1}$ appears to significantly boost the performance. We will mainly focus on Adam algorithm due to this generality but our arguments also apply to RMSprop and other algorithms such as Adadelta, Nadam.
+
+3 The Non-Convergence of Adam [body]
+With the problem setup in the previous section, we discuss fundamental flaw in the current exponential moving average methods like Adam. We show that Adam can fail to converge to an optimal solution even in simple one-dimensional convex settings. These examples of non-convergence contradict the claim of convergence in (Kingma & Ba, 2015), and the main issue lies in the following quantity of interest:
+
+\displaystyle\Gamma_{t+1}=\left(\frac{\sqrt{V_{t+1}}}{\alpha_{t+1}}-\frac{\sqrt{V_{t}}}{\alpha_{t}}\right).
+
+This quantity essentially measures the change in the inverse of learning rate of the adaptive method with respect to time. One key observation is that for Sgd and Adagrad, $\Gamma_{t}\succeq 0$ for all $t\in[T]$. This simply follows from update rules of Sgd and Adagrad in the previous section. In particular, update rules for these algorithms lead to “non-increasing” learning rates. However, this is not necessarily the case for exponential moving average variants like Adam and RMSprop i.e., $\Gamma_{t}$ can potentially be indefinite for $t\in[T]$ . We show that this violation of positive definiteness can lead to undesirable convergence behavior for Adam and RMSprop. Consider the following simple sequence of linear functions for $\mathcal{F}=[-1,1]$:
+
+f_{t}(x)=\begin{cases}Cx,&\text{for }t\bmod 3=1\\ -x,&\text{otherwise},\end{cases}
+
+where $C>2$. For this function sequence, it is easy to see that the point $x=-1$ provides the minimum regret. Suppose $\beta_{1}=0$ and $\beta_{2}=1/(1+C^{2})$. We show that Adam converges to a highly suboptimal solution of $x=+1$ for this setting. Intuitively, the reasoning is as follows. The algorithm obtains the large gradient $C$ once every 3 steps, and while the other 2 steps it observes the gradient $-1$, which moves the algorithm in the wrong direction. The large gradient $C$ is unable to counteract this effect since it is scaled down by a factor of almost $C$ for the given value of $\beta_{2}$, and hence the algorithm converges to $1$ rather than $-1$. We formalize this intuition in the result below.
+
+Theorem 1.
+
+There is an online convex optimization problem where Adam has non-zero average regret i.e., $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$.
+
+We relegate all proofs to the appendix. A few remarks are in order. One might wonder if adding a small constant in the denominator of the update helps in circumventing this problem i.e., the update for Adam in Algorithm 1 of $\hat{x}_{t+1}$ is modified as follows:
+
+\displaystyle\hat{x}_{t+1}=x_{t}-\alpha_{t}m_{t}/\sqrt{V_{t}+\epsilon\mathbb{I}}.
+
+The algorithm in (Kingma & Ba, 2015) uses such an update in practice, although their analysis does not. In practice, selection of the $\epsilon$ parameter appears to be critical for the performance of the algorithm. However, we show that for any constant $\epsilon>0$, there exists an online optimization setting where, again, Adam has non-zero average regret asymptotically (see Theorem 6 in Section F of the appendix).
+
+The above examples of non-convergence are catastrophic insofar that Adam and RMSprop converge to a point that is worst amongst all points in the set $[-1,1]$. Note that above example also holds for constant step size $\alpha_{t}=\alpha$. Also note that classic Sgd and Adagrad do not suffer from this problem and for these algorithms, average regret asymptotically goes to 0. This problem is especially aggravated in high dimensional settings and when the variance of the gradients with respect to time is large. This example also provides intuition for why large $\beta_{2}$ is advisable while using Adam algorithm, and indeed in practice using large $\beta_{2}$ helps. However the following result shows that for any constant $\beta_{1}$ and $\beta_{2}$ with $\beta_{1}<\sqrt{\beta_{2}}$, we can design an example where Adam has non-zero average rate asymptotically.
+
+Theorem 2.
+
+For any constant $\beta_{1},\beta_{2}\in[0,1)$ such that $\beta_{1}<\sqrt{\beta_{2}}$, there is an online convex optimization problem where Adam has non-zero average regret i.e., $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$.
+
+The above results show that with constant $\beta_{1}$ and $\beta_{2}$, momentum or regularization via $\epsilon$ will not help in convergence of the algorithm to the optimal solution. Note that the condition $\beta_{1}<\sqrt{\beta_{2}}$ is benign and is typically satisfied in the parameter settings used in practice. Furthermore, such condition is assumed in convergence proof of Kingma & Ba (2015). We can strengthen this result by providing a similar example of non-convergence even in the easier stochastic optimization setting:
+
+Theorem 3.
+
+For any constant $\beta_{1},\beta_{2}\in[0,1)$ such that $\beta_{1}<\sqrt{\beta_{2}}$, there is a stochastic convex optimization problem for which Adam does not converge to the optimal solution.
+
+These results have important consequences insofar that one has to use “problem-dependent” $\epsilon,\beta_{1}$ and $\beta_{2}$ in order to avoid bad convergence behavior. In high-dimensional problems, this typically amounts to using, unlike the update in Equation (3), a different $\epsilon,\beta_{1}$ and $\beta_{2}$ for each dimension. However, this defeats the purpose of adaptive methods since it requires tuning a large set of parameters. We would also like to emphasize that while the example of non-convergence is carefully constructed to demonstrate the problems in Adam, it is not unrealistic to imagine scenarios where such an issue can at the very least slow down convergence.
+
+We end this section with the following important remark. While the results stated above use constant $\beta_{1}$ and $\beta_{2}$, the analysis of Adam in (Kingma & Ba, 2015) actually relies on decreasing $\beta_{1}$ over time. It is quite easy to extend our examples to the case where $\beta_{1}$ is decreased over time, since the critical parameter is $\beta_{2}$ rather than $\beta_{1}$, and as long as $\beta_{2}$ is bounded away from $1$, our analysis goes through. Thus for the sake of clarity, in this paper we only prove non-convergence of Adam in the setting where $\beta_{1}$ is held constant.
+
+4 A New Exponential Moving Average Variant: AMSGrad [body]
+In this section, we develop a new principled exponential moving average variant and provide its convergence analysis. Our aim is to devise a new strategy with guaranteed convergence while preserving the practical benefits of Adam and RMSprop. To understand the design of our algorithms, let us revisit the quantity $\Gamma_{t}$ in (2). For Adam and RMSprop, this quantity can potentially be negative. The proof in the original paper of Adam erroneously assumes that $\Gamma_{t}$ is positive semi-definite and is hence, incorrect (refer to Appendix D for more details). For the first part, we modify these algorithms to satisfy this additional constraint. Later on, we also explore an alternative approach where $\Gamma_{t}$ can be made positive semi-definite by using values of $\beta_{1}$ and $\beta_{2}$ that change with $t$.
+
+AMSGrad uses a smaller learning rate in comparison to Adam and yet incorporates the intuition of slowly decaying the effect of past gradients on the learning rate as long as $\Gamma_{t}$ is positive semi-definite. Algorithm 2 presents the pseudocode for the algorithm. The key difference of AMSGrad with Adam is that it maintains the maximum of all $v_{t}$ until the present time step and uses this maximum value for normalizing the running average of the gradient instead of $v_{t}$ in Adam. By doing this, AMSGrad results in a non-increasing step size and avoids the pitfalls of Adam and RMSprop i.e., $\Gamma_{t}\succeq 0$ for all $t\in[T]$ even with constant $\beta_{2}$. Also, in Algorithm 2, one typically uses a constant $\beta_{1t}$ in practice (although, the proof requires a decreasing schedule for proving convergence of the algorithm).
+
+Algorithm 2 AMSGrad
+
+Input: $x_{1}\in\mathcal{F}$, step size $\{\alpha_{t}\}_{t=1}^{T}$, $\{\beta_{1t}\}_{t=1}^{T}$, $\beta_{2}$
+Set $m_{0}=0$, $v_{0}=0$ and $\hat{v}_{0}=0$
+for $t=1$ to $T$ do
+$g_{t}=\nabla f_{t}(x_{t})$
+$m_{t}=\beta_{1t}m_{t-1}+(1-\beta_{1t})g_{t}$
+$v_{t}=\beta_{2}v_{t-1}+(1-\beta_{2})g_{t}^{2}$
+$\hat{v}_{t}=\max(\hat{v}_{t-1},v_{t})$ and $\hat{V}_{t}=\text{diag}(\hat{v}_{t})$
+$x_{t+1}=\Pi_{\mathcal{F},\sqrt{\hat{V}_{t}}}(x_{t}-\alpha_{t}m_{t}/\sqrt{\hat{v}_{t}})$
+end for
+
+To gain more intuition for the updates of AMSGrad, it is instructive to compare its update with Adam and Adagrad. Suppose at particular time step $t$ and coordinate $i\in[d]$, we have $v_{t-1,i}>g_{t,i}^{2}>0$, then Adam aggressively increases the learning rate, however, as we have seen in the previous section, this can be detrimental to the overall performance of the algorithm. On the other hand, Adagrad slightly decreases the learning rate, which often leads to poor performance in practice since such an accumulation of gradients over a large time period can significantly decrease the learning rate. In contrast, AMSGrad neither increases nor decreases the learning rate and furthermore, decreases $v_{t}$ which can potentially lead to non-decreasing learning rate even if gradient is large in the future iterations. For rest of the paper, we use $g_{1:t}=[g_{1}\dots g_{t}]$ to denote the matrix obtained by concatenating the gradient sequence. We prove the following key result for AMSGrad.
+
+Theorem 4.
+
+Let $\{x_{t}\}$ and $\{v_{t}\}$ be the sequences obtained from Algorithm 2, $\alpha_{t}=\alpha/\sqrt{t}$, $\beta_{1}=\beta_{11}$, $\beta_{1t}\leq\beta_{1}$ for all $t\in[T]$ and $\gamma=\beta_{1}/\sqrt{\beta_{2}}<1$. Assume that $\mathcal{F}$ has bounded diameter $D_{\infty}$ and $\|\nabla f_{t}(x)\|_{\infty}\leq G_{\infty}$ for all $t\in[T]$ and $x\in\mathcal{F}$. For $x_{t}$ generated using the AMSGrad (Algorithm 2), we have the following bound on the regret
+
+R_{T}\leq\frac{D_{\infty}^{2}\sqrt{T}}{\alpha(1-\beta_{1})}\sum_{i=1}^{d}\hat{v}_{T,i}^{1/2}+\frac{D_{\infty}^{2}}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}\hat{v}_{t,i}^{1/2}}{\alpha_{t}}+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The following result falls as an immediate corollary of the above result.
+
+Corollary 1.
+
+Suppose $\beta_{1t}=\beta_{1}\lambda^{t-1}$ in Theorem 4, then we have
+
+R_{T}\leq\frac{D_{\infty}^{2}\sqrt{T}}{\alpha(1-\beta_{1})}\sum_{i=1}^{d}\hat{v}_{T,i}^{1/2}+\frac{\beta_{1}D_{\infty}^{2}G_{\infty}}{(1-\beta_{1})^{2}(1-\lambda)^{2}}+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The above bound can be considerably better than $O(\sqrt{dT})$ regret of Sgd when $\sum_{i=1}^{d}\hat{v}_{T,i}^{1/2}\ll\sqrt{d}$ and $\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}\ll\sqrt{dT}$ (Duchi et al., 2011). Furthermore, in Theorem 4, one can use a much more modest momentum decay of $\beta_{1t}=\beta_{1}/t$ and still ensure a regret of $O(\sqrt{T})$. We would also like to point out that one could consider taking a simple average of all the previous values of $v_{t}$ instead of their maximum. The resulting algorithm is very similar to Adagrad except for normalization with smoothed gradients rather than actual gradients and can be shown to have similar convergence as Adagrad.
+
+5 Experiments [body]
+In this section, we present empirical results on both synthetic and real-world datasets. For our experiments, we study the problem of multiclass classification using logistic regression and neural networks, representing convex and nonconvex settings, respectively.
+
+Figure 1: Performance comparison of Adam and AMSGrad on synthetic example on a simple one dimensional convex problem inspired by our examples of non-convergence. The first two plots (left and center) are for the online setting and the the last one (right) is for the stochastic setting.
+
+Synthetic Experiments: To demonstrate the convergence issue of Adam, we first consider the following simple convex setting inspired from our examples of non-convergence:
+
+f_{t}(x)=\begin{cases}1010x,&\text{for }t\bmod 101=1\\ -10x,&\text{otherwise},\end{cases}
+
+Figure 2: Performance comparison of Adam and AMSGrad for logistic regression, feedforward neural network and Cifarnet. The top row shows performance of Adam and AMSGrad on logistic regression (left and center) and 1-hidden layer feedforward neural network (right) on MNIST. In the bottom row, the two plots compare the training and test loss of Adam and AMSGrad with respect to the iterations for Cifarnet.
+
+with the constraint set $\mathcal{F}=[-1,1]$. We first observe that, similar to the examples of non-convergence we have considered, the optimal solution is $x=-1$; thus, for convergence, we expect the algorithms to converge to $x=-1$. For this sequence of functions, we investigate the regret and the value of the iterate $x_{t}$ for Adam and AMSGrad. To enable fair comparison, we set $\beta_{1}=0.9$ and $\beta_{2}=0.99$ for Adam and AMSGrad algorithm, which are typically the parameters settings used for Adam in practice. Figure 1 shows the average regret ($R_{t}/t$) and value of the iterate ($x_{t}$) for this problem. We first note that the average regret of Adam does not converge to $0$ with increasing $t$. Furthermore, its iterates $x_{t}$ converge to $x=1$, which unfortunately has the largest regret amongst all points in the domain. On the other hand, the average regret of AMSGrad converges to $0$ and its iterate converges to the optimal solution. Figure 1 also shows the stochastic optimization setting:
+
+f_{t}(x)=\begin{cases}1010x,&\text{with probability }0.01\\ -10x,&\text{otherwise}.\end{cases}
+
+Similar to the aforementioned online setting, the optimal solution for this problem is $x=-1$. Again, we see that the iterate $x_{t}$ of Adam converges to the highly suboptimal solution $x=1$.
+
+Logistic Regression: To investigate the performance of the algorithm on convex problems, we compare AMSGrad with Adam on logistic regression problem. We use MNIST dataset for this experiment, the classification is based on 784 dimensional image vector to one of the 10 class labels. The step size parameter $\alpha_{t}$ is set to $\alpha/\sqrt{t}$ for both Adam and AMSGrad in for our experiments, consistent with the theory. We use a minibatch version of these algorithms with minibatch size set to $128$. We set $\beta_{1}=0.9$ and $\beta_{2}$ is chosen from the set $\{0.99,0.999\}$, but they are fixed throughout the experiment. The parameters $\alpha$ and $\beta_{2}$ are chosen by grid search. We report the train and test loss with respect to iterations in Figure 2. We can see that AMSGrad performs better than Adam with respect to both train and test loss. We also observed that AMSGrad is relatively more robust to parameter changes in comparison to Adam.
+
+Neural Networks: For our first experiment, we trained a simple 1-hidden fully connected layer neural network for the multiclass classification problem on MNIST. Similar to the previous experiment, we use $\beta_{1}=0.9$ and $\beta_{2}$ is chosen from $\{0.99,0.999\}$. We use a fully connected 100 rectified linear units (ReLU) as the hidden layer for this experiment. Furthermore, we use constant $\alpha_{t}=\alpha$ throughout all our experiments on neural networks. Such a parameter setting choice of Adam is consistent with the ones typically used in the deep learning community for training neural networks. A grid search is used to determine parameters that provides the best performance for the algorithm.
+
+Finally, we consider the multiclass classification problem on the standard CIFAR-10 dataset, which consists of 60,000 labeled examples of $32\times 32$ images. We use Cifarnet, a convolutional neural network (CNN) with several layers of convolution, pooling and non-linear units, for training a multiclass classifer for this problem. In particular, this architecture has 2 convolutional layers with 64 channels and kernel size of $6\times 6$ followed by 2 fully connected layers of size 384 and 192. The network uses $2\times 2$ max pooling and layer response normalization between the convolutional layers (Krizhevsky et al., 2012). A dropout layer with keep probability of 0.5 is applied in between the fully connected layers (Srivastava et al., 2014). The minibatch size is also set to 128 similar to previous experiments. The results for this problem are reported in Figure 2. The parameters for Adam and AMSGrad are selected in a way similar to the previous experiments. We can see that AMSGrad performs considerably better than Adam on train loss and accuracy. Furthermore, this performance gain also translates into good performance on test loss.
+
+5 Experiments > 5.1 Extension: AdamNc algorithm [body]
+An alternative approach is to use an increasing schedule of $\beta_{2}$ in Adam. This approach, unlike Algorithm 2 does not require changing the structure of Adam but rather uses a non-constant $\beta_{1}$ and $\beta_{2}$. The pseudocode for the algorithm, AdamNc, is provided in the appendix (Algorithm 3). We show that by appropriate selection of $\beta_{1t}$ and $\beta_{2t}$, we can achieve good convergence rates.
+
+Theorem 5.
+
+Let $\{x_{t}\}$ and $\{v_{t}\}$ be the sequences obtained from Algorithm 3, $\alpha_{t}=\alpha/\sqrt{t}$, $\beta_{1}=\beta_{11}$ and $\beta_{1t}\leq\beta_{1}$ for all $t\in[T]$. Assume that $\mathcal{F}$ has bounded diameter $D_{\infty}$ and $\|\nabla f_{t}(x)\|_{\infty}\leq G_{\infty}$ for all $t\in[T]$ and $x\in\mathcal{F}$. Furthermore, let $\{\beta_{2t}\}$ be such that the following conditions are satisfied:
+
+1. $\frac{1}{\alpha_{T}}\sqrt{\sum_{j=1}^{t}\Pi_{k=1}^{t-j}\beta_{2(t-k+1)}(1-\beta_{2j})g_{j,i}^{2}}\geq\frac{1}{\zeta}\sqrt{\sum_{j=1}^{t}g_{j,i}^{2}}$ for some $\zeta>0$ and all $t\in[T]$, $j\in[d]$.
+
+2. $\frac{v_{t,i}^{1/2}}{\alpha_{t}}\geq\frac{v_{t-1,i}^{1/2}}{\alpha_{t-1}}$ for all $t\in\{2,\cdots,T\}$ and $i\in[d]$.
+
+Then for $x_{t}$ generated using the AdamNc (Algorithm 3), we have the following bound on the regret
+
+R_{T}\leq\frac{D_{\infty}^{2}}{2\alpha(1-\beta_{1})}\sum_{i=1}^{d}\sqrt{T}v_{T,i}^{1/2}+\frac{D_{\infty}^{2}}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}v_{t,i}^{1/2}}{\alpha_{t}}+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The above result assumes selection of $\{(\alpha_{t},\beta_{2t})\}$ such that $\Gamma_{t}\succeq 0$ for all $t\in\{2,\cdots,T\}$. However, one can generalize the result to deal with the case where this constraint is violated as long as the violation is not too large or frequent. Following is an immediate consequence of the above result.
+
+Corollary 2.
+
+Suppose $\beta_{1t}=\beta_{1}\lambda^{t-1}$ and $\beta_{2t}=1-1/t$ in Theorem 5, then we have
+
+\frac{D_{\infty}^{2}}{2\alpha(1-\beta_{1})}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}+\frac{\beta_{1}D_{\infty}^{2}G_{\infty}}{(1-\beta_{1})^{2}(1-\lambda)^{2}}+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The above corollary follows from a trivial fact that $v_{t,i}=\sum_{j=1}^{t}g_{j,i}^{2}/t$ for all $i\in[d]$ when $\beta_{2t}=1-1/t$. This corollary is interesting insofar that such a parameter setting effectively yields a momentum based variant of Adagrad. Similar to Adagrad, the regret is data-dependent and can be considerably better than $O(\sqrt{dT})$ regret of Sgd when $\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}\ll\sqrt{dT}$ (Duchi et al., 2011). It is easy to generalize this result for setting similar settings of $\beta_{2t}$. Similar to Corollary 1, one can use a more modest decay of $\beta_{1t}=\beta_{1}/t$ and still ensure a data-dependent regret of $O(\sqrt{T})$.
+
+6 Discussion [body]
+In this paper, we study exponential moving variants of Adagrad and identify an important flaw in these algorithms which can lead to undesirable convergence behavior. We demonstrate these problems through carefully constructed examples where RMSprop and Adam converge to highly suboptimal solutions. In general, any algorithm that relies on an essentially fixed sized window of past gradients to scale the gradient updates will suffer from this problem.
+
+We proposed fixes to this problem by slightly modifying the algorithms, essentially endowing the algorithms with a long-term memory of past gradients. These fixes retain the good practical performance of the original algorithms, and in some cases actually show improvements.
+
+The primary goal of this paper is to highlight the problems with popular exponential moving average variants of Adagrad from a theoretical perspective. RMSprop and Adam have been immensely successful in development of several state-of-the-art solutions for a wide range of problems. Thus, it is important to understand their behavior in a rigorous manner and be aware of potential pitfalls while using them in practice. We believe this paper is a first step in this direction and suggests good design principles for faster and better stochastic optimization.
+
+References [references]
+Auer & Gentile (2000) Peter Auer and Claudio Gentile. Adaptive and self-confident on-line learning algorithms. In Proceedings of the 13th Annual Conference on Learning Theory, pp. 107–117, 2000.
+
+Cesa-Bianchi et al. (2004) Nicolò Cesa-Bianchi, Alex Conconi, and Claudio Gentile. On the generalization ability of on-line learning algorithms. IEEE Transactions on Information Theory, 50:2050–2057, 2004.
+
+Dozat (2016) Timothy Dozat. Incorporating Nesterov Momentum into Adam. In Proceedings of 4th International Conference on Learning Representations, Workshop Track, 2016.
+
+Duchi et al. (2011) John C. Duchi, Elad Hazan, and Yoram Singer. Adaptive subgradient methods for online learning and stochastic optimization. Journal of Machine Learning Research, 12:2121–2159, 2011.
+
+Kingma & Ba (2015) Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In Proceedings of 3rd International Conference on Learning Representations, 2015.
+
+Krizhevsky et al. (2012) Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton. Imagenet classification with deep convolutional neural networks. In Advances in Neural Information Processing Systems 25, pp. 1097–1105, 2012.
+
+McMahan & Streeter (2010) H. Brendan McMahan and Matthew J. Streeter. Adaptive bound optimization for online convex optimization. In Proceedings of the 23rd Annual Conference On Learning Theory, pp. 244–256, 2010.
+
+Srivastava et al. (2014) Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhutdinov. Dropout: A simple way to prevent neural networks from overfitting. Journal of Machine Learning Research, 15:1929–1958, 2014.
+
+Tieleman & Hinton (2012) T. Tieleman and G. Hinton. RmsProp: Divide the gradient by a running average of its recent magnitude. COURSERA: Neural Networks for Machine Learning, 2012.
+
+Zeiler (2012) Matthew D. Zeiler. ADADELTA: An Adaptive Learning Rate Method. CoRR, abs/1212.5701, 2012.
+
+Zinkevich (2003) Martin Zinkevich. Online convex programming and generalized infinitesimal gradient ascent. In Proceedings of the 20th International Conference on Machine Learning, pp. 928–936, 2003.
+
+Appendix [body]
+
+
+Appendix A Proof of Theorem 1 [body]
+Proof.
+
+We consider the setting where $f_{t}$ are linear functions and $\mathcal{F}=[-1,1]$. In particular, we define the following function sequence:
+
+f_{t}(x)=\begin{cases}Cx,&\text{for }t\bmod 3=1\\ -x,&\text{otherwise},\end{cases}
+
+where $C\geq 2$. For this function sequence, it is easy to see that the point $x=-1$ provides the minimum regret. Without loss of generality, assume that the initial point is $x_{1}=1$. This can be assumed without any loss of generality because for any choice of initial point, we can always translate the coordinate system such that the initial point is $x_{1}=1$ in the new coordinate system and then choose the sequence of functions as above in the new coordinate system. Also, since the problem is one-dimensional, we drop indices representing coordinates from all quantities in Algorithm 1. Consider the execution of Adam algorithm for this sequence of functions with
+
+\beta_{1}=0,\beta_{2}=\frac{1}{1+C^{2}}\text{ and }\alpha_{t}=\frac{\alpha}{\sqrt{t}}
+
+where $\alpha<\sqrt{1-\beta_{2}}$. Note that since gradients of these functions are bounded, $\mathcal{F}$ has bounded $L_{\infty}$ diameter and $\beta_{1}^{2}/\sqrt{\beta_{2}}<1$. Hence, the conditions on the parameters required for Adam are satisfied (refer to (Kingma & Ba, 2015) for more details).
+
+Our main claim is that for iterates $\{x_{t}\}_{t=1}^{\infty}$ arising from the updates of Adam, we have $x_{t}>0$ for all $t\in\mathbb{N}$ and furthermore, $x_{3t+1}=1$ for all $t\in\mathbb{N}\cup\{0\}$. For proving this, we resort to the principle of mathematical induction. Since $x_{1}=1$, both the aforementioned conditions hold for the base case. Suppose for some $t\in\mathbb{N}\cup\{0\}$, we have $x_{i}>0$ for all $i\in[3t+1]$ and $x_{3t+1}=1$. Our aim is to prove that $x_{3t+2}$ and $x_{3t+3}$ are positive and $x_{3t+4}=1$. We first observe that the gradients have the following form:
+
+\nabla f_{i}(x)=\begin{cases}C,&\text{for }i\bmod 3=1\\ -1,&\text{otherwise }\end{cases}
+
+From $(3t+1)^{\text{th}}$ update of Adam in Equation (1), we obtain
+
+\hat{x}_{3t+2}=x_{3t+1}-\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}}=1-\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}}.
+
+The equality follows from the induction hypothesis. We observe the following:
+
+\displaystyle\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}} \displaystyle\leq\frac{\alpha C}{\sqrt{(3t+1)(1-\beta_{2})C^{2}}} \displaystyle=\frac{\alpha}{\sqrt{(3t+1)(1-\beta_{2}))}}<1.
+
+The second inequality follows from the step size choice that $\alpha<\sqrt{1-\beta_{2}}$. Therefore, we have $0<\hat{x}_{3t+2}<1$ and hence $x_{3t+2}=\hat{x}_{3t+2}>0$. Furthermore, after the $(3t+2)^{\text{th}}$ and $(3t+3)^{\text{th}}$ updates of Adam in Equation (1), we have the following:
+
+\displaystyle\hat{x}_{3t+3}=x_{3t+2}+\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2}))}}, \displaystyle\hat{x}_{3t+4}=x_{3t+3}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}.
+
+Since $x_{3t+2}>0$, it is easy to see that $x_{3t+3}>0$. To complete the proof, we need to show that $x_{3t+4}=1$. In order to prove this claim, we show that $\hat{x}_{3t+4}\geq 1$, which readily translates to $x_{3t+4}=1$ because $x_{3t+4}=\Pi_{\mathcal{F}}(\hat{x}_{3t+4})$ and $\mathcal{F}=[-1,1]$ here $\Pi_{\mathcal{F}}$ is the simple Euclidean projection (note that in one-dimension, $\Pi_{\mathcal{F},\sqrt{V_{t}}}=\Pi_{\mathcal{F}}$). We observe the following:
+
+\displaystyle\hat{x}_{3t+4}=\min(\hat{x}_{3t+3},1)+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}.
+
+The above equality is due to the fact that $\hat{x}_{3t+3}>0$ and property of projection operation onto the set $\mathcal{F}=[-1,1]$. We consider the following two cases:
+
+1. Suppose $\hat{x}_{3t+3}\geq 1$, then it is easy to see from the above equality that $\hat{x}_{3t+4}>1$.
+
+2. Suppose $\hat{x}_{3t+3}<1$, then we have the following: $\displaystyle\hat{x}_{3t+4}$ $\displaystyle=\hat{x}_{3t+3}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}$ $\displaystyle=x_{3t+2}+\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2}))}}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}$ $\displaystyle=1-\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}}+\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2}))}}$ $\displaystyle\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\quad+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}.$ The third equality is due to the fact that $x_{3t+2}=\hat{x}_{3t+2}$. Thus, to prove $\hat{x}_{3t+4}>1$, it is enough to the prove: $\displaystyle\underbrace{\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}}}_{T_{1}}$ $\displaystyle\leq\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2}))}}$ $\displaystyle\qquad\underbrace{\qquad+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}}_{T_{2}}$ We have the following bound on term $T_{1}$ from Equation (4): $\displaystyle T_{1}\leq\frac{\alpha}{\sqrt{(3t+1)(1-\beta_{2}))}}.$ (5) Furthermore, we lower bound $T_{2}$ in the following manner: $\displaystyle T_{2}$ $\displaystyle=\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2}))}}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2}))}}$ $\displaystyle\geq\frac{\alpha}{\sqrt{\beta_{2}C^{2}+(1-\beta_{2})}}\left(\frac{1}{\sqrt{3t+2}}+\frac{1}{\sqrt{3t+3}}\right)$ $\displaystyle\geq\frac{\alpha}{\sqrt{\beta_{2}C^{2}+(1-\beta_{2})}}\left(\frac{1}{\sqrt{2(3t+1)}}+\frac{1}{\sqrt{2(3t+1)}}\right)$ $\displaystyle=\frac{\sqrt{2}\alpha}{\sqrt{(3t+1)(\beta_{2}C^{2}+(1-\beta_{2})})}=\frac{\alpha}{\sqrt{(3t+1)(1-\beta_{2})}}\geq T_{1}.$ (6) The first inequality is due to the fact that $v_{t}\leq C^{2}$ for all $t\in\mathbb{N}$. The last inequality follows from inequality in Equation (5). The last equality is due to following fact: $\displaystyle\sqrt{\frac{\beta_{2}C^{2}+(1-\beta_{2})}{2}}=\sqrt{1-\beta_{2}}$ for the choice of $\beta_{2}=1/(1+C^{2})$. Therefore, we have $T_{2}\geq T_{1}$ and hence, $\hat{x}_{3t+4}\geq 1$.
+
+Therefore, from both the cases, we see that $x_{3t+4}=1$. Therefore, by the principle of mathematical induction it holds for all $t\in\mathbb{N}\cup\{0\}$. Thus, we have
+
+f_{3t+1}(x_{3t+1})+f_{3t+2}(x_{3t+2})+f_{3t+2}(x_{3t+2})-f_{3t+1}(-1)-f_{3t+2}(-1)-f_{3t+3}(-1)\geq 2C-4=2C-4.
+
+Therefore, for every 3 steps, Adam suffers a regret of at least $2C-4$. More specifically, $R_{T}\geq(2C-4)T/3$. Since $C\geq 2$, this regret can be very large and furthermore, $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$, which completes the proof. ∎
+
+Appendix B Proof of Theorem 2 [body]
+Proof.
+
+The proof generalizes the optimization setting used in Theorem 1. Throughout the proof, we assume $\beta_{1}<\sqrt{\beta_{2}}$, which is also a condition (Kingma & Ba, 2015) assume in their paper. In this proof, we consider the setting where $f_{t}$ are linear functions and $\mathcal{F}=[-1,1]$. In particular, we define the following function sequence:
+
+f_{t}(x)=\begin{cases}Cx,&\text{for }t\bmod C=1\\ -x,&\text{otherwise},\end{cases}
+
+where $C\in\mathbb{N}$, $C\bmod 2=0$ satisfies the following:
+
+\displaystyle(1-\beta_{1})\beta_{1}^{C-1}C\leq 1-\beta_{1}^{C-1}, \displaystyle\beta_{2}^{(C-2)/2}C^{2}\leq 1, \displaystyle\frac{3(1-\beta_{1})}{2\sqrt{1-\beta_{2}}}\left(1+\frac{\gamma(1-\gamma^{C-1})}{1-\gamma}\right)+\frac{\beta_{1}^{C/2-1}}{1-\beta_{1}}<\frac{C}{3},
+
+where $\gamma=\beta_{1}/\sqrt{\beta_{2}}<1$. It is not hard to see that these conditions hold for large constant $C$ that depends on $\beta_{1}$ and $\beta_{2}$. Since the problem is one-dimensional, we drop indices representing coordinates from all quantities in Algorithm 1. For this function sequence, it is easy to see that the point $x=-1$ provides the minimum regret since $C\geq 2$. Furthermore, the gradients have the following form:
+
+\nabla f_{i}(x)=\begin{cases}C,&\text{for }t\bmod C=1\\ -1,&\text{otherwise }\end{cases}
+
+Our first observation is that $m_{kC}\leq 0$ for all $k\in\mathbb{N}\cup\{0\}$. For $k=0$, this holds trivially due to our initialization. For the general case, observe the following:
+
+\displaystyle m_{kC+C} \displaystyle=-(1-\beta_{1})-(1-\beta_{1})\beta_{1}-\cdots-(1-\beta_{1})\beta_{1}^{C-2}+(1-\beta_{1})\beta_{1}^{C-1}C+\beta_{1}^{C}m_{kC} \displaystyle=-(1-\beta_{1}^{C-1})+(1-\beta_{1})\beta_{1}^{C-1}C+\beta_{1}^{C}m_{kC}.
+
+If $m_{kC}\leq 0$, it can be easily shown that $m_{kC+C}\leq 0$ for our selection of $C$ in Equation (7) by using the principle of mathematical induction. With this observation we continue to the main part of the proof. Let $T^{\prime}$ be such that $t+C\leq\tau^{2}t$ for all $t\geq T^{\prime}$ where $\tau\leq 3/2$. All our analysis focuses on iterations $t\geq T^{\prime}$. Note that any regret before $T^{\prime}$ is just a constant because $T^{\prime}$ is independent of $T$ and thus, the average regret is negligible as $T\rightarrow\infty$. Consider an iterate at time step $t$ of the form $kC$ after $T^{\prime}$. Our claim is that
+
+\displaystyle x_{t+C}\geq\min\{x_{t}+c_{t},1\}
+
+for some $c_{t}>0$. To see this, consider the updates of Adam for the particular sequence of functions we considered are:
+
+\displaystyle x_{t+1} \displaystyle=\Pi_{\mathcal{F}}\left(x_{t}-\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})C+\beta_{1}m_{t}}{\sqrt{(1-\beta_{2})C^{2}+\beta_{2}v_{t}}}\right), \displaystyle x_{t+i} \displaystyle=\Pi_{\mathcal{F}}\left(x_{t+i-1}-\frac{\alpha}{\sqrt{t+i-1}}\frac{-(1-\beta_{1})+\beta_{1}m_{t+i-1}}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}}\right)\text{ for }i\in\{2,\cdots,C\}.
+
+For $i\in\{2,\cdots,C\}$, we use the following notation:
+
+\displaystyle\delta_{t} \displaystyle=-\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})C+\beta_{1}m_{t}}{\sqrt{(1-\beta_{2})C^{2}+\beta_{2}v_{t}}}, \displaystyle\delta_{t+i} \displaystyle=-\frac{\alpha}{\sqrt{t+i}}\frac{-(1-\beta_{1})+\beta_{1}m_{t+i}}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i}}}\text{ for }i\in\{1,\cdots,C-1\}.
+
+Note that if $\delta_{t+j}\geq 0$ for some $j\in\{1,\cdots,C-1\}$ then $\delta_{t+l}\geq 0$ for all $l\in\{j,\cdots,C-1\}$. This follows from the fact that the gradient is negative for all time steps $i\in\{2,\cdots,C\}$. Using Lemma 6 for $\{x_{t+1},\cdots,x_{t+C}\}$ and $\{\delta_{t},\cdots,\delta_{t+C-1}\}$, we have the following:
+
+\displaystyle x_{t+C}\geq\min\left\{1,x_{t}+\sum_{i=t}^{t+C-1}\delta_{i}\right\}.
+
+Let $i^{\prime}=C/2$. In order to prove our claim in Equation (10), we need to prove the following:
+
+\delta=\sum_{i=t}^{t+C-1}\delta_{i}>0.
+
+To this end, we observe the following:
+
+\displaystyle\sum_{i=t+1}^{t+C-1}\delta_{i}=\sum_{i=1}^{C-1}-\frac{\alpha}{\sqrt{t+i}}\frac{-(1-\beta_{1})+\beta_{1}m_{t+i}}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i}}} \displaystyle=\sum_{i=2}^{C}-\frac{\alpha}{\sqrt{t+i-1}}\frac{-(1-\beta_{1})+(1-\beta_{1})\left[\sum_{j=1}^{i-2}\beta_{1}^{j}(-1)\right]+(1-\beta_{1})\beta_{1}^{i-1}C+\beta_{1}^{i}m_{t}}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}} \displaystyle\geq\sum_{i=2}^{C}\frac{\alpha}{\sqrt{t+i-1}}\frac{(1-\beta_{1})+(1-\beta_{1})\left[\sum_{j=1}^{i-2}\beta_{1}^{j}\right]-(1-\beta_{1})\beta_{1}^{i-1}C}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}} \displaystyle\geq\sum_{i=2}^{C}\frac{\alpha}{\tau\sqrt{t}}\frac{(1-\beta_{1})+(1-\beta_{1})\left[\sum_{j=1}^{i-2}\beta_{1}^{j}\right]}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}}-\sum_{i=2}^{C}\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})\beta_{1}^{i-1}C}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}} \displaystyle\geq\sum_{i=2}^{C}\frac{\alpha}{\tau\sqrt{t}}\frac{(1-\beta_{1})+(1-\beta_{1})\left[\sum_{j=1}^{i-2}\beta_{1}^{j}\right]}{\sqrt{(1-\beta_{2})+\beta_{2}v_{t+i-1}}}-\sum_{i=2}^{C}\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})\beta_{1}^{i-1}C}{\sqrt{(1-\beta_{2})+\beta_{2}^{i-1}(1-\beta_{2})C^{2}}} \displaystyle\geq\frac{\alpha}{\tau\sqrt{t}}\sum_{i=i^{\prime}}^{C}\frac{1-\beta_{1}^{i-1}}{\sqrt{(1-\beta_{2})+2\beta_{2}}}-\frac{\alpha}{\sqrt{t}}\frac{\gamma(1-\beta_{1})(1-\gamma^{C-1})}{(1-\gamma)\sqrt{(1-\beta_{2})}} \displaystyle\geq\frac{\alpha}{\tau\sqrt{t}\sqrt{1+\beta_{2}}}\left(C-i^{\prime}-\frac{\beta_{1}^{i^{\prime}-1}}{1-\beta_{1}}\right)-\frac{\alpha}{\sqrt{t}}\frac{\gamma(1-\beta_{1})(1-\gamma^{C-1})}{(1-\gamma)\sqrt{(1-\beta_{2})}}\geq 0.
+
+The first equality follows from the definition of $m_{t+i+1}$. The first inequality follows from the fact that $m_{t}\leq 0$ when $t\bmod C=0$ (see Equation (9) and arguments based on it). The second inequality follows from the definition of $\tau$ that $t+C\leq\tau^{2}t$ for all $t\geq T^{\prime}$. The third inequality is due to the fact that $v_{t+i-1}\geq(1-\beta_{2})\beta_{2}^{i-2}C^{2}$. The last inequality follows from our choice of $C$. The fourth inequality is due to the following upper bound that applies for all $i^{\prime}\leq i\leq C$:
+
+\displaystyle v_{t+i-1} \displaystyle=(1-\beta_{2})\sum_{j=1}^{t+i-1}\beta_{2}^{t+i-1-j}g_{j}^{2} \displaystyle\leq(1-\beta_{2})\left[\sum_{h=1}^{k}\beta_{2}^{t+i-1-hC}C^{2}+\sum_{j=1}^{t+i-1}\beta_{2}^{t+i-1-j}\ \right] \displaystyle\leq(1-\beta_{2})\left[\beta_{2}^{i^{\prime}-1}C^{2}\sum_{h=0}^{k-1}\beta_{2}^{hC}+\frac{1}{1-\beta_{2}}\right] \displaystyle\leq(1-\beta_{2})\left[\frac{\beta_{2}^{i^{\prime}-1}C^{2}}{1-\beta_{2}^{C}}+\frac{1}{1-\beta_{2}}\right]\leq 2.
+
+The first inequality follows from online problem setting for the counter-example i.e., gradient is $C$ once every $C$ iterations and $-1$ for the rest. The last inequality follows from the fact that $\beta_{2}^{i^{\prime}-1}C^{2}\leq 1$ and $\beta_{2}^{C}\leq\beta_{2}$. Furthermore, from the above inequality, we have
+
+\displaystyle\sum_{i=t}^{t+C-1}\delta_{i}\geq\delta_{t}+\frac{\alpha}{\tau\sqrt{t}\sqrt{1+\beta_{2}}}\left(C-i^{\prime}-\frac{\beta_{1}^{i^{\prime}-1}}{1-\beta_{1}}\right)-\frac{\alpha}{\sqrt{t}}\frac{\gamma(1-\beta_{1})(1-\gamma^{C-1})}{(1-\gamma)\sqrt{(1-\beta_{2})}} \displaystyle=-\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})C+\beta_{1}m_{t}}{\sqrt{(1-\beta_{2})C^{2}+\beta_{2}v_{t}}}+\frac{\alpha}{\tau\sqrt{t}\sqrt{1+\beta_{2}}}\left(C-i^{\prime}-\frac{\beta_{1}^{i^{\prime}-1}}{1-\beta_{1}}\right) \displaystyle\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad\qquad-\frac{\alpha}{\sqrt{t}}\frac{\gamma(1-\beta_{1})(1-\gamma^{C-1})}{(1-\gamma)\sqrt{(1-\beta_{2})}} \displaystyle\geq-\frac{\alpha}{\sqrt{t}}\frac{(1-\beta_{1})C}{\sqrt{(1-\beta_{2})C^{2}}}+\frac{\alpha}{\tau\sqrt{t}\sqrt{1+\beta_{2}}}\left(C-i^{\prime}-\frac{\beta_{1}^{i^{\prime}-1}}{1-\beta_{1}}\right)-\frac{\alpha}{\sqrt{t}}\frac{\gamma(1-\beta_{1})(1-\gamma^{C-1})}{(1-\gamma)\sqrt{(1-\beta_{2})}} \displaystyle\geq\frac{\alpha}{\tau\sqrt{t}}\left[\frac{C}{3}-\frac{\beta_{1}^{C/2-1}}{1-\beta_{1}}-\frac{3(1-\beta_{1})}{2\sqrt{1-\beta_{2}}}\left(1+\frac{\gamma(1-\gamma^{C-1})}{1-\gamma}\right)\right]=\frac{\alpha}{\sqrt{t}}\lambda
+
+Note that from our choice of $C$, it is easy to see that $\lambda\geq 0$. Also, observe that $\lambda$ is independent of $t$. Thus, $x_{t+C}\geq\min\{1,x_{t}+\lambda/\sqrt{t}\}$. From this fact, we also see the following:
+
+1. If $x_{t}=1$, then $x_{t+C}=1$ for all $t\geq T^{\prime}$ such that $t\bmod C=0$.
+
+2. There exists constant $T_{1}^{\prime}\geq T^{\prime}$ such that $x_{T_{1}^{\prime}}=1$ where $T_{1}^{\prime}\bmod C=0$.
+
+The first point simply follows from the relation $x_{t+C}\geq\min\{1,x_{t}+\lambda/\sqrt{t}\}$. The second point is due to divergent nature of the sum $\sum_{t=t^{\prime}}^{\infty}1/\sqrt{t}$. Therefore, we have
+
+\sum_{i=1}^{C}f_{(kC+i)}(x_{kC+i})-\sum_{i=1}^{C}f_{(kC+i)}(-1)\geq 2C-2(C-1)=2.
+
+where $kC\geq T_{1}^{\prime}$. Thus, when $t\geq T_{1}^{\prime}$, for every C steps, Adam suffers a regret of at least $2$. More specifically, $R_{T}\geq 2(T-T_{1}^{\prime})/C$. Thus, $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$, which completes the proof. ∎
+
+Appendix C Proof of Theorem 3 [body]
+Proof.
+
+Let $\delta$ be an arbitrary small positive constant, and $C$ be a large enough constant chosen as a function of $\beta_{1},\beta_{2},\delta$ that will be determined in the proof.
+
+Consider the following one dimensional stochastic optimization setting over the domain $[-1,1]$. At each time step $t$, the function $f_{t}(x)$ is chosen i.i.d. as follows:
+
+f_{t}(x)=\begin{cases}Cx\text{ with probability }p:=\frac{1+\delta}{C+1}\\ -x\text{ with probability }1-p\end{cases}
+
+The expected function is $F(x)=\delta x$; thus the optimum point over $[-1,1]$ is $x^{\star}=-1$. At each time step $t$ the gradient $g_{t}$ equals $C$ with probability $p$ and $-1$ with probability $1-p$. Thus, the step taken by Adam is
+
+\Delta_{t}=\frac{-\alpha_{t}(\beta_{1}m_{t-1}+(1-\beta_{1})g_{t})}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})g_{t}^{2}}}.
+
+We now show that for a large enough constant $C$, $\mathbb{E}[\Delta_{t}]\geq 0$, which implies that the Adam’s steps keep drifting away from the optimal solution $x^{\star}=-1$.
+
+Lemma 1.
+
+For a large enough constant $C$ (as a function of $\beta_{1},\beta_{2},\delta$), we have $\mathbb{E}[\Delta_{t}]\geq 0$.
+
+Proof.
+
+Let $\mathbb{E}_{t}[\cdot]$ denote expectation conditioned on all randomness up to and including time $t-1$. Taking conditional expectation of the step, we have
+
+\displaystyle\frac{1}{\alpha_{t}}\mathbb{E}_{t}[\Delta_{t}]=p\cdot\frac{-(\beta_{1}m_{t-1}+(1-\beta_{1})C)}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})C^{2}}}+(1-p)\cdot\frac{-(\beta_{1}m_{t-1}-(1-\beta_{1}))}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})}} \displaystyle=p\cdot\underbrace{\frac{-(\beta_{1}m_{t-1}+(1-\beta_{1})C)}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})C^{2}}}}_{T_{1}}+(1-p)\cdot\underbrace{\frac{-\beta_{1}m_{t-1}}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})}}}_{T_{2}}+(1-p)\cdot\underbrace{\frac{1-\beta_{1}}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})}}}_{T_{3}}
+
+We will bound the expectation of the terms $T_{1}$, $T_{2}$ and $T_{3}$ above separately.
+
+First, for $T_{1}$, we have
+
+T_{1}\geq\frac{-(\beta_{1}C+(1-\beta_{1})C)}{\sqrt{(1-\beta_{2})C^{2}}}\geq-\frac{1}{\sqrt{1-\beta_{2}}}.
+
+Next, we bound $\mathbb{E}[T_{2}]$. Define $k=\lceil\frac{\log(C+1)}{\log(1/\beta_{1})}\rceil$. This choice of $k$ ensures that $\beta_{1}^{k}C\leq 1-\beta_{1}^{k}$. Now, note that
+
+m_{t-1}=(1-\beta_{1})\sum_{i=1}^{t-1}\beta_{1}^{t-1-i}g_{i}.
+
+Let $E$ denote the event that for every $i=t-1,t-2,\ldots,\max\{t-k,1\}$, $g_{i}=-1$. Note that $\Pr[E]\geq 1-kp$. Assuming $E$ happens, we can bound $m_{t-1}$ as follows:
+
+m_{t-1}\leq(1-\beta_{1})\sum_{i=\max\{t-k,1\}}^{t-1}\beta_{1}^{t-1-i}\cdot-1+(1-\beta_{1})\sum_{i=1}^{\max\{t-k,1\}-1}\beta_{1}^{t-1-i}\cdot C\leq-(1-\beta_{1}^{k})+\beta_{1}^{k}C\leq 0,
+
+and so $T_{2}\geq 0$.
+
+With probability at most $kp$, the event $E$ doesn’t happen. In this case, we bound $T_{2}$ as follows. We first bound $m_{t-1}$ in terms of $v_{t-1}$ using the Cauchy-Schwarz inequality as follows:
+
+\displaystyle m_{t-1}=(1-\beta_{1})\sum_{i=1}^{t-1}\beta_{1}^{t-1-i}g_{i} \displaystyle\leq(1-\beta_{1})\sqrt{\left(\textstyle\sum_{i=1}^{t-1}\beta_{2}^{t-1-i}g_{i}^{2}\right)\left(\textstyle\sum_{i=1}^{t-1}(\tfrac{\beta_{1}^{2}}{\beta_{2}})^{t-1-i}\right)} \displaystyle\leq\underbrace{(1-\beta_{1})\sqrt{\frac{\beta_{2}}{(1-\beta_{2})(\beta_{2}-\beta_{1}^{2})}}}_{A}\cdot\sqrt{v_{t-1}}.
+
+Thus, $v_{t-1}\geq m_{t-1}^{2}/A^{2}$. Thus, we have
+
+T_{2}=\frac{-\beta_{1}m_{t-1}}{\sqrt{\beta_{2}v_{t-1}+(1-\beta_{2})}}\geq\frac{-\beta_{1}|m_{t-1}|}{\sqrt{\beta_{2}(m_{t-1}^{2}/A^{2})}}=\frac{-\beta_{1}(1-\beta_{1})}{\sqrt{(1-\beta_{2})(\beta_{2}-\beta_{1}^{2})}}.
+
+Hence, we have
+
+\mathbb{E}[T_{2}]\geq 0\cdot(1-kp)+\frac{-\beta_{1}(1-\beta_{1})}{\sqrt{(1-\beta_{2})(\beta_{2}-\beta_{1}^{2})}}\cdot kp=\frac{-\beta_{1}(1-\beta_{1})kp}{\sqrt{(1-\beta_{2})(\beta_{2}-\beta_{1}^{2})}}
+
+Finally, we lower bound $\mathbb{E}[T_{3}]$ using Jensen’s inequality applied to the convex function $\frac{1}{\sqrt{x}}$:
+
+\mathbb{E}[T_{3}]\geq\frac{(1-\beta_{1})}{\sqrt{\beta_{2}\mathbb{E}[v_{t-1}]+(1-\beta_{2})}}\geq\frac{(1-\beta_{1})}{\sqrt{\beta_{2}(1+\delta)C^{2}+(1-\beta_{2})}}.
+
+The last inequality follows by using the facts $v_{t-1}=(1-\beta_{2})\sum_{i=1}^{t-1}\beta_{2}^{t-1-i}g_{i}^{2}$, and the random variables $g_{1}^{2},g_{2}^{2},\ldots,g_{t-1}^{2}$ are i.i.d., and so
+
+\mathbb{E}[v_{t-1}]=(1-\beta_{2}^{t-1})\mathbb{E}[g_{1}^{2}]=(1-\beta_{2}^{t-1})(C^{2}p+(1-p))=(1-\beta_{2}^{t-1})(1+\delta)C-\delta\leq(1+\delta)C.
+
+Combining the bounds in (12), (13), and (14) in the expression for Adam’s step, (11), and plugging in the values of the parameters $k$ and $p$ we get the following lower bound on $\mathbb{E}[\Delta_{t}]$:
+
+-\frac{1+\delta}{C+1}\cdot\left(\frac{1}{\sqrt{1-\beta_{2}}}+\frac{-\beta_{1}(1-\beta_{1})\lceil\frac{\log(C+1)}{\log(1/\beta_{1})}\rceil}{\sqrt{(1-\beta_{2})(\beta_{2}-\beta_{1}^{2})}}\right)+\left(1-\frac{1+\delta}{C+1}\right)\cdot\frac{(1-\beta_{1})}{\sqrt{\beta_{2}(1+\delta)C+(1-\beta_{2})}}.
+
+It is evident that for $C$ large enough (as a function of $\delta,\beta_{1},\beta_{2}$), the above expression can be made non-negative. ∎
+
+For the sake of simplicity, let us assume, as is routinely done in practice, that we are using a version of Adam that doesn’t perform any projection steps. Then the lemma implies that $\mathbb{E}[x_{t+1}]\geq\mathbb{E}[x_{t}]$. Via a simple induction, we conclude that $\mathbb{E}[x_{t}]\geq x_{1}$ for all $t$. Thus, if we assume that the starting point $x_{1}\geq 0$, then $\mathbb{E}[x_{t}]\geq 0$. Since $F$ is a monotonically increasing function, we have $\mathbb{E}[F(x_{t})]\geq F(0)=0$, whereas $F(-1)=-\delta$. Thus the expected suboptimality gap is always $\delta>0$, which implies that Adam doesn’t converge to the optimal solution. ∎
+
+Footnote: 2 2 Projections can be easily handled with a little bit of work but the analysis becomes more messy.
+
+Appendix D Proof of Theorem 4 [body]
+The proof of Theorem 4 presented below is along the lines of the Theorem 4.1 in (Kingma & Ba, 2015) which provides a claim of convergence for Adam. As our examples showing non-convergence of Adam indicate, the proof in (Kingma & Ba, 2015) has problems. The main issue in their proof is the incorrect assumption that $\Gamma_{t}$ defined in their equation (3) is positive semidefinite, and we also identified problems in lemmas 10.3 and 10.4 in their paper. The following proof fixes these issues and provides a proof of convergence for AMSGrad.
+
+Proof.
+
+We begin with the following observation:
+
+\displaystyle x_{t+1}=\Pi_{\mathcal{F},\sqrt{\hat{V}_{t}}}(x_{t}-\alpha_{t}\hat{V}_{t}^{-1/2}m_{t})=\min_{x\in\mathcal{F}}\|\hat{V}_{t}^{1/4}(x-(x_{t}-\alpha_{t}\hat{V}_{t}^{-1/2}m_{t}))\|.
+
+Furthermore, $\Pi_{\mathcal{F},\sqrt{\hat{V}_{t}}}(x^{*})=x^{*}$ for all $x^{*}\in\mathcal{F}$. In this proof, we will use $x_{i}^{*}$ to denote the $i^{\text{th}}$ coordinate of $x^{*}$. Using Lemma 4 with $u_{1}=x_{t+1}$ and $u_{2}=x^{*}$, we have the following:
+
+\displaystyle\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2} \displaystyle\leq\|\hat{V}_{t}^{1/4}(x_{t}-\alpha_{t}\hat{V}_{t}^{-1/2}m_{t}-x^{*})\|^{2} \displaystyle=\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}+\alpha_{t}^{2}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}-2\alpha_{t}\langle m_{t},x_{t}-x^{*}\rangle \displaystyle=\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}+\alpha_{t}^{2}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}-2\alpha_{t}\langle\beta_{1t}m_{t-1}+(1-\beta_{1t})g_{t},x_{t}-x^{*}\rangle
+
+Rearranging the above inequality, we have
+
+\displaystyle\langle g_{t},x_{t}-x^{*}\rangle \displaystyle\leq\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{1-\beta_{1t}}\langle m_{t-1},x_{t}-x^{*}\rangle \displaystyle\leq\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2(1-\beta_{1t})}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t-1}\|^{2}+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}.
+
+The second inequality follows from simple application of Cauchy-Schwarz and Young’s inequality. We now use the standard approach of bounding the regret at each step using convexity of the function $f_{t}$ in the following manner:
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\sum_{t=1}^{T}\langle g_{t},x_{t}-x^{*}\rangle \displaystyle\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2(1-\beta_{1t})}\alpha_{t-1}\|\hat{V}_{t-1}^{-1/4}m_{t-1}\|^{2}+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg] \displaystyle\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{(1-\beta_{1})}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg].
+
+The first inequality is due to convexity of function $f_{t}$. The second inequality follows from the bound in Equation (15) and the fact that $\hat{v}_{t-1,i}\leq\hat{v}_{t,i}$. For further bounding this inequality, we need the following intermediate result.
+
+Lemma 2.
+
+For the parameter settings and conditions assumed in Theorem 4, we have
+
+\sum_{t=1}^{T}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}\leq\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}
+
+Proof.
+
+We start with the following:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle=\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{m_{T,i}^{2}}{\sqrt{\hat{v}_{T,i}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{m_{T,i}^{2}}{\sqrt{v_{T,i}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}(1-\beta_{1j})\Pi_{k=1}^{T-j}\beta_{1(T-k+1)}g_{j,i})^{2}}{\sqrt{T((1-\beta_{2})\sum_{j=1}^{T}\beta_{2}^{T-j}g_{j,i}^{2})}}
+
+The first inequality follows from the definition of $\hat{v}_{T,i}$, which is maximum of all $v_{T,i}$ until the current time step. The second inequality follows from the update rule of Algorithm 2. We further bound the above inequality in the following manner:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{1(T-k+1)})(\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{1(T-k+1)}g_{j,i}^{2})}{\sqrt{T((1-\beta_{2})\sum_{j=1}^{T}\beta_{2}^{T-j}g_{j,i}^{2})}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}\beta_{1}^{T-j})(\sum_{j=1}^{T}\beta_{1}^{T-j}g_{j,i}^{2})}{\sqrt{T((1-\beta_{2})\sum_{j=1}^{T}\beta_{2}^{T-j}g_{j,i}^{2})}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\frac{\alpha}{1-\beta_{1}}\sum_{i=1}^{d}\frac{\sum_{j=1}^{T}\beta_{1}^{T-j}g_{j,i}^{2}}{\sqrt{T((1-\beta_{2})\sum_{j=1}^{T}\beta_{2}^{T-j}g_{j,i}^{2})}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\frac{\alpha}{(1-\beta_{1})\sqrt{T(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{j=1}^{T}\frac{\beta_{1}^{T-j}g_{j,i}^{2}}{\sqrt{\beta_{2}^{T-j}g_{j,i}^{2}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\frac{\alpha}{(1-\beta_{1})\sqrt{T(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{j=1}^{T}\gamma^{T-j}|g_{j,i}|
+
+The first inequality follows from Cauchy-Schwarz inequality. The second inequality is due to the fact that $\beta_{1k}\leq\beta_{1}$ for all $k\in[T]$. The third inequality follows from the inequality $\sum_{j=1}^{T}\beta_{1}^{T-j}\leq 1/(1-\beta_{1})$. By using similar upper bounds for all time steps, the quantity in Equation (17) can further be bounded as follows:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}\leq\sum_{t=1}^{T}\frac{\alpha}{(1-\beta_{1})\sqrt{t(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{j=1}^{t}\gamma^{t-j}|g_{j,i}| \displaystyle=\frac{\alpha}{(1-\beta_{1})\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{t=1}^{T}\frac{1}{\sqrt{t}}\sum_{j=1}^{t}\gamma^{t-j}|g_{j,i}|=\frac{\alpha}{(1-\beta_{1})\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{t=1}^{T}|g_{t,i}|\sum_{j=t}^{T}\frac{\gamma^{j-t}}{\sqrt{j}} \displaystyle\leq\frac{\alpha}{(1-\beta_{1})\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{t=1}^{T}|g_{t,i}|\sum_{j=t}^{T}\frac{\gamma^{j-t}}{\sqrt{t}}\leq\frac{\alpha}{(1-\beta_{1})\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\sum_{t=1}^{T}|g_{t,i}|\frac{1}{(1-\gamma)\sqrt{t}} \displaystyle\leq\frac{\alpha}{(1-\beta_{1})(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}\sqrt{\sum_{t=1}^{T}\frac{1}{t}}\leq\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}
+
+The third inequality follows from the fact that $\sum_{j=t}^{T}\gamma^{j-t}\leq 1/(1-\gamma)$. The fourth inequality is due to simple application of Cauchy-Schwarz inequality. The final inequality is due to the following bound on harmonic sum: $\sum_{t=1}^{T}1/t\leq(1+\log T)$. This completes the proof of the lemma. ∎
+
+We now return to the proof of Theorem 4. Using the above lemma in Equation (16) , we have:
+
+Footnote: 3 3 For the sake of clarity, we provide more details of the proof here compared to the original version. Also, the original proof had a missing constant factor of $\tfrac{2}{1-\beta_{1}}$ in the regret bound, which has been addressed here.
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|\hat{V}_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right] \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{1}{2\alpha_{1}(1-\beta_{1})}\|\hat{V}_{1}^{1/4}(x_{1}-x^{*})\|^{2}+\frac{1}{2}\sum_{t=2}^{T}\left[\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1t})}-\frac{\|\hat{V}_{t-1}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t-1}(1-\beta_{1(t-1)})}\right] \displaystyle\qquad\qquad\qquad\qquad+\sum_{t=1}^{T}\Bigg[\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{1}{2\alpha_{1}(1-\beta_{1})}\|\hat{V}_{1}^{1/4}(x_{1}-x^{*})\|^{2}+\frac{1}{2}\sum_{t=2}^{T}\Bigg[\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1(t-1)})}-\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1(t-1)})}+\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1t})} \displaystyle\qquad-\frac{\|\hat{V}_{t-1}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t-1}(1-\beta_{1(t-1)})}\Bigg]+\sum_{t=1}^{T}\Bigg[\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle\leq\frac{1}{2\alpha_{1}(1-\beta_{1})}\|\hat{V}_{1}^{1/4}(x_{1}-x^{*})\|^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\left[\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}}-\frac{\|\hat{V}_{t-1}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t-1}}\right] \displaystyle\qquad\qquad\qquad\qquad+\sum_{t=1}^{T}\Bigg[\frac{\beta_{1t}}{\alpha_{t}(1-\beta_{1})^{2}}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{1}{2\alpha_{1}(1-\beta_{1})}\sum_{i=1}^{d}\hat{v}_{1,i}^{1/2}(x_{1,i}-x_{i}^{*})^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\sum_{i=1}^{d}(x_{t,i}-x_{i}^{*})^{2}\left[\frac{\hat{v}_{t,i}^{1/2}}{\alpha_{t}}-\frac{\hat{v}_{t-1,i}^{1/2}}{\alpha_{t-1}}\right] \displaystyle\qquad\qquad\qquad\qquad+\frac{1}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}(x_{t,i}-x_{i}^{*})^{2}\hat{v}_{t,i}^{1/2}}{\alpha_{t}}+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The second inequality uses the fact that $\beta_{1t}\leq\beta_{1}$, and the observations that $\tfrac{\hat{v}_{t,i}^{1/2}}{\alpha_{t}}\geq\tfrac{\hat{v}_{t-1,i}^{1/2}}{\alpha_{t-1}}$ and
+
+\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1t})}-\frac{\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}(1-\beta_{1(t-1)})}\leq\frac{\beta_{1t}}{\alpha_{t}(1-\beta_{1})^{2}}\|\hat{V}_{t}^{1/4}(x_{t}-x^{*})\|^{2}.
+
+In order to further simplify the bound in Equation (18), we need to use telescopic sum. Using the above fact and $L_{\infty}$ bound on the feasible region and making use of the above property in Equation (18), we have:
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\frac{1}{2\alpha_{1}(1-\beta_{1})}\sum_{i=1}^{d}\hat{v}_{1,i}^{1/2}D_{\infty}^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\sum_{i=1}^{d}D_{\infty}^{2}\left[\frac{\hat{v}_{t,i}^{1/2}}{\alpha_{t}}-\frac{\hat{v}_{t-1,i}^{1/2}}{\alpha_{t-1}}\right] \displaystyle\qquad\qquad\qquad\qquad+\frac{1}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{D_{\infty}^{2}\beta_{1t}\hat{v}_{t,i}^{1/2}}{\alpha_{t}}+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{D_{\infty}^{2}}{2\alpha_{T}(1-\beta_{1})}\sum_{i=1}^{d}\hat{v}_{T,i}^{1/2}+\frac{D_{\infty}^{2}}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}\hat{v}_{t,i}^{1/2}}{\alpha_{t}}+\frac{\alpha\sqrt{1+\log T}}{(1-\beta_{1})^{2}(1-\gamma)\sqrt{(1-\beta_{2})}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The equality follows from simple telescopic sum, which yields the desired result. One important point to note here is that the regret of AMSGrad can be bounded by $O(G_{\infty}\sqrt{T})$. This can be easily seen from the proof of the aforementioned lemma where in the analysis the term $\sum_{t=1}^{T}|g_{t,i}|/\sqrt{t}$ can also be bounded by $O(G_{\infty}\sqrt{T})$. Thus, the regret of AMSGrad is upper bounded by minimum of $O(G_{\infty}\sqrt{T})$ and the bound in the Theorem 4 and therefore, the worst case dependence of regret on $T$ in our case is $O(\sqrt{T})$. ∎
+
+Appendix E Proof of Theorem 5 [body]
+Algorithm 3 AdamNc
+
+Input: $x_{1}\in\mathcal{F}$, step size $\{\alpha_{t}>0\}_{t=1}^{T}$, $\{(\beta_{1t},\beta_{2t})\}_{t=1}^{T}$
+Set $m_{0}=0$ and $v_{0}=0$
+for $t=1$ to $T$ do
+$g_{t}=\nabla f_{t}(x_{t})$
+$m_{t}=\beta_{1t}m_{t-1}+(1-\beta_{1t})g_{t}$
+$v_{t}=\beta_{2t}v_{t-1}+(1-\beta_{2t})g_{t}^{2}$ and $V_{t}=\text{diag}(v_{t})$
+$x_{t+1}=\Pi_{\mathcal{F},\sqrt{V_{t}}}(x_{t}-\alpha_{t}m_{t}/\sqrt{v_{t}})$
+end for
+
+Proof.
+
+Using similar argument to proof of Theorem 4 until Equation (15), we have the following
+
+\displaystyle\langle g_{t},x_{t}-x^{*}\rangle \displaystyle\leq\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|V_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad+\frac{\beta_{1t}}{2(1-\beta_{1t})}\alpha_{t}\|V_{t}^{-1/4}m_{t-1}\|^{2}+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}.
+
+The second inequality follows from simple application of Cauchy-Schwarz and Young’s inequality. We now use the standard approach of bounding the regret at each step using convexity of the function $f_{t}$ in the following manner:
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\sum_{t=1}^{T}\langle g_{t},x_{t}-x^{*}\rangle \displaystyle\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|V_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2(1-\beta_{1t})}\alpha_{t}\|V_{t}^{-1/4}m_{t-1}\|^{2}+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg] \displaystyle\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|V_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right]+\frac{\alpha_{t}}{2(1-\beta_{1t})}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2(1-\beta_{1t})}\alpha_{t-1}\|V_{t-1}^{-1/4}m_{t-1}\|^{2}+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg].
+
+The inequalities follow due to convexity of function $f_{t}$ and the fact that $\tfrac{v_{t,i}^{1/2}}{\alpha_{t}}\geq\tfrac{v_{t-1,i}^{1/2}}{\alpha_{t-1}}$ . For further bounding this inequality, we need the following intermediate result.
+
+Lemma 3.
+
+For the parameter settings and conditions assumed in Theorem 5, we have
+
+\sum_{t=1}^{T}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}\leq\frac{2\zeta}{(1-\beta_{1})^{2}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+Proof.
+
+We start with the following:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle=\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{m_{T,i}^{2}}{\sqrt{v_{T,i}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|\hat{V}_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}(1-\beta_{1j})\Pi_{k=1}^{T-j}\beta_{1(T-k+1)}g_{j,i})^{2}}{\sqrt{(\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{2(T-k+1)}(1-\beta_{2j})g_{j,i}^{2})}}
+
+The first inequality follows from the update rule of Algorithm 2. We further bound the above inequality in the following manner:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{1(T-k+1)})(\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{1(T-k+1)}g_{j,i}^{2})}{\sqrt{\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{2(T-k+1)}(1-\beta_{2j})g_{j,i}^{2}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\alpha_{T}\sum_{i=1}^{d}\frac{(\sum_{j=1}^{T}\beta_{1}^{T-j})(\sum_{j=1}^{T}\beta_{1}^{T-j}g_{j,i}^{2})}{\sqrt{\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{2(T-k+1)}(1-\beta_{2j})g_{j,i}^{2}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\frac{\alpha_{T}}{1-\beta_{1}}\sum_{i=1}^{d}\frac{\sum_{j=1}^{T}\beta_{1}^{T-j}g_{j,i}^{2}}{\sqrt{\sum_{j=1}^{T}\Pi_{k=1}^{T-j}\beta_{2(T-k+1)}(1-\beta_{2j})g_{j,i}^{2}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\frac{\zeta}{1-\beta_{1}}\sum_{i=1}^{d}\frac{\sum_{j=1}^{T}\beta_{1}^{T-j}g_{j,i}^{2}}{\sqrt{\sum_{j=1}^{T}g_{j,i}^{2}}} \displaystyle\leq\sum_{t=1}^{T-1}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2}+\frac{\zeta}{1-\beta_{1}}\sum_{i=1}^{d}\sum_{j=1}^{T}\frac{\beta_{1}^{T-j}g_{j,i}^{2}}{\sqrt{\sum_{k=1}^{j}g_{k,i}^{2}}}
+
+The first inequality follows from Cauchy-Schwarz inequality. The second inequality is due to the fact that $\beta_{1k}\leq\beta_{1}$ for all $k\in[T]$. The third inequality follows from the inequality $\sum_{j=1}^{T}\beta_{1}^{T-j}\leq 1/(1-\beta_{1})$. Using similar argument for all time steps, the quantity in Equation (21) can be bounded as follows:
+
+\displaystyle\sum_{t=1}^{T}\alpha_{t}\|V_{t}^{-1/4}m_{t}\|^{2} \displaystyle\leq\frac{\zeta}{1-\beta_{1}}\sum_{i=1}^{d}\sum_{j=1}^{T}\frac{\sum_{l=0}^{T-j}\beta_{1}^{l}g_{j,i}^{2}}{\sqrt{\sum_{k=1}^{j}g_{k,i}^{2}}} \displaystyle\leq\frac{\zeta}{(1-\beta_{1})^{2}}\sum_{i=1}^{d}\sum_{j=1}^{T}\frac{g_{j,i}^{2}}{\sqrt{\sum_{k=1}^{j}g_{k,i}^{2}}}\leq\frac{2\zeta}{(1-\beta_{1})^{2}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The final inequality is due to Lemma 5. This completes the proof of the lemma. ∎
+
+Using the above lemma in Equation (20) , we have:
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\sum_{t=1}^{T}\Bigg[\frac{1}{2\alpha_{t}(1-\beta_{1t})}\left[\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}-\|V_{t}^{1/4}(x_{t+1}-x^{*})\|^{2}\right] \displaystyle\qquad\qquad\qquad\qquad\qquad+\frac{\beta_{1t}}{2\alpha_{t}(1-\beta_{1t})}\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle\leq\frac{1}{2\alpha_{1}(1-\beta_{1})}\|V_{1}^{1/4}(x_{1}-x^{*})\|^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\left[\frac{\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}}{\alpha_{t}}-\frac{\|V_{t-1}^{1/4}(x_{t-1}-x^{*})\|^{2}}{\alpha_{t}}\right] \displaystyle\qquad\qquad\qquad\qquad+\sum_{t=1}^{T}\Bigg[\frac{\beta_{1t}}{\alpha_{t}(1-\beta_{1})^{2}}\|V_{t}^{1/4}(x_{t}-x^{*})\|^{2}\Bigg]+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{1}{2\alpha_{1}(1-\beta_{1})}\sum_{i=1}^{d}v_{1,i}^{1/2}(x_{1,i}-x_{i}^{*})^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\sum_{i=1}^{d}(x_{t,i}-x_{i}^{*})^{2}\left[\frac{v_{t,i}^{1/2}}{\alpha_{t}}-\frac{v_{t-1,i}^{1/2}}{\alpha_{t-1}}\right] \displaystyle\qquad\qquad\qquad\qquad+\frac{1}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}(x_{t,i}-x_{i}^{*})^{2}v_{t,i}^{1/2}}{\alpha_{t}}+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The first inequality and second inequality use the fact that $\beta_{1t}\leq\beta_{1}$ and argument similar to that in Theorem 4. Furthermore, from the theorem statement, we know that that $\{(\alpha_{t}.\beta_{2t})\}$ are selected such that the following holds:
+
+\frac{v_{t,i}^{1/2}}{\alpha_{t}}\geq\frac{v_{t-1,i}^{1/2}}{\alpha_{t-1}}.
+
+Using the $L_{\infty}$ bound on the feasible region and making use of the above property in Equation (22), we have:
+
+\displaystyle\sum_{t=1}^{T}f_{t}(x_{t})-f_{t}(x^{*})\leq\frac{1}{2\alpha_{1}(1-\beta_{1})}\sum_{i=1}^{d}v_{1,i}^{1/2}D_{\infty}^{2}+\frac{1}{2(1-\beta_{1})}\sum_{t=2}^{T}\sum_{i=1}^{d}D_{\infty}^{2}\left[\frac{v_{t,i}^{1/2}}{\alpha_{t}}-\frac{v_{t-1,i}^{1/2}}{\alpha_{t-1}}\right] \displaystyle\qquad\qquad\qquad\qquad+\frac{1}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{D_{\infty}^{2}\beta_{1t}v_{t,i}^{1/2}}{\alpha_{t}}+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2} \displaystyle=\frac{D_{\infty}^{2}}{2\alpha_{T}(1-\beta_{1})}\sum_{i=1}^{d}v_{T,i}^{1/2}+\frac{D_{\infty}^{2}}{(1-\beta_{1})^{2}}\sum_{t=1}^{T}\sum_{i=1}^{d}\frac{\beta_{1t}v_{t,i}^{1/2}}{\alpha_{t}}+\frac{2\zeta}{(1-\beta_{1})^{3}}\sum_{i=1}^{d}\|g_{1:T,i}\|_{2}.
+
+The equality follows from simple telescopic sum, which yields the desired result. ∎
+
+Appendix F Proof of Theorem 6 [body]
+Theorem 6.
+
+For any $\epsilon>0$, Adam with the modified update in Equation (3) and with parameter setting such that all the conditions in (Kingma & Ba, 2015) are satisfied can have non-zero average regret i.e., $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$ for convex $\{f_{i}\}_{i=1}^{\infty}$ with bounded gradients on a feasible set $\mathcal{F}$ having bounded $D_{\infty}$ diameter.
+
+Proof.
+
+Let us first consider the case where $\epsilon=1$ (in fact, the same setting works for any $\epsilon\leq 1$). The general $\epsilon$ case can be proved by simply rescaling the sequence of functions by a factor of $\sqrt{\epsilon}$. We show that the same optimization setting in Theorem 1 where $f_{t}$ are linear functions and $\mathcal{F}=[-1,1]$, hence, we only discuss the details that differ from the proof of Theorem 1. In particular, we define the following function sequence:
+
+f_{t}(x)=\begin{cases}Cx,&\text{for }t\bmod 3=1\\ -x,&\text{otherwise},\end{cases}
+
+where $C\geq 2$. Similar to the proof of Theorem 1, we assume that the initial point is $x_{1}=1$ and the parameters are:
+
+\beta_{1}=0,\beta_{2}=\frac{2}{(1+C^{2})C^{2}}\text{ and }\alpha_{t}=\frac{\alpha}{\sqrt{t}}
+
+where $\alpha<\sqrt{1-\beta_{2}}$. The proof essentially follows along the lines of that of Theorem 1 and is through principle of mathematical induction. Our aim is to prove that $x_{3t+2}$ and $x_{3t+3}$ are positive and $x_{3t+4}=1$. The base case holds trivially. Suppose for some $t\in\mathbb{N}\cup\{0\}$, we have $x_{i}>0$ for all $i\in[3t+1]$ and $x_{3t+1}=1$. For $(3t+1)^{\text{th}}$ update, the only change from the update of in Equation (1) is the additional $\epsilon$ in the denominator i.e., we have
+
+\displaystyle\hat{x}_{3t+2} \displaystyle=x_{3t+1}-\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2}+\epsilon)}} \displaystyle\geq 1-\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2})}}\geq 0.
+
+The last inequality follows by simply dropping $v_{3t}$ term and using the relation that $\alpha<\sqrt{1-\beta_{2}}$. Therefore, we have $0<\hat{x}_{3t+2}<1$ and hence $x_{3t+2}=\hat{x}_{3t+2}>0$. Furthermore, after the $(3t+2)^{\text{th}}$ and $(3t+3)^{\text{th}}$ updates of Adam in Equation (1), we have the following:
+
+\displaystyle\hat{x}_{3t+3}=x_{3t+2}+\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2})+\epsilon)}}, \displaystyle\hat{x}_{3t+4}=x_{3t+3}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2})+\epsilon)}}.
+
+Since $x_{3t+2}>0$, it is easy to see that $x_{3t+3}>0$. To complete the proof, we need to show that $x_{3t+4}=1$. The only change here from the proof of Theorem 1 is that we need to show the following:
+
+\displaystyle\frac{\alpha}{\sqrt{(3t+2)(\beta_{2}v_{3t+1}+(1-\beta_{2})+\epsilon)}}+\frac{\alpha}{\sqrt{(3t+3)(\beta_{2}v_{3t+2}+(1-\beta_{2})+\epsilon)}} \displaystyle\geq\frac{\alpha}{\sqrt{\beta_{2}C^{2}+(1-\beta_{2})+\epsilon}}\left(\frac{1}{\sqrt{3t+2}}+\frac{1}{\sqrt{3t+3}}\right) \displaystyle\geq\frac{\alpha}{\sqrt{\beta_{2}C^{2}+(1-\beta_{2})+\epsilon}}\left(\frac{1}{\sqrt{2(3t+1)}}+\frac{1}{\sqrt{2(3t+1)}}\right) \displaystyle=\frac{\sqrt{2}\alpha}{\sqrt{(3t+1)(\beta_{2}C^{2}+(1-\beta_{2})+\epsilon})}=\frac{\alpha C}{\sqrt{(3t+1)((1-\beta_{2})C^{2}+\epsilon)}} \displaystyle\geq\frac{\alpha C}{\sqrt{(3t+1)(\beta_{2}v_{3t}+(1-\beta_{2})C^{2}+\epsilon)}}.
+
+The first inequality is due to the fact that $v_{t}\leq C^{2}$ for all $t\in\mathbb{N}$. The last equality is due to following fact:
+
+\displaystyle\sqrt{\frac{\beta_{2}C^{2}+(1-\beta_{2})}{2}}=\sqrt{1-\beta_{2}+\frac{\epsilon}{C^{2}}}.
+
+for the choice of $\beta_{2}=2/[(1+C^{2})C^{2}]$ and $\epsilon=1$. Therefore, we see that $x_{3t+4}=1$. Therefore, by the principle of mathematical induction it holds for all $t\in\mathbb{N}\cup\{0\}$. Thus, we have
+
+f_{3t+1}(x_{3t+1})+f_{3t+2}(x_{3t+2})+f_{3t+2}(x_{3t+2})-f_{3t+1}(-1)-f_{3t+2}(-1)-f_{3t+3}(-1)\geq 2C-4.
+
+Therefore, for every 3 steps, Adam suffers a regret of at least $2C-4$. More specifically, $R_{T}\geq(2C-4)T/3$. Since $C\geq 2$, this regret can be very large and furthermore, $R_{T}/T\nrightarrow 0$ as $T\rightarrow\infty$, which completes the proof of the case where $\epsilon=1$. For the general $\epsilon$ case, we consider the following sequence of functions:
+
+f_{t}(x)=\begin{cases}C\sqrt{\epsilon}x,&\text{for }t\bmod 3=1\\ -\sqrt{\epsilon}x,&\text{otherwise},\end{cases}
+
+The functions are essentially rescaled in a manner so that the resultant updates of Adam correspond to the one in the optimization setting described above. Using essentially the same argument as above, it is easy to show that the regret $R_{T}\geq(2C-4)\sqrt{\epsilon}T/3$ and thus, the average regret is non-zero asymptotically, which completes the proof. ∎
+
+Appendix G Auxiliary Lemma [body]
+Lemma 4 ((McMahan & Streeter, 2010)).
+
+For any $Q\in\mathcal{S}_{+}^{d}$ and convex feasible set $\mathcal{F}\subset\mathbb{R}^{d}$, suppose $u_{1}=\min_{x\in\mathcal{F}}\|Q^{1/2}(x-z_{1})\|$ and $u_{2}=\min_{x\in\mathcal{F}}\|Q^{1/2}(x-z_{2})\|$ then we have $\|Q^{1/2}(u_{1}-u_{2})\|\leq\|Q^{1/2}(z_{1}-z_{2})\|$.
+
+Proof.
+
+We provide the proof here for completeness. Since $u_{1}=\min_{x\in\mathcal{F}}\|Q^{1/2}(x-z_{1})\|$ and $u_{2}=\min_{x\in\mathcal{F}}\|Q^{1/2}(x-z_{2})\|$ and from the property of projection operator we have the following:
+
+\displaystyle\langle z_{1}-u_{1},Q(z_{2}-z_{1})\rangle\geq 0\text{ and }\langle z_{2}-u_{2},Q(z_{1}-z_{2})\rangle\geq 0.
+
+Combining the above inequalities, we have
+
+\displaystyle\langle u_{2}-u_{1},Q(z_{2}-z_{1})\rangle\geq\langle z_{2}-z_{1},Q(z_{2}-z_{1})\rangle.
+
+Also, observe the following:
+
+\displaystyle\langle u_{2}-u_{1},Q(z_{2}-z_{1})\rangle\leq\frac{1}{2}[\langle u_{2}-u_{1},Q(u_{2}-u_{1})\rangle+\langle z_{2}-z_{1},Q(z_{2}-z_{1})\rangle]
+
+The above inequality can be obtained from the fact that $\langle(u_{2}-u_{1})-(z_{2}-z_{1}),Q((u_{2}-u_{1})-(z_{2}-z_{1}))\rangle\geq 0$ as $Q\in\mathcal{S}_{+}^{d}$ and rearranging the terms. Combining the above inequality with Equation (24), we have the required result. ∎
+
+Lemma 5 ((Auer & Gentile, 2000)).
+
+For any non-negative real numbers $y_{1},\cdots,y_{t}$, the following holds:
+
+\sum_{i=1}^{t}\frac{y_{i}}{\sqrt{\sum_{j=1}^{i}y_{j}}}\leq 2\sqrt{\sum_{i=1}^{t}y_{i}}.
+
+Lemma 6.
+
+Suppose $\mathcal{F}=[a,b]$ for $a,b\in\mathbb{R}$ and
+
+y_{t+1}=\Pi_{\mathcal{F}}(y_{t}+\delta_{t})
+
+for all the $t\in[T]$, $y_{1}\in\mathcal{F}$ and furthermore, there exists $i\in[T]$ such that $\delta_{j}\leq 0$ for all $j\leq i$ and $\delta_{j}>0$ for all $j>i$. Then we have,
+
+y_{T+1}\geq\min\{b,y_{1}+\sum_{j=1}^{T}\delta_{j}\}.
+
+Proof.
+
+It is first easy to see that $y_{i+1}\geq y_{1}+\sum_{j=1}^{i}\delta_{j}$ since $\delta_{j}\leq 0$ for all $j\leq i$. Furthermore, also observe that $y_{T+1}\geq\min\{b,y_{i+1}+\sum_{j=i+1}^{T}\delta_{j}\}$ since $\delta_{j}\geq 0$ for all $j>i$. Combining the above two inequalities gives us the desired result. ∎
+

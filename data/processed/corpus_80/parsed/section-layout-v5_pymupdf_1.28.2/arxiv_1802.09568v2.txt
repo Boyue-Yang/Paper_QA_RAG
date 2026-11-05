@@ -1,0 +1,2340 @@
+Front matter
+Shampoo: Preconditioned Stochastic Tensor Optimization
+
+Vineet Gupta6 Tomer Koren6 Yoram Singer‹
+
+March 5, 2018
+
+Abstract
+Preconditioned gradient methods are among the most general and powerful tools in optimization. However, preconditioning requires storing and manipulating prohibitively large matrices. We describe and analyze a new structure-aware preconditioning algorithm, called Shampoo, for stochastic optimization over tensor spaces. Shampoo maintains a set of preconditioning matrices, each of which operates on a single dimension, contracting over the remaining dimensions. We establish convergence guarantees in the stochastic convex setting, the proof of which builds upon matrix trace inequalities. Our experiments with state-of- the-art deep learning models show that Shampoo is capable of converging considerably faster than commonly used optimizers. Although it involves a more complex update rule, Shampoo’s runtime per step is comparable to that of simple gradient methods such as SGD, AdaGrad, and Adam.
+
+1 Introduction
+Over the last decade, stochastic first-order optimization methods have emerged as the canonical tools for training large-scale machine learning models. These methods are particularly appealing due to their wide applicability and their low runtime and memory costs.
+
+A potentially more powerful family of algorithms consists of preconditioned gradient methods. Preconditioning methods maintain a matrix, termed a preconditioner, which is used to transform (i.e., premultiply) the gradient vector before it is used to take a step. Classic algorithms in this family include Newton’s method, which employs the local Hessian as a preconditioner, as well as a plethora of quasi-Newton methods (e.g., [8, 15, 19]) that can be used whenever second-order information is unavailable or too expensive to compute. Newer additions to this family are preconditioned online algorithms, most notably AdaGrad [6], that use the covariance matrix of the accumulated gradients to form a preconditioner.
+
+While preconditioned methods often lead to improved convergence properties, the dimen- sionality of typical problems in machine learning prohibits out-of-the-box use of full-matrix preconditioning. To mitigate this issue, specialized variants have been devised in which the full preconditioner is replaced with a diagonal approximation [6, 14], a sketched version [9, 20], or various estimations thereof [7, 2, 23]. While the diagonal methods are heavily used in practice thanks to their favorable scaling with the dimension, the other approaches are seldom practical at large scale as one typically requires a fine approximation (or estimate) of the preconditioner that often demands super-linear memory and computation.
+
+In this paper, we take an alternative approach to preconditioning and describe an efficient and practical apparatus that exploits the structure of the parameter space. Our approach is motivated by the observation that in numerous machine learning applications, the parameter space entertains a more complex structure than a monolithic vector in Euclidean space. In
+
+6Google Brain. Email: {vineet,tkoren}@google.com ‹Princeton University and Google Brain. Email: y.s@cs.princeton.edu
+
+U
+
+L
+
+R
+
+G
+
+Figure 1: Illustration of Shampoo for a 3-dimensional tensor G P R3ˆ4ˆ5.
+
+multiclass problems the parameters form a matrix of size m ˆ n where m is the number of features and n is the number of classes. In neural networks, the parameters of each fully- connected layer form an m ˆ n matrix with n being the number of input nodes and m is the number of outputs. The space of parameters of convolutional neural networks for images is a collection of 4 dimensional tensors of the form input-depth ˆ width ˆ height ˆ output-depth. As a matter of fact, machine learning software tools such as Torch and TensorFlow are designed with tensor structure in mind.
+
+Our algorithm, which we call Shampoo,1 retains the tensor structure of the gradient and maintains a separate preconditioner matrix for each of its dimensions. An illustration of Sham- poo is provided in Figure 1. The set of preconditioners is updated by the algorithm in an online fashion with the second-order statistics of the accumulated gradients, similarly to AdaGrad. Importantly, however, each individual preconditioner is a full, yet moderately-sized, matrix that can be effectively manipulated in large scale learning problems.
+
+While our algorithm is motivated by modern machine learning practices, in particular train- ing of deep neural networks, its derivation stems from our analysis in a stochastic convex op- timization setting. In fact, we analyze Shampoo in the broader framework of online convex optimization [21, 11], thus its convergence applies more generally. Our analysis combines well- studied tools in online optimization along with off-the-beaten-path inequalities concerning geo- metric means of matrices. Moreover, the adaptation to the high-order tensor case is non-trivial and relies on extensions of matrix analysis to the tensor world.
+
+We implemented Shampoo (in its general tensor form) in Python as a new optimizer in the TensorFlow framework [1]. Shampoo is extremely simple to implement, as most of the computations it performs boil down to standard tensor operations supported out-of-the-box in TensorFlow and similar libraries. Using the Shampoo optimizer is also a straightforward process. Whereas recent optimization methods, such as [17, 18], need to be aware of the structure of the underlying model, Shampoo only needs to be informed of the tensors involved and their sizes. In our experiments with state-of-the-art deep learning models Shampoo is capable of converging considerably faster than commonly used optimizers. Surprisingly, albeit using more complex update rule, Shampoo’s runtime per step is comparable to that of simple methods such as vanilla SGD.
+
+1.1 Shampoo for matrices
+In order to further motivate our approach we start with a special case of Shampoo and defer a formal exposition of the general algorithm to later sections. In the two dimensional case, the parameters form a matrix W P Rmˆn. First-order methods update iterates Wt based on the gradient Gt “ ∇ftpWtq, which is also an m ˆ n matrix. Here, ft is the loss function
+
+1We call it Shampoo because it has to do with preconditioning.
+
+Initialize W1 “ 0mˆn ; L0 “ ǫIm ; R0 “ ǫIn for t “ 1, . . . , T do
+
+Receive loss function ft : Rmˆn ÞÑ R Compute gradient Gt “ ∇ftpWtq {Gt P Rmˆn} Update preconditioners:
+
+Lt “ Lt´1 ` GtGT
+
+t Rt “ Rt´1 ` GT
+
+t Gt
+
+Update parameters:
+
+Wt`1 “ Wt ´ ηL´1{4
+
+t GtR´1{4
+
+t
+
+Algorithm 1: Shampoo, matrix case.
+
+encountered on iteration t that typically represents the loss incurred over a single data point (or more generally, over a batch of data).
+
+A structure-oblivious full-matrix preconditioning scheme would flatten the parameter space into an mn-dimensional vector and employ preconditioning matrices Ht of size mn ˆ mn. In contrast, Shampoo maintains smaller left Lt P Rmˆm and right Rt P Rnˆn matrices containing second-moment information of the accumulated gradients. On each iteration, two precondition- ing matrices are formed from Lt and Rt and multiply the gradient matrix from the left and right respectively. The amount of space Shampoo uses in the matrix case is m2 ` n2 instead of m2n2. Moreover, as the preconditioning involves matrix inversion (and often spectral decompo- sition), the amount of computation required to construct the left and right preconditioners is Opm3 ` n3q, substantially lower than full-matrix methods which require Opm3n3q.
+
+The pseudocode of Shampoo for the matrix case is given in Algorithm 1. To recap more formally, Shampoo maintains two different matrices: an m ˆ m matrix L
+
+1{4 t to precondition the rows of Gt and R
+
+1{4 t for its columns. The 1{4 exponent arises from our analysis; intuitively, it is a sensible choice as it induces an overall step-size decay rate of Op1{
+
+?
+
+tq, which is common in stochastic optimization methods. The motivation for the algorithm comes from the observation that its update rule is equivalent, after flattening Wt and Gt, to a gradient step preconditioned using the Kronecker product of L
+
+1{4 t . The latter is shown to be tightly connected to a full unstructured preconditioner matrix used by algorithms such as AdaGrad. Thus, the algorithm can be thought of as maintaining a “structured” matrix which is implicitly used to precondition the flattened gradient, without either forming a full matrix or explicitly performing a product with the flattened gradient vector.
+
+1{4 t and R
+
+1.2 Related work
+As noted above, Shampoo is closely related to AdaGrad [6]. The diagonal (i.e., element-wise) version of AdaGrad is extremely popular in practice and frequently applied to tasks ranging from learning linear models over sparse features to training of large deep-learning models. In contrast, the full-matrix version of AdaGrad analyzed in [6] is rarely used in practice due to the prohibitive memory and runtime requirements associated with maintaining a full preconditioner. Shampoo can be viewed as an efficient, practical and provable apparatus for approximately and implicitly using the full AdaGrad preconditioner, without falling back to diagonal matrices.
+
+Another recent optimization method that uses factored preconditioning is K-FAC [17], which was specifically designed to optimize the parameters of neural networks. K-FAC employs a pre- conditioning scheme that approximates the Fisher-information matrix of a generative model represented by a neural network. The Fisher matrix of each layer in the network is approx- imated by a Kronecker product of two smaller matrices, relying on certain independence as-
+
+sumptions regarding the statistics of the gradients. K-FAC differs from Shampoo in several important ways. While K-FAC is used for training generative models and needs to sample from the model’s predictive distribution, Shampoo applies in a general stochastic (more generally, online) optimization setting and comes with convergence guarantees in the convex case. K-FAC relies heavily on the structure of the backpropagated gradients in a feed-forward neural network. In contrast, Shampoo is virtually oblivious to the particular model structures and only depends on standard gradient information. As a result, Shampoo is also much easier to implement and use in practice as it need not be tailored to the particular model or architecture.
+
+2 Background and technical tools
+We use lowercase letters to denote scalars and vectors and uppercase letters to denote matrices and tensors. Throughout, the notation A ľ 0 (resp. A ą 0) for a matrix A means that A is symmetric and positive semidefinite (resp. definite), or PSD (resp. PD) in short. Similarly, the notations A ľ B and A ą B mean that A ´ B ľ 0 and A ´ B ą 0 respectively, and both tacitly assume that A and B are symmetric. Given A ľ 0 and α P R, the matrix Aα is defined as the PSD matrix obtained by applying x ÞÑ xα to the eigenvalues of A; formally, if we rewrite A using its spectral decomposition ř
+
+i λiuiuT
+
+i in which pλi, uiq is A’s i’th eigenpair, then Aα “ ř
+
+?
+
+xTAx the Mahalanobis norm of x P Rd as induced by a positive definite matrix A ą 0. The dual norm of } ¨ }A is denoted } ¨ }˚
+
+i uiuT
+
+i λα
+
+i . We denote by }x}A “
+
+?
+
+xTA´1x. The inner product of two matrices A and B is denoted as A ‚ B “ TrpATBq. The spectral norm of a matrix A is denoted }A}2 “ maxx‰0 }Ax}{}x} and the Frobenius norm is }A}F “
+
+A and equals
+
+?
+
+A ‚ A. We denote by ei the unit vector with 1 in its i’th position and 0 elsewhere.
+
+2.1 Online convex optimization
+We use Online Convex Optimization (OCO) [21, 11] as our analysis framework. OCO can be seen as a generalization of stochastic (convex) optimization. In OCO a learner makes predictions in the form of a vector belonging to a convex domain W Ď Rd for T rounds. After predicting wt P W on round t, a convex function ft : W ÞÑ R is chosen, potentially in an adversarial or adaptive way based on the learner’s past predictions. The learner then suffers a loss ftpwtq and observes the function ft as feedback. The goal of the learner is to achieve low cumulative loss compared to any fixed vector in the W. Formally, the learner attempts to minimize its regret, defined as the quantity
+
+Tÿ
+
+Tÿ
+
+RT “
+
+ftpwtq ´ min
+
+ftpwq ,
+
+wPW
+
+t“1
+
+t“1
+
+Online convex optimization includes stochastic convex optimization as a special case. Any regret minimizing algorithm can be converted to a stochastic optimization algorithm with convergence rate OpRT{Tq using an online-to-batch conversion technique [4].
+
+2.2 Adaptive regularization in online optimization
+We next introduce tools from online optimization that our algorithms rely upon. First, we describe an adaptive version of Online Mirror Descent (OMD) in the OCO setting which employs time-dependent regularization. The algorithm proceeds as follows: on each round t “ 1, 2, . . . , T, it receives the loss function ft and computes the gradient gt “ ∇ftpwtq. Then, given a positive definite matrix Ht ą 0 it performs an update according to
+
+␣
+
+(
+
+ηgT
+
+2}w ´ wt}2 Ht
+
+t w ` 1
+
+. (1)
+
+wt`1 “ argmin
+
+w P W
+
+When W “ Rd, Eq. (1) is equivalent to a preconditioned gradient step, wt`1 “ wt ´ ηH´1
+
+t gt. More generally, the update rule can be rewritten as a projected gradient step,
+
+“
+
+‰
+
+wt ´ ηH´1
+
+wt`1 “ ΠW
+
+t gt; Ht
+
+,
+
+where ΠWrz; Hs “ argminwPW}w ´ z}H is the projection onto the convex set W with respect to the norm } ¨ }H. The following lemma provides a regret bound for Online Mirror Descent, see for instance [6].
+
+Lemma 1. For any sequence of matrices H1, . . . , HT ą 0, the regret of online mirror descent is bounded above by,
+
+Tÿ
+
+Tÿ
+
+`
+
+˘
+
+`
+
+˘2 .
+
+1 2η
+
+` η
+
+}wt ´ w‹}2
+
+Ht ´ }wt`1 ´ w‹}2
+
+}gt}˚
+
+Ht
+
+Ht
+
+2
+
+t“1
+
+t“1
+
+In order to analyze particular regularization schemes, namely specific strategies for choosing the matrices H1, . . . , HT , we need the following lemma, adopted from [10]; for completeness, we provide a short proof in Appendix C.
+
+Lemma 2 (Gupta et al. [10]). Let g1, . . . , gT be a sequence of vectors, and let Mt “ řt
+
+s“1 gsgT
+
+s for t ě 1. Given a function Φ over PSD matrices, define
+
+␣
+
+(
+
+Mt ‚ H´1 ` ΦpHq
+
+Ht “ argmin
+
+Hą0
+
+(and assume that a minimum is attained for all t). Then
+
+Tÿ
+
+Tÿ
+
+`
+
+˘2 ď
+
+`
+
+˘2 ` ΦpHTq ´ ΦpH0q .
+
+}gt}˚
+
+}gt}˚
+
+Ht
+
+HT
+
+t“1
+
+t“1
+
+2.3 Kronecker products
+We recall the definition of the Kronecker product, the vectorization operation and their calculus. Let A be an mˆn matrix and B be an m1 ˆn1 matrix. The Kronecker product, denoted AbB, is an mm1 ˆ nn1 block matrix defined as,
+
+¨
+
+˛
+
+a11B a12B . . . a1nB a21B a22B . . . a2nB ... ... ... ... am1B am2B . . . amnB
+
+˚ ˚ ˚ ˝
+
+‹‹‹‚ .
+
+A b B “
+
+For an mˆn matrix A with rows a1, . . . , am, the vectorization (or flattening) of A is the mnˆ1 column vector2
+
+vecpAq “ pa1 a2 ¨ ¨ ¨ amqT.
+
+The next lemma collects several properties of the Kronecker product and the vecp¨q operator, that will be used throughout the paper. For proofs and further details, we refer to [12].
+
+Lemma 3. Let A, A1, B, B1 be matrices of appropriate dimensions. The following properties hold:
+
+(i) pA b BqpA1 b B1q “ pAA1q b pBB1q;
+
+(ii) pA b BqT “ AT b BT;
+
+2This definition is slightly non-standard and differs from the more typical column-major operator vecpq; the notation vecpq is used to distinguish it from the latter.
+
+(iii) If A, B ľ 0, then for any s P R it holds that pA b Bqs “ As b Bs, and in particular, if
+
+A, B ą 0 then pA b Bq´1 “ A´1 b B´1;
+
+(iv) If A ľ A1 and B ľ B1 then AbB ľ A1 bB1, and in particular, if A, B ľ 0 then AbB ľ 0;
+
+(v) TrpA b Bq “ TrpAq TrpBq;
+
+(vi) vecpuvTq “ u b v for any two column vectors u, v.
+
+The following identity connects the Kronecker product and the vec operator. It facilitates an efficient computation of a matrix-vector product where the matrix is a Kronecker product of two smaller matrices. We provide its proof for completeness; see Appendix C.
+
+Lemma 4. Let G P Rmˆn, L P Rmˆm and R P Rnˆn. Then, one has
+
+pL b RTqvecpGq “ vecpLGRq .
+
+2.4 Matrix inequalities
+Our analysis requires the following result concerning the geometric means of matrices. Recall that by writing X ľ 0 we mean, in particular, that X is a symmetric matrix.
+
+Lemma 5 (Ando et al. [3]). Assume that 0 ĺ Xi ĺ Yi for all i “ 1, . . . , n. Assume further that all Xi commute with each other and all Yi commute with each other. Let α1, . . . , αn ě 0 such that řn
+
+i“1 αi “ 1, then
+
+Xα1
+
+1 ¨ ¨ ¨ Xαn n ĺ Y α1
+
+1 ¨ ¨ ¨ Y αn n .
+
+In words, the (weighted) geometric mean of commuting PSD matrices is operator monotone.
+
+Ando et al. [3] proved a stronger result which does not require the PSD matrices to commute with each other, relying on a generalized notion of geometric mean, but for our purposes the simpler commuting case suffices. We also use the following classic result from matrix theory, attributed to Löwner [16], which is an immediate consequence of Lemma 5.
+
+Lemma 6. The function x ÞÑ xα is operator-monotone for α P r0, 1s, that is, if 0 ĺ X ĺ Y then Xα ĺ Y α.
+
+3 Analysis of Shampoo for matrices
+In this section we analyze Shampoo in the matrix case. The analysis conveys the core ideas while avoiding numerous the technical details imposed by the general tensor case. The main result of this section is stated in the following theorem.
+
+Theorem 7. Assume that the gradients G1, . . . , GT are matrices of rank at most r. Then the regret of Algorithm 1 compared to any W ‹ P Rmˆn is bounded as follows,
+
+Tÿ
+
+Tÿ
+
+?
+
+2rD TrpL 1{4 T q TrpR
+
+1{4 T q ,
+
+ftpW ‹q ď
+
+ftpWtq ´
+
+t“1
+
+t“1
+
+where
+
+Tÿ
+
+Tÿ
+
+GtGT
+
+GT
+
+tPrTs }Wt ´ W ‹}F .
+
+t Gt , D “ max
+
+LT “ ǫIm `
+
+t , RT “ ǫIn `
+
+t“1
+
+t“0
+
+Let us make a few comments regarding the bound. First, under mild conditions, each of the trace terms on the right-hand side of the bound scales as OpT 1{4q. Thus, the overall scaling of the bound with respect to the number of iterations T is Op
+
+?
+
+Tq, which is the best possible in the context of online (or stochastic) optimization. For example, assume that the functions ft are 1-Lipschitz with respect to the spectral norm, that is, }Gt}2 ď 1 for all t. Let us also fix ǫ “ 0 for simplicity. Then, GtGT
+
+1{4 and TrpR
+
+t ĺ Im and GT
+
+1{4 T q ď mT
+
+t Gt ĺ In for all t, and so we have TrpL
+
+1{4. That is, in the worst case, while only assuming convex and Lipschitz losses, the regret of the algorithm is Op
+
+1{4 T q ď nT
+
+?
+
+Tq. Second, we note that D in the above bound could in principle grow with the number of iterations T and is not necessarily bounded by a constant. This issue can be easily addressed, for instance, by adding an additional step to the algorithm in which Wt is projected Wt onto the convex set of matrices whose Frobenius norm is bounded by D{2. Concretely, the projection at step t needs to be computed with respect to the norm induced by the pair of matrices pLt, Rtq, defined as }A}2
+
+t “ TrpATL
+
+1{4 t q; it is not hard to verify that the latter indeed defines a norm over Rmˆn, for any Lt, Rt ą 0. Alas, the projection becomes computationally expensive in large scale problems and is rarely performed in practice. We therefore omitted the projection step from Algorithm 1 in favor of a slightly looser bound.
+
+1{4 t AR
+
+The main step in the proof of the theorem is established in the following lemma. The lemma implies that the Kronecker product of the two preconditioners used by the algorithm is lower bounded by a full mn ˆ mn matrix often employed in full-matrix preconditioning methods.
+
+Lemma 8. Assume that G1, . . . , GT P Rmˆn are matrices of rank at most r. Let gt “ vecpGtq denote the vectorization of Gt for all t. Then, for any ǫ ě 0,
+
+´
+
+¯1{2
+
+´
+
+¯1{2
+
+Tÿ
+
+Tÿ
+
+Tÿ
+
+ǫImn ` 1
+
+gtgT
+
+GtGT
+
+GT
+
+t ĺ
+
+ǫIm `
+
+ǫIn `
+
+t Gt
+
+.
+
+b
+
+t
+
+r
+
+t“1
+
+t“1
+
+t“1
+
+In particular, the lemma shows that the small eigenvalues of the full-matrix preconditioner on the left, which are the most important for effective preconditioning, do not vanish as a result of the implicit approximation. In order to prove Lemma 8 we need the following technical result.
+
+Lemma 9. Let G be an m ˆ n matrix of rank at most r and denote g “ vecpGq. Then,
+
+1 r ggT ĺ Im b pGTGq and 1 rggT ĺ pGGTq b In .
+
+Proof. Write the singular value decomposition G “ řr
+
+i“1 σiuivT
+
+i , where σi ě 0 for all i, and u1, . . . , ur P Rm and v1, . . . , vr P Rn are orthonormal sets of vectors. Then, g “ řr
+
+i“1 σipui b viq and hence,
+
+´ rÿ
+
+¯´ rÿ
+
+¯T
+
+ggT “
+
+σipui b viq
+
+σipui b viq
+
+.
+
+i“1
+
+i“1
+
+Next, we use the fact that for any set of vectors w1, . . . , wr,
+
+´ rÿ
+
+¯´ rÿ
+
+¯T
+
+rÿ
+
+wiwT
+
+ĺ r
+
+wi
+
+wi
+
+i ,
+
+i“1
+
+i“1
+
+i“1
+
+which holds since given a vector x we can write αi “ xTwi, and use the convexity of α ÞÑ α2 to obtain
+
+xT´ rÿ
+
+¯´ rÿ
+
+¯T
+
+´ rÿ
+
+¯2
+
+i “ r xT´ rÿ
+
+¯
+
+rÿ
+
+wiwT
+
+α2
+
+wi
+
+wi
+
+x “
+
+αi
+
+ď r
+
+x .
+
+i
+
+i“1
+
+i“1
+
+i“1
+
+i“1
+
+i“1
+
+Using this fact and Lemma 3(i) we can rewrite,
+
+´ rÿ
+
+¯´ rÿ
+
+¯T
+
+ggT “
+
+σipui b viq
+
+σipui b viq
+
+i“1
+
+i“1
+
+rÿ
+
+i pui b viqpui b viqT
+
+σ2
+
+ĺ r
+
+i“1
+
+rÿ
+
+i puiuT
+
+i q b pvivT
+
+σ2
+
+“ r
+
+i q .
+
+i“1
+
+Now, since GGT “ řr
+
+i uiuT
+
+i and vivT
+
+i“1 σ2
+
+i ĺ In for all i, we have
+
+rÿ
+
+1 rggT ĺ
+
+i puiuT
+
+i q b In “ pGGTq b In .
+
+σ2
+
+i“1
+
+Similarly, using GTG “ řr
+
+i vivT
+
+i and uiuT
+
+i“1 σ2
+
+i ĺ Im for all i, we obtain the second matrix inequality.
+
+Proof of Lemma 8. Let us introduce the following notations to simplify our derivation,
+
+Tÿ
+
+Tÿ
+
+def “ ǫIm `
+
+def “ ǫIn `
+
+GtGT
+
+GT
+
+Am
+
+t , Bn
+
+t Gt .
+
+t“1
+
+t“1
+
+From Lemma 9 we know that,
+
+Tÿ
+
+Tÿ
+
+ǫImn ` 1
+
+t ĺ Im b Bn and ǫImn ` 1
+
+gtgT
+
+gtgT
+
+t ĺ Am b In .
+
+r
+
+r
+
+t“1
+
+t“1
+
+Now, observe that Im b Bn and Am b In commute with each other. Using Lemma 5 followed by Lemma 3(iii) and Lemma 3(i) yields
+
+Tÿ
+
+`
+
+˘1{2`
+
+˘1{2 “
+
+`
+
+˘`
+
+˘
+
+ǫImn ` 1
+
+gtgT
+
+1{2 n
+
+1{2 m b In
+
+1{2 m b B
+
+1{2 n ,
+
+t ĺ
+
+Im b Bn
+
+Am b In
+
+Im b B
+
+A
+
+“ A
+
+r
+
+t“1
+
+which completes the proof.
+
+We can now prove the main result of the section.
+
+Proof of Theorem 7. Recall the update performed in Algorithm 1,
+
+Wt`1 “ Wt ´ ηL´1{4
+
+t GtR´1{4
+
+t .
+
+1{4 t , is equivalent due to Lemma 4 to a single preconditioning matrix Ht “ L
+
+1{4 t and R
+
+Note that the pair of left and right preconditioning matrices, L
+
+1{4 t
+
+P Rmnˆmn. This matrix is applied
+to flattened version of the gradient gt “ vecpGtq. More formally, letting wt “ vecpWtq we have that the update rule of the algorithm is equivalent to,
+
+1{4 t b R
+
+wt`1 “ wt ´ ηH´1
+
+t gt . (2)
+
+Hence, we can invoke Lemma 1 in conjuction the fact that 0 ă H1 ĺ . . . ĺ HT. The latter follows from Lemma 3(iv), as 0 ă L1 ĺ . . . ĺ LT and 0 ă R1 ĺ . . . ĺ RT . We thus further bound the first term of Lemma 1 by,
+
+Tÿ
+
+Tÿ
+
+TrpHt ´ Ht´1q “ D2 TrpHT q . (3)
+
+pwt ´ w‹qTpHt ´ Ht´1qpwt ´ w‹q ď D2
+
+t“1
+
+t“1
+
+for D “ maxtPrTs }wt ´ w‹} “ maxtPrTs }Wt ´ W ‹}F where w‹ “ vecpW ‹q and H0 “ 0. We obtain the regret bound
+
+Tÿ
+
+Tÿ
+
+Tÿ
+
+ftpW ‹q ď D2
+
+`
+
+˘2 . (4)
+
+2η TrpHT q ` η 2
+
+}gt}˚
+
+ftpWtq ´
+
+Ht
+
+t“1
+
+t“1
+
+t“1
+
+Let us next bound the sum on the right-hand side of Eq. (4). First, according to Lemma 8 and the monotonicity (in the operator sense) of the square root function x ÞÑ x1{2 (recall Lemma 6), for the preconditioner Ht we have that
+
+´
+
+¯1{2
+
+tÿ
+
+ĺ ?rHt . (5)
+
+def “
+
+gsgT
+
+pHt
+
+rǫI `
+
+s
+
+s“1
+
+On the other hand, invoking Lemma 2 with the choice of potential
+
+ΦpHq “ TrpHq ` rǫ TrpH´1q
+
+and Mt “ řt
+
+s“1 gtgT
+
+t , we get,
+
+␣
+
+(
+
+` pH2
+
+˘
+
+Mt ‚ H´1 ` ΦpHq
+
+tH´1 ` H
+
+“ pHt .
+
+argmin
+
+“ argmin
+
+Tr
+
+Hą0
+
+Hą0
+
+To see the last equality, observe that for any symmetric A ľ 0, the function TrpAX ` X´1q is minimized at X “ A´1{2, since ∇X TrpAX ` X´1q “ A ´ X´2. Hence, Lemma 2 implies
+
+Tÿ
+
+Tÿ
+
+`
+
+˘2 ď
+
+`
+
+˘2 ` Φp pHT q ´ Φp pH0q
+
+}gt}˚
+
+}gt}˚
+
+p Ht
+
+p HT
+
+t“1
+
+t“1
+
+´
+
+¯
+
+Tÿ
+
+gtgT
+
+‚ pH´1
+
+T ` Trp pHT q (6)
+
+rǫI `
+
+ď
+
+t
+
+t“1
+
+“ 2 Trp pHT q .
+
+Using Eq. (5) twice along with Eq. (6), we obtain
+
+Tÿ
+
+Tÿ
+
+Htq2 ď ?r
+
+p Htq2 ď 2?r Trp pHT q ď 2r TrpHTq .
+
+p}gt}˚
+
+p}gt}˚
+
+t“1
+
+t“1
+
+?
+
+Finally, using the above upper bound in Eq. (4) and choosing η “ D{
+
+2r gives the desired regret bound:
+
+´D2
+
+2η ` ηr ¯
+
+Tÿ
+
+Tÿ
+
+?
+
+2rD TrpL 1{4 T q TrpR
+
+1{4 T q .
+
+ftpW ‹q ď
+
+TrpHT q “
+
+ftpWtq ´
+
+t“1
+
+t“1
+
+4 Shampoo for tensors
+In this section we introduce the Shampoo algorithm in its general form, which is applicable to tensors of arbitrary dimension. Before we can present the algorithm, we review further definitions and operations involving tensors.
+
+4.1 Tensors: notation and definitions
+A tensor is a multidimensional array. The order of a tensor is the number of dimensions (also called modes). For an order-k tensor A of dimension n1 ˆ ¨ ¨ ¨ ˆ nk, we use the notation Aj1,...,jk to refer to the single element at position ji on the i’th dimension for all i where 1 ď ji ď ni. We also denote
+
+k ź
+
+ź
+
+ni and @i : n´i “
+
+n “
+
+nj .
+
+i“1
+
+j‰i
+
+The following definitions are used throughout the section.
+
+• A slice of an order-k tensor along its i’th dimension is a tensor of order k´1 which consists of entries with the same index on the i’th dimension. A slice generalizes the notion of rows and columns of a matrix.
+
+• An n1 ˆ ¨ ¨ ¨ ˆ nk tensor A is of rank one if it can be written as an outer product of k vectors of appropriate dimensions. Formally, let ˝ denote the vector outer product and and set A “ u1 ˝ u2 ˝ ¨ ¨ ¨ ˝ uk where ui P Rni for all i. Then A is an order-k tensor defined through
+
+Aj1,...,jk “ pu1 ˝ u2 ˝ ¨ ¨ ¨ ˝ ukqj1,...,jk
+
+“ u1
+
+j1u2
+
+j2 ¨ ¨ ¨ uk
+
+jk, @ 1 ď ji ď ni pi P rksq .
+
+• The vectorization operator flattens a tensor to a column vector in Rn, generalizing the matrix vec operator. For an n1 ˆ ¨ ¨ ¨ ˆ nk tensor A with slices A1
+
+1, . . . , A1 n1 along its first dimension, this operation can be defined recursively as follows:
+
+`
+
+n1qT˘T,
+
+1qT ¨ ¨ ¨ vecpA1
+
+vecpA1
+
+vecpAq “
+
+where for the base case (k “ 1), we define vecpuq “ u for any column vector u.
+
+• The matricization operator matipAq reshapes a tensor A to a matrix by vectorizing the slices of A along the i’th dimension and stacking them as rows of a matrix. More formally, for an n1ˆ¨ ¨ ¨ˆnk tensor A with slices Ai
+
+1, . . . , Ai ni along the i’th dimension, matricization is defined as the ni ˆ n´i matrix,
+
+`
+
+˘T .
+
+vecpAi
+
+1q ¨ ¨ ¨ vecpAi
+
+matipAq “
+
+niq
+
+• The matrix product of an n1 ˆ ¨ ¨ ¨ ˆ nk tensor A with an m ˆ ni matrix M is defined as the n1 ˆ ¨ ¨ ¨ ˆ ni´1 ˆ m ˆ ni`1 ˆ ¨ ¨ ¨ ˆ nk tensor, denoted A ˆi M, for which the identity matipA ˆi Mq “ MmatipAq holds. Explicitly, we define A ˆi M element-wise as
+
+ni ÿ
+
+pA ˆi Mqj1,...,jk “
+
+MjisAj1,...ji´1,s,ji`1,...,jk.
+
+s“1
+
+A useful fact, that follows directly from this definition, is that the tensor-matrix product is commutative, in the sense that A ˆi M ˆi1 M1 “ A ˆi1 M1 ˆi M for any i ‰ i1 and matrices M P Rniˆni, M1 P Rni1ˆni1.
+
+• The contraction of an n1 ˆ ¨ ¨ ¨ ˆ nk tensor A with itself along all but the i’th dimension is an ni ˆ ni matrix defined as Apiq “ matipAqmatipAqT, or more explicitly as
+
+ÿ
+
+Aj,α´iAj1,α´i @ 1 ď j, j1 ď ni,
+
+Apiq
+
+j,j1 “
+
+α´i
+
+where the sum ranges over all possible indexings α´i of all dimensions ‰ i.
+
+Initialize: W1 “ 0n1ˆ¨¨¨ˆnk ; @i P rks : Hi
+
+0 “ ǫIni for t “ 1, . . . , T do
+
+Receive loss function ft : Rn1ˆ¨¨¨ˆnk ÞÑ R Compute gradient Gt “ ∇ftpWtq {Gt P Rn1ˆ¨¨¨ˆnk}
+
+rGt Ð Gt { rGt is preconditioned gradient} for i “ 1, . . . , k do
+
+t´1 ` Gpiq
+
+Hi
+
+t “ Hi
+
+t rGt Ð rGt ˆi pHi
+
+tq´1{2k
+
+Update: Wt`1 “ Wt ´ η rGt
+
+Algorithm 2: Shampoo, general tensor case.
+
+4.2 The algorithm
+We can now describe the Shampoo algorithm in the general, order-k tensor case, using the definitions established above. Here we assume that the optimization domain is W“ Rn1ˆ¨¨¨ˆnk, that is, the vector space of order-k tensors, and the functions f1, . . . , fT are convex over this domain. In particular, the gradient ∇ft is also an n1 ˆ ¨ ¨ ¨ ˆ nk tensor.
+
+The Shampoo algorithm in its general form, presented in Algorithm 2, is analogous to Algorithm 1. It maintains a separate preconditioning matrix Hi
+
+t (of size ni ˆ ni) corresponding to for each dimension i P rks of the gradient. On step t, the i’th mode of the gradient Gt is then multiplied by the matrix pHi
+
+tq´1{2k through the tensor-matrix product operator ˆi. (Recall that the order in which the multiplications are carried out does not affect the end result and can be arbitrary.) After all dimensions have been processed and the preconditioned gradient rGt has been obtained, a gradient step is taken.
+
+The tensor operations Apiq and M ˆi A can be implemented using tensor contraction, which is a standard library function in scientific computing libraries such as Python’s NumPy, and is fully supported by modern machine learning frameworks such as TensorFlow [1]. See Section 5 for further details on our implementation of the algorithm in the TensorFlow environment.
+
+We now state the main result of this section.
+
+Theorem 10. Assume that for all i P rks and t “ 1, . . . , T it holds that rankpmatipGtqq ď ri, and let r “ pśk
+
+1{k. Then the regret of Algorithm 2 compared to any W ‹ P Rn1ˆ¨¨¨ˆnk is
+
+i“1 riq
+
+Tÿ
+
+Tÿ
+
+k ź
+
+?
+
+`
+
+1{2k˘ ,
+
+pHi
+
+ftpW ‹q ď
+
+2rD
+
+Tr
+
+ftpWtq ´
+
+T q
+
+t“1
+
+t“1
+
+i“1
+
+T “ ǫIni ` řT
+
+t“1 Gpiq
+
+where Hi
+
+t for all i P rks and D “ maxtPrTs }Wt ´ W ‹}F.
+
+The comments following Theorem 7 regarding the parameter D in the above bound and the lack of projections in the algorithm are also applicable in the general tensor version. Furthermore, as in the matrix case, under standard assumptions each of the trace terms on the right-hand side of the above bound is bounded by OpT
+
+1{2kq. Therefore, their product, and thereby the overall regret bound, is Op
+
+?
+
+Tq.
+
+4.3 Analysis
+We turn to proving Theorem 10. For the proof, we require the following generalizations of Lemmas 4 and 8 to tensors of arbitrary order.
+
+Lemma 11. Assume that G1, . . . , GT are all order k tensors of dimension n1 ˆ ¨ ¨ ¨ ˆ nk, and let n “ n1 ¨ ¨ ¨ nk and gt “ vecpGtq for all t. Let ri denote the bound on the rank of the
+
+ith matricization of G1, . . . , GT , namely, rankpmatipGtqq ď ri for all t and i P rks. Denote r “ pśk
+
+1{k. Then, for any ǫ ě 0 it holds that
+
+i“1 riq
+
+´
+
+¯1{k
+
+Tÿ
+
+Tÿ
+
+k â
+
+gtgT
+
+Gpiq
+
+t ĺ r
+
+ǫIn `
+
+ǫIni `
+
+.
+
+t
+
+i“1
+
+t“1
+
+t“1
+
+Lemma 12. Let G be an n1 ˆ . . . ˆ nk dimensional tensor and Mi be an ni ˆ ni for i P rks , then
+
+´ k â
+
+¯
+
+vecpGq “ vecpG ˆ1 M1 ˆ2 M2 . . . ˆk Mkq .
+
+Mi
+
+i“1
+
+We defer proofs to Appendix B. The proof of our main theorem now readily follows.
+
+Proof of Theorem 10. The proof is analogous to that of Theorem 7. For all t, let
+
+k â
+
+1{2k , gt “ vecpGtq , wt “ vecpWtq .
+
+Hi
+
+Ht “ p
+
+tq
+
+i“1
+
+Similarly to the order-two (matrix) case, and in light of Lemma 12, the update rule of the algorithm is equivalent to wt`1 “ wt ´ ηH´1
+
+t gt. The rest of the proof is identical to that of the matrix case, using Lemma 11 in place of Lemma 8.
+
+5 Implementation details
+We implemented Shampoo in its general tensor form in Python as a new TensorFlow [1] op- timizer. Our implementation follows almost verbatim the pseudocode shown in Algorithm 2. We used the built-in tensordot operation to implement tensor contractions and tensor-matrix products. Matrix powers were computed simply by constructing a singular value decomposition (SVD) and then taking the powers of the singular values. These operations are fully supported in TensorFlow. We plan to implement Shampoo in PyTorch in the near future.
+
+Our optimizer treats each tensor in the input model as a separate optimization variable and applies the Shampoo update to each of these tensors independently. This has the advantage of making the optimizer entirely oblivious to the specifics of the architecture, and it only has to be aware of the tensors involved and their dimensions. In terms of preconditioning, this approach amounts to employing a block-diagonal preconditioner, with blocks corresponding to the different tensors in the model. In particular, only intra-tensor correlations are captured and correlations between parameters in different tensors are ignored entirely.
+
+Our optimizer also implements a diagonal variant of Shampoo which is automatically acti- vated for a dimension of a tensor whenever it is considered too large for the associated precondi- tioner to be stored in memory or to compute its SVD. Other dimensions of the same tensor are not affected and can still use non-diagonal preconditioning (unless they are too large themselves). See Appendix A for a detailed description of this variant and its analysis. In our experiments, we used a threshold of around 1200 for each dimension to trigger the diagonal version with no apparent sacrifice in performance. This option gives the benefit of working with full precondi- tioners whenever possible, while still being able to train models where some of the tensors are prohibitively large, and without having to modify either the architecture or the code used for training.
+
+6 Experimental results
+We performed experiments with Shampoo on several datasets, using standard deep neural- network models. We focused on two domains: image classification on CIFAR-10/100, and
+
+Dataset SGD Adam AdaGrad Shampoo CIFAR10 (ResNet-32) 2.184 2.184 2.197 2.151 CIFAR10 (Inception) 3.638 3.667 3.682 3.506 CIFAR100 (ResNet-55) 1.210 1.203 1.210 1.249 LM1B (Attention) 4.919 4.871 4.908 3.509
+
+Table 1: Average number of steps per second (with batch size of 128) in each experiment, for each of the algorithms we tested.
+
+1.5
+
+Adagrad
+
+Adagrad
+
+0.3
+
+Adam Shampoo Momentum
+
+Adam Shampoo Momentum
+
+1
+
+0.2
+
+loss
+
+loss
+
+0.5
+
+0.1
+
+50 100 150 200 250 0
+
+50 100 150 200 250 0
+
+Epochs
+
+Epochs
+
+Figure 2: Training loss for a residual network and an inception network on CIFAR-10.
+
+statistical language modeling on LM1B. In each experiment, we relied on existing code for training the models, and merely replaced the TensorFlow optimizer without making any other changes to the code.
+
+In all of our experiments, we worked with a mini-batch of size 128. In Shampoo, this simply means that the gradient Gt used in each iteration of the algorithm is the average of the gradient over 128 examples, but otherwise has no effect on the algorithm. Notice that, in particular, the preconditioners are also updated once per batch using the averaged gradient rather than with gradients over individual examples.
+
+We made two minor heuristic adjustments to Shampoo to improve performance. First, we employed a delayed update for the preconditioners, and recomputed the roots of the matrices Hi
+
+t once in every 20–100 steps. This had almost no impact on accuracy, but helped to improve the amortized runtime per step. Second, we incorporated momentum into the gradient step, essentially computing the running average of the gradients Gt “ αGt´1 ` p1 ´ αqGt with a fixed setting of α “ 0.9. This slightly improved the convergence of the algorithm, as is the case with many other first-order stochastic methods.
+
+Quite surprisingly, while the Shampoo algorithm performs significantly more computation per step than algorithms like SGD, AdaGrad, and Adam, its actual runtime in practice is not much worse. Table 1 shows the average number of steps (i.e., batches of size 128) per second on a Tesla K40 GPU, for each of the algorithms we tested. As can be seen from the results, each step of Shampoo is typically slower than that of the other algorithms by a small margin, and in some cases (ResNet-55) it is actually faster.
+
+6.1 Image Classification
+We ran the CIFAR-10 benchmark with several different architectures. For each optimization algorithm, we explored 10 different learning rates between 0.01 and 10.0 (scaling the entire
+
+Adagrad
+
+3
+
+Adam Shampoo Momentum
+
+2
+
+loss
+
+1
+
+50 100 150 200 250 0
+
+Epochs
+
+Figure 3: Training loss for a residual network on CIFAR-100 (without batchnorm).
+
+Adagrad Momentum
+
+4.7
+
+Adam Shampoo
+
+4.6
+
+log(perplexity)
+
+4.5
+
+4.4
+
+4.3
+
+4.2
+
+1 2 3 4 5 ¨105
+
+Steps
+
+Figure 4: Test log-perplexity of an Attention model of Vaswani et al. [22].
+
+range for Adam), and chose the one with the best loss and error. We show in Fig. 2 the training loss for a 32-layer residual network with 2.4M parameters. This network is capable of reaching an error rate of 5% on the test set. We also ran on the 20-layer small inception network described in Zhang et al. [24], with 1.65M trainable parameters, capable of reaching an error rate of 7.5% on test data.
+
+For CIFAR-100 (Fig. 3), we used a 55-layer residual network with 13.5M trainable parame- ters. In this model, the trainable variables are all tensors of order 4 (all layers are convolutional), where the largest layer is of dimension p256, 3, 3, 256q. This architecture does not employ batch- norm, dropout, etc., and was able to reach an error rate of 24% on the test set.
+
+6.2 Language Models
+Our next experiment was on the LM1B benchmark for statistical language modeling [5]. We used an Attention model with 9.8M trainable parameters from [22]. This model has a succession of fully connected-layers, with corresponding tensors of order at most 2, the largest of which is of dimension p2000, 256q. In this experiment, we simply used the default learning rate of η “ 1.0 for Shampoo. For the other algorithms we explored various different settings of the learning rate. The graph for the test perplexity is shown in Fig. 4.
+
+Acknowledgements
+We are grateful to Samy Bengio, Roy Frostig, Phil Long, Aleksander Mądry and Kunal Talwar for numerous discussions and helpful suggestions. Special thanks go to Roy Frostig for coming up with the name “Shampoo.”
+
+References
+[1] M. Abadi, P. Barham, J. Chen, Z. Chen, A. Davis, J. Dean, M. Devin, S. Ghemawat,
+
+G. Irving, M. Isard, M. Kudlur, J. Levenberg, R. Monga, S. Moore, D. G. Murray, B. Steiner, P. Tucker, V. Vasudevan, P. Warden, M. Wicke, Y. Yu, and X. Zheng. Tensorflow: A system for large-scale machine learning. In 12th USENIX Symposium on Operating Systems Design and Implementation (OSDI 16), pages 265–283, 2016.
+
+[2] N. Agarwal, B. Bullins, and E. Hazan. Second order stochastic optimization in linear time.
+
+arXiv preprint arXiv:1602.03943, 2016.
+
+[3] T. Ando, C.-K. Li, and R. Mathias. Geometric means. Linear algebra and its applications,
+
+385:305–334, 2004.
+
+[4] N. Cesa-Bianchi, A. Conconi, and C. Gentile. On the generalization ability of on-line learning algorithms. IEEE Transactions on Information Theory, 50(9):2050–2057, 2004.
+
+[5] C. Chelba, T. Mikolov, M. Schuster, Q. Ge, T. Brants, P. Koehn, and T. Robinson. One
+
+billion word benchmark for measuring progress in statistical language modeling. Technical report, Google, 2013.
+
+[6] J. Duchi, E. Hazan, and Y. Singer. Adaptive subgradient methods for online learning and
+
+stochastic optimization. Journal of Machine Learning Research, 12(Jul):2121–2159, 2011.
+
+[7] M. A. Erdogdu and A. Montanari. Convergence rates of sub-sampled newton methods. In
+
+Proceedings of the 28th International Conference on Neural Information Processing Systems- Volume 2, pages 3052–3060. MIT Press, 2015.
+
+[8] R. Fletcher. Practical methods of optimization. John Wiley & Sons, 2013.
+
+[9] A. Gonen and S. Shalev-Shwartz. Faster sgd using sketched conditioning. arXiv preprint
+
+[10] V. Gupta, T. Koren, and Y. Singer. A unified approach to adaptive regularization in online
+
+and stochastic optimization. arXiv preprint arXiv:1706.06569, 2017.
+
+[11] E. Hazan. Introduction to online convex optimization. Foundations and Trends in Opti-
+
+mization, 2(3-4):157–325, 2016.
+
+[12] R. A. Horn and C. R. Johnson. Topics in matrix analysis, 1991. Cambridge University
+
+Presss, Cambridge, 37:39, 1991.
+
+[13] A. Kalai and S. Vempala. Efficient algorithms for online decision problems. Journal of
+
+Computer and System Sciences, 71(3):291–307, 2005.
+
+[14] D. P. Kingma and J. Ba. Adam: A method for stochastic optimization. arXiv preprint
+
+[15] A. S. Lewis and M. L. Overton. Nonsmooth optimization via quasi-newton methods. Math-
+
+ematical Programming, 141(1-2):135–163, 2013.
+
+[16] K. Löwner. Über monotone matrixfunktionen. Mathematische Zeitschrift, 38(1):177–216,
+
+1934.
+
+[17] J. Martens and R. Grosse. Optimizing neural networks with Kronecker-factored approxi-
+
+mate curvature. In International conference on machine learning, pages 2408–2417, 2015.
+
+[18] B. Neyshabur, R. R. Salakhutdinov, and N. Srebro. Path-sgd: Path-normalized optimiza-
+
+tion in deep neural networks. In Advances in Neural Information Processing Systems, pages 2422–2430, 2015.
+
+[19] J. Nocedal. Updating quasi-newton matrices with limited storage. Mathematics of compu-
+
+tation, 35(151):773–782, 1980.
+
+[20] M. Pilanci and M. J. Wainwright. Newton sketch: A near linear-time optimization algorithm
+
+with linear-quadratic convergence. SIAM Journal on Optimization, 27(1):205–245, 2017.
+
+[21] S. Shalev-Shwartz. Online learning and online convex optimization. Foundations and Trends
+
+in Machine Learning, 4(2):107–194, 2012.
+
+[22] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and
+
+I. Polosukhin. Attention is all you need. In Advances in Neural Information Processing
+Systems, pages 6000–6010, 2017.
+
+[23] P. Xu, J. Yang, F. Roosta-Khorasani, C. Ré, and M. W. Mahoney. Sub-sampled new- ton methods with non-uniform sampling. In Advances in Neural Information Processing Systems, pages 3000–3008, 2016.
+
+[24] C. Zhang, S. Bengio, M. Hardt, B. Recht, and O. Vinyals. Understanding deep learning
+
+requires rethinking generalization. In 5th International Conference on Learning Represen- tations, ICLR 2017, 2017.
+
+A Diagonal Shampoo
+In this section we describe a diagonal version of the Shampoo algorithm, in which each of the preconditioning matrices is a diagonal matrix. This diagonal variant is particularly useful if one of the dimensions is too large to store the corresponding full preconditioner in memory and to compute powers thereof. For simplicity, we describe this variant in the matrix case. The only change in Algorithm 1 is replacing the updates of the matrices Lt and Rt with the updates
+
+Lt “ Lt´1 ` diagpGtGT
+
+t q;
+
+Rt “ Rt´1 ` diagpGT
+
+t Gtq.
+
+Here, diagpAq is defined as diagpAqij “ Iti “ ju Aij for all i, j. See Algorithm 3 for the resulting pseudocode. Notice that for implementing the algorithm, one merely needs to store the diagonal elements of the matrices Lt and Rt and maintain Opm ` nq numbers is memory. Each update step could then be implemented in Opmnq time, i.e., in time linear in the number of parameters.
+
+We note that one may choose to use the full Shampoo update for one dimension while employing the diagonal version for the other dimension. (In the more general tensor case, this choice can be made independently for each of the dimensions.) Focusing for now on the scheme described in Algorithm 3, in which both dimensions use a diagonal preconditioner, we can prove the following regret bound.
+
+Initialize W1 “ 0mˆn ; L0 “ ǫIm ; R0 “ ǫIn for t “ 1, . . . , T do
+
+Receive loss function ft : Rmˆn ÞÑ R Compute gradient Gt “ ∇ftpWtq {Gt P Rmˆn} Update preconditioners:
+
+Lt “ Lt´1 ` diagpGtGT
+
+t q
+
+Rt “ Rt´1 ` diagpGT
+
+t Gtq
+
+Update parameters:
+
+Wt`1 “ Wt ´ ηL´1{4
+
+t GtR´1{4
+
+t
+
+Algorithm 3: Diagonal version of Shampoo, matrix case.
+
+Theorem 13. Assume that the gradients G1, . . . , GT are matrices of rank at most r. Then the regret of Algorithm 3 compared to any W ‹ P Rmˆn is bounded as
+
+Tÿ
+
+Tÿ
+
+?
+
+2rD8 TrpL 1{4 T q TrpR
+
+1{4 T q ,
+
+ftpW ‹q ď
+
+ftpWtq ´
+
+t“1
+
+t“1
+
+where
+
+Tÿ
+
+Tÿ
+
+diagpGtGT
+
+diagpGT
+
+tPrTs }Wt ´ W ‹}8 .
+
+t Gtq , D8 “ max
+
+LT “ ǫIm `
+
+t q , RT “ ǫIn `
+
+t“1
+
+t“0
+
+def “ }vecpAq}8.)
+
+(Here, }A}8 is the entry-wise ℓ8 norm of a matrix A, i.e., }A}8
+
+1{4 t . The proof is identical to that of Theorem 7, with two changes. First, we can replace Eq. (3) with
+
+1{4 t b R
+
+Proof (sketch). For all t, denote Ht “ L
+
+Tÿ
+
+Tÿ
+
+pwt ´ w‹qTpHt ´ Ht´1qpwt ´ w‹q ď D2
+
+TrpHt ´ Ht´1q “ D2
+
+8 TrpHT q ,
+
+8
+
+t“1
+
+t“1
+
+where the inequality follows from the fact that for a diagonal PSD matrix M one has vTMv ď }v}2
+
+8 TrpMq. Second, using the facts that A ĺ B ñ diagpAq ĺ diagpBq and diagpA b Bq “ diagpAq b diagpBq, we can show (from Lemmas 6 and 8) that
+
+´
+
+¯1{2
+
+tÿ
+
+ĺ ?rL
+
+1{4 t “ ?rHt ,
+
+def “ diag
+
+gtgT
+
+1{4 t b R
+
+pHt
+
+rǫImn `
+
+t
+
+s“1
+
+replacing Eq. (5). Now, proceeding exactly as in the proof of Theorem 7 with Eqs. (3) and (5) replaced by the above facts leads to the result.
+
+B Tensor case: Technical proofs
+We prove Lemmas 11 and 12. We require several identities involving the vecp¨q and matip¨q operations, bundled in the following lemma.
+
+Lemma 14. For any column vectors u1, . . . , uk and order-k tensor A it holds that:
+
+(i) vecpu1 ˝ ¨ ¨ ¨ ˝ ukq “ u1 b ¨ ¨ ¨ b uk ;
+
+(ii) matipu1 ˝ ¨ ¨ ¨ ˝ ukq “ ui` Â
+
+i1‰i ui1˘T ;
+
+(iii) vecpAq “ vecpmat1pAqq “ vecpmatkpAqTq ;
+
+(iv) matipA ˆi Mq “ MmatipAq .
+
+Proof. (i) The statement is trivially true for k “ 1. The j’th slice of u1 ˝ ¨ ¨ ¨ ˝ uk along the first dimension is u1
+
+jpu2 ˝ ¨ ¨ ¨ ˝ ukq. By induction, we have
+
+vecpu1 ˝ ¨ ¨ ¨ ˝ ukq
+
+1pu2 b ¨ ¨ ¨ b ukqT, ¨ ¨ ¨ , u1 n1pu2 b ¨ ¨ ¨ b ukqTqT
+
+“ pu1
+
+“ u1 b ¨ ¨ ¨ b uk.
+
+(ii) The j’th slice of u1 ˝ ¨ ¨ ¨ ˝ uk along the i-th dimension is ui
+
+jpu1 ˝ ¨ ¨ ¨ ui´1 ˝ ui`1 ˝ ¨ ¨ ¨ ˝ ukq. Thus
+
+´
+
+uj¯T
+
+“ ui´ â
+
+uj¯T
+
+1 â
+
+â
+
+matipu1 ˝ ¨ ¨ ¨ ˝ ukq “
+
+ui
+
+uj, . . . , ui
+
+.
+
+ni
+
+j‰i
+
+j‰i
+
+j‰i
+
+(iii) If A is a rank one tensor u1 ˝ ¨ ¨ ¨ ˝ uk, then we have
+
+vecpmat1pAqq “ vecpu1pu2 b ¨ ¨ ¨ b ukqTq
+
+“ u1 b ¨ ¨ ¨ b uk “ vecpAq ,
+
+and
+
+vecpmatkpAqTq “ vecppukpu1 b ¨ ¨ ¨ b uk´1qTqTq
+
+“ vecppu1 b ¨ ¨ ¨ b uk´1qpukqTq
+
+“ u1 b ¨ ¨ ¨ b uk “ vecpAq .
+
+As any tensor can be written as a sum of rank-one tensors, the identity extends to arbitrary tensors due to the linearity of matip¨q and vecp¨q. (iv) If A “ u1 ˝ ¨ ¨ ¨ ˝ uk is a rank one tensor, then from the definition it follows that
+
+A ˆi M “ u1 ˝ ¨ ¨ ¨ ˝ ui´1 ˝ Mui ˝ ui`1 ˝ ¨ ¨ ¨ ˝ uk .
+
+Therefore, from (ii) above, we have
+
+matipA ˆi Mq “ Mui´ â
+
+uj¯T
+
+“ MmatipAq .
+
+j‰i
+
+As above, this property can be extended to an arbitrary tensor A due to the linearity of all operators involved.
+
+B.1 Proof of Lemma 11
+
+We need the following technical result.
+
+Lemma 15. Let G be an order k tensor of dimension n1 ˆ ¨ ¨ ¨ ˆ nk, and B an ni ˆ ni matrix. Let gi “ vecpmatipGqq and g “ vecpGq. Then
+
+´ â
+
+¯
+
+´ â
+
+¯
+
+´ â
+
+¯
+
+ô ggT ĺ
+
+gigT
+
+i ĺ B b
+
+Inj
+
+Inj
+
+b B b
+
+Inj
+
+.
+
+j‰i
+
+jăi
+
+jąi
+
+Proof. Let X be any n1 ˆ ¨ ¨ ¨ ˆ nk dimensional tensor, and denote
+
+x “ vecpXq , xi “ vecpmatipXqq .
+
+We will show that
+
+”
+
+´ â
+
+¯ı
+
+xi ô xTggTx ď xT”´ â
+
+¯
+
+´ â
+
+¯ı
+
+xT
+
+i gigT
+
+i xi ď xT
+
+B b
+
+Inj
+
+Inj
+
+b B b
+
+Inj
+
+x ,
+
+i
+
+j‰i
+
+jăi
+
+jąi
+
+which would prove the lemma. We first note that the left-hand sides of the inequalities are equal, as both are equal to the square of the dot-product of the tensors G and X (which can be defined as the dot product of vecpGq and vecpXq). We will next show that the right-hand sides are equal as well.
+
+Let us write X “ ř
+
+α Xαpeα1 ˝¨ ¨ ¨ ˝eαkq, where α ranges over all k-tuples such that αj P rnjs for j P rks, and eαj is an nj-dimensional unit vector with 1 in the αj position, and zero elsewhere. Now, x “ vecpXq “ ř
+
+α Xαpeα1 b ¨ ¨ ¨ b eαkq. Thus
+
+xT”´ â
+
+¯
+
+´ â
+
+¯ı
+
+”´ â
+
+¯
+
+´ â
+
+¯ı
+
+x “ xT ÿ
+
+Inj
+
+b B b
+
+Inj
+
+Xα
+
+Inj
+
+b B b
+
+Inj
+
+peα1 b ¨ ¨ ¨ b eαkq
+
+jăi
+
+jąi
+
+jăi
+
+jąi
+
+α
+
+”´ â
+
+¯
+
+´ â
+
+¯ı
+
+“ xT ÿ
+
+Xα
+
+eαj
+
+b Beαi b
+
+eαj
+
+jăi
+
+jąi
+
+α
+
+”´ â
+
+¯
+
+´ â
+
+¯ı
+
+ÿ
+
+eT
+
+b eT
+
+eT
+
+XαXα1
+
+jeαj
+
+iBeαi b
+
+jeαj
+
+“
+
+α1
+
+α1
+
+α1
+
+jăi
+
+jąi
+
+α,α1
+
+ÿ
+
+Bα1
+
+iαiXα1...αi...αkXα1...α1
+
+i...αk,
+
+“
+
+α,α1
+
+i
+
+since eT
+
+j “ αj, and eT
+
+jeαj “ 1 if α1
+
+jeαj “ 0 otherwise. On the other hand, recall that
+
+α1
+
+α1
+
+´ â
+
+¯T
+
+ÿ
+
+matipXq “
+
+Xαeαi
+
+eαj
+
+,
+
+j‰i
+
+α
+
+thus
+
+´
+
+¯
+
+ÿ
+
+â
+
+xi “ vecpmatipXqq “
+
+Xα
+
+eαi b
+
+eαj
+
+j‰i
+
+α
+
+and therefore
+
+”
+
+´ â
+
+¯ı
+
+”
+
+´ â
+
+¯ı´
+
+¯
+
+ÿ
+
+â
+
+xT
+
+xi “ xT
+
+B b
+
+Inj
+
+Xα
+
+B b
+
+Inj
+
+eαi b
+
+eαj
+
+i
+
+i
+
+j‰i
+
+j‰i
+
+j‰i
+
+α
+
+´
+
+¯
+
+ÿ
+
+â
+
+“ xT
+
+Xα
+
+Beαi b
+
+eαj
+
+i
+
+j‰i
+
+α
+
+´
+
+¯
+
+ÿ
+
+ÿ
+
+â
+
+eT
+
+eT
+
+XαXα1
+
+iBeαi b
+
+jeαj
+
+“
+
+α1
+
+α1
+
+j‰i
+
+α
+
+α1
+
+ÿ
+
+Bα1
+
+iαiXα1...αi...αkXα1...α1
+
+i...αk.
+
+“
+
+α,α1
+
+i
+
+To conclude, we have shown that
+
+”
+
+´ â
+
+¯ı
+
+xi “ xT”´ â
+
+¯
+
+´ â
+
+¯ı
+
+xT
+
+B b
+
+Inj
+
+Inj
+
+b B b
+
+Inj
+
+x,
+
+i
+
+j‰i
+
+jăi
+
+jąi
+
+and as argued above, this proves the lemma.
+
+Proof of Lemma 11. Consider the matrix matipGtq. By Lemma 9, we have
+
+´ â
+
+¯
+
+1 ri
+
+vecpmatipGtqqvecpmatipGtqqT ĺ pmatipGtqmatipGtqTq b In´i “ Gpiq
+
+Inj
+
+t b
+
+j‰i
+
+(recall that n´i “ ś
+
+j‰i nj). Now, by Lemma 15, this implies
+
+´ i´1 â
+
+¯
+
+´ k â
+
+¯
+
+1 ri
+
+gtgT
+
+b Gpiq
+
+t ĺ
+
+Inj
+
+Inj
+
+.
+
+t b
+
+j“1
+
+j“i`1
+
+Summing over t “ 1, . . . , T and adding ǫIn, we have for each dimension i P rks that:
+
+´ i´1 â
+
+¯
+
+´ Tÿ
+
+¯
+
+´ k â
+
+¯
+
+Tÿ
+
+gtgT
+
+Gpiq
+
+t ĺ riǫIn ` ri
+
+ǫIn `
+
+Inj
+
+Inj
+
+b
+
+b
+
+t
+
+j“1
+
+j“i`1
+
+t“1
+
+t“1
+
+´ i´1 â
+
+¯
+
+´
+
+¯
+
+´ k â
+
+¯
+
+Tÿ
+
+Gpiq
+
+“ ri
+
+Inj
+
+ǫIni `
+
+Inj
+
+.
+
+b
+
+b
+
+t
+
+j“1
+
+j“i`1
+
+t“1
+
+The matrices on the right-hand sides of the k inequalities are positive semidefinite and commute with each other, so we are in a position to apply Lemma 5 and obtain the result.
+
+B.2 Proof of Lemma 12
+
+Proof. The proof is by induction on k ě 2. The base case (k “ 2) was already proved in Lemma 4. For the induction step, let H “ Âk´1
+
+i“1 Mi. Using the relation vecpGq “ vecpmatkpGqTq and then Lemma 4, the left-hand side of the identity is
+
+´ k â
+
+¯
+
+vecpGq “ pH b MkqvecpmatkpGqTq “ vecpHmatkpGqTMT
+
+Mi
+
+k q.
+
+i“1
+
+Now, consider the slices Gk
+
+1, . . . , Gk nk of G along the k’th dimension (these are nk tensors of order k ´1). Then the i’th row of matkpGq is the vector vecpGk
+
+i qT. Applying the induction hypothesis to HvecpGk
+
+i q, we get
+
+´ k´1 â
+
+¯
+
+HvecpGk
+
+vecpGk
+
+i q “ vecpGk
+
+Mi
+
+i ˆ1 M1 ˆ2 M2 ¨ ¨ ¨ ˆk´1 Mk´1q.
+
+i q “
+
+i“1
+
+Stacking the nk vectors on both sides (for i “ 1, . . . , nk) to form nk ˆ n´k matrices, we get
+
+HmatkpGqT “ matkpG ˆ1 M1 ˆ2 M2 ¨ ¨ ¨ ˆk´1 Mk´1qT.
+
+Now, let G1 “ G ˆ1 M1 ˆ2 M2 ¨ ¨ ¨ ˆk´1 Mk´1. Substituting, it follows that
+
+´ k â
+
+¯
+
+vecpGq “ vecpmatkpG1qTMT
+
+Mi
+
+k q
+
+i“1
+
+“ vecppMkmatkpG1qqTq
+
+“ vecpmatkpG1 ˆk MkqTq 7 BmatipAq “ matipA ˆi Bq
+
+“ vecpG1 ˆk Mkq 7 vecpmatkpGqTq “ vecpGq
+
+“ vecpG ˆ1 M1 ¨ ¨ ¨ ˆk Mkq.
+
+C Additional proofs
+C.1 Proof of Lemma 2
+
+Proof. The proof is an instance of the Follow-the-Leader / Be-the-Leader (FTL-BTL) Lemma of Kalai and Vempala [13]. We rewrite the inequality we wish to prove as
+
+Tÿ
+
+Tÿ
+
+`
+
+˘2 ` ΦpH0q ď
+
+`
+
+˘2 ` ΦpHTq .
+
+}gt}˚
+
+}gt}˚
+
+Ht
+
+HT
+
+t“1
+
+t“1
+
+The proof proceeds by an induction on T. The base of the induction, T “ 0, is trivially true. Inductively, we have
+
+T´1 ÿ
+
+T´1 ÿ
+
+`
+
+˘2 ` ΦpH0q ď
+
+`
+
+˘2 ` ΦpHT´1q
+
+}gt}˚
+
+}gt}˚
+
+Ht
+
+HT ´1
+
+t“1
+
+t“1
+
+T´1 ÿ
+
+`
+
+˘2 ` ΦpHT q .
+
+}gt}˚
+
+ď
+
+HT
+
+t“1
+
+The second inequality follows from the fact that HT´1 is a minimizer of
+
+T´1 ÿ
+
+`
+
+˘2 ` ΦpHq .
+
+MT´1 ‚ H´1 ` ΦpHq “
+
+}gt}˚
+
+H
+
+t“1
+
+HT q2 to both sides gives the result.
+
+Adding p}gt}˚
+
+C.2 Proof of Lemma 4
+
+Proof. We first prove the claim for G of rank one, G “ uvT. Using first (vi) and then (i) from Lemma 3, the left hand side is,
+
+pL b RTqvecpGq “ pL b RTqvecpuvTq “ pL b RTqpu b vq “ pLuq b pRTvq .
+
+For the right hand side we have,
+
+`
+
+LupRTvqT˘
+
+vecpLGRq “ vecpLuvTRq “ vec
+
+“ pLuq b pRTvq ,
+
+where we used (vi) from Lemma 3 for the last equality. Thus we proved the identity for G “ uvT. More generally, any matrix can be expressed as a sum of rank one matrices, thus the identity follows from the linearity of all the operators involved.
+

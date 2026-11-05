@@ -1,0 +1,5840 @@
+Front matter
+Self-Improvement in Language Models:
+
+The Sharpening Mechanism
+
+Audrey Huang∗
+
+Adam Block∗
+
+Dylan J. Foster∗
+
+Dhruv Rohatgi
+
+audreyh5@illinois.edu
+
+blockadam@microsoft.com
+
+dylanfoster@microsoft.com
+
+drohatgi@mit.edu
+
+Cyril Zhang
+
+Max Simchowitz
+
+Jordan T. Ash
+
+Akshay Krishnamurthy
+
+cyrilzhang@microsoft.com
+
+msimchow@andrew.cmu.edu
+
+ash.jordan@microsoft.com
+
+akshaykr@microsoft.com
+
+Abstract
+Recent work in language modeling has raised the possibility of self-improvement, where a language models evaluates and refines its own generations to achieve higher performance without external feedback. It is impossible for this self-improvement to create information that is not already in the model, so why should we expect that this will lead to improved capabilities?
+
+We offer a new perspective on the capabilities of self-improvement through a lens we refer to as sharpening. Motivated by the observation that language models are often better at verifying response quality than they are at generating correct responses, we formalize self-improvement as using the model itself as a verifier during post-training in order to “sharpen” the model to one placing large mass on high-quality sequences, thereby amortizing the expensive inference-time computation of generating good sequences. We begin by introducing a new statistical framework for sharpening in which the learner aims to sharpen a pre-trained base policy via sample access, and establish fundamental limits. Then, we analyze two natural families of self-improvement algorithms based on SFT and RLHF. We find that (i) the SFT-based approach is minimax optimal whenever the initial model has sufficient coverage, but (ii) the RLHF-based approach can improve over SFT-based self-improvement by leveraging online exploration, bypassing the need for coverage. Finally, we empirically validate the sharpening mechanism via inference-time and amortization experiments. We view these findings as a starting point toward a foundational understanding that can guide the design and evaluation of self-improvement algorithms.
+
+1 Introduction
+Contemporary language models are remarkably proficient on a wide range of natural language tasks (Brown et al., 2020; Ouyang et al., 2022; Touvron et al., 2023; OpenAI, 2023; Google, 2023), but inherit shortcomings of the data on which they were trained. A fundamental challenge is to achieve better performance than what is directly induced by the distribution of available, human-generated training data. To this end, recent work (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024) has raised
+
+the possibility of “self-improvement,” where a model—typically through forms of self-play or self-training in which the model critiques its own generations—learns to improve on its own, without external feedback. This phenomenon is somewhat counterintuitive; at first glance it would seem to disagree with the well-known data-processing inequality (Cover, 1999), which implies that no form of self-training should be able to create information not already in the model. This motivates the question of why we should expect such supervision-free interventions will lead to stronger reasoning and planning capabilities.
+
+A dominant hypothesis for why improvement without external feedback might be possible is that models contain “hidden knowledge” (Hinton et al., 2015) that is difficult to access. Self-improvement, rather than creating knowledge from nothing, is a means of extracting and distilling this knowledge into a more accessible form, and thus is a computational phenomenon rather than a statistical one. While there is a growing body
+
+∗Equal contribution.
+
+BoN: % Lift over Greedy
+
+Phi3.5 (Mini) on MATH
+
+MATH
+
+140
+
+140
+
+0.7 -2.8 17.0 -4.2 4.5 3.8
+
+Correct Incorrect
+
+Phi3 (Mini)
+
+120
+
+120
+
+9.9 4.1 3.2 5.9 6.0 -0.9
+
+Phi3.5 (Mini)
+
+100
+
+100
+
+% Lift over Greedy
+
+-0.2 4.0 -6.8 1.4 0.5 -9.2
+
+Phi3 (Small)
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+80
+
+80
+
+-2.1 -4.4 1.8 -1.5 3.3 -0.7
+
+Phi3 (Medium)
+
+Count
+
+60
+
+60
+
+26.1 10.5 -1.1 11.8 28.6 10.2
+
+Mistral-7B
+
+40
+
+40
+
+-7.1 -2.6 3.0 -14.9 126.7 6.7
+
+Llama3.2-3B
+
+20
+
+20
+
+3.4 -11.8 -10.4 -0.6 6.7 -7.0
+
+GPT-3.5
+
+0
+
+0
+
+400 300 200 100 0 Log Probability
+
+0 10 20 30 40 50 N
+
+MATH
+
+GSM8K
+
+ProntoQA Bio
+
+Phys
+
+Chem
+
+(a)
+
+(b)
+
+(c)
+
+Figure 1: Validation of maximum-likelihood sharpening, via Best-of-N (BoN) sampling, at inference time. (a) Percent accuracy improvement over greedy decoding for BoN sharpening with N = 50 on 6 tasks and 7 models, colored by performance. (b) Perecent accuracy improvement over greedy for BoN sharpening as a function of N for 7 different models on the MATH dataset. (c) Distribution over sequence-level log probabilities for sampled completions (N = 1) from Phi3.5-Mini on the MATH dataset, conditioned on whether or not the completion is correct. Correct completions are noticeably in higher likelihood than incorrect completions, demonstrating the utility of inference-time sharpening.
+
+of empirical evidence for this hidden-knowledge hypothesis (Furlanello et al., 2018; Gotmare et al., 2019; Dong et al., 2019; Abnar et al., 2020; Allen-Zhu and Li, 2020), particularly in the context of self-distillation, a fundamental understanding of self-improvement remains missing. Concretely, where in the model is this hidden knowledge, and when and how can it be extracted?
+
+1.1 Our Perspective: The Sharpening Mechanism
+In this paper, we posit a potential source of hidden knowledge, and offer a formal perspective on how to extract it. Our starting point is the widely observed phenomenon that language models are often better at verifying whether responses are correct than they are at generating correct responses (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024). This gap may be explained by
+
+the theory of computational complexity, which suggests that generating high-quality responses can be less computationally tractable than verification (Cook, 1971; Levin, 1973; Karp, 1972). In autoregressive language modeling, computing the most likely response for a given prompt is NP-hard in the worst case (Appendix E), whereas the model’s likelihood for a given response can be easily evaluated.
+
+We view self-improvement as any attempt to narrow this gap, i.e., use the model as its own verifier to improve
+
+generation and sharpen the model toward high-quality responses. Formally, consider a learner with access to a base model πbase : X →∆(Y) representing a conditional distribution that maps a prompt x ∈X to a distribution over responses (i.e., πbase(y | x) is the probability that the model generates the response y given the prompt x). We posit that πbase has already been trained in some manner (e.g., through next-token prediction or additional post-training steps such as SFT or RLHF), with the key feature being that πbase is a good verifier, as measured by some self-reward function rself(y | x; πbase) measuring model certainty. The self-reward function is derived purely from the base model πbase, without external supervision or feedback. Examples include normalized and/or regularized sequence likelihood (Meister et al., 2020), models-as-judges (Zheng et al., 2024; Yuan et al., 2024; Wu et al., 2024a; Wang et al., 2024), and model confidence (Wang and Zhou, 2024).
+
+Sharpening
+
+We refer to sharpening as any process that tilts πbase toward responses that are more certain
+
+in the sense that they enjoy greater self-reward rself. That is, a sharpened model bπ is one that (approximately) maximizes the self-reward:
+
+rself(y | x; πbase). (1)
+
+bπ(x) ≈arg max
+
+y∈Y
+
+An important special case for sharpening is in language/autoregressive modeling. Here, we have Y = VH
+
+for a vocabulary space V and sequence length H, and πbase has the autoregressive structure πbase(y1:H | x) = QH
+
+h=1 πbase,h(yh | y1:h−1, x) for y = y1:H ∈Y. Sharpening in this setting pertains to entire responses, i.e., the optimization over responses in Eq. (1) is at the sequence level. In contrast, popular decoding strategies such as greedy, low-temperature sampling, and beam search operate at the token-level; nevertheless, they can be viewed as heuristics for inference-time sharpening.1 The combinatorial response space can make sharpening computationally demanding and so, an appealing alternative to inference-time sharpening is amortization via self-training (Section 2). The latter captures many existing self-training schemes (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024), and is the main focus of this paper; we use the term sharpening without further qualification to refer to the latter.
+
+We refer to the sharpening mechanism as the phenomenon where responses from a model with the highest
+
+certainty (in the sense of large self-reward rself) exhibit the greatest performance on a task of interest. Though it is unclear a-priori whether there are self-rewards related to task performance, the successes of self- improvement in prior works (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024) give strong positive evidence. These works suggest that, in many settings, models do have hidden knowledge: the model’s own self-reward correlates with response quality, but it is computationally challenging to generate high self-rewarding—and thus high quality—responses. It is the role of (algorithmic) sharpening to leverage these verifications to improve the quality of generations, despite computational difficulty.
+
+1.2 Contributions
+We initiate the theoretical study of self-improvement via the sharpening mechanism. We disentangle the
+
+choice of self-reward from the algorithms used to optimize it, and aim to understand: (i) When and how does self-training achieve sharpening? (ii) What are the fundamental limits for self-training algorithms?
+
+Algorithms for sharpening (Section 2). The starting point for our work is to consider two natural families of self-improvement algorithms based on supervised fine-tuning (SFT) and reinforcement learning (RL/RLHF), respectively, SFT-Sharpening and RLHF-Sharpening. Both algorithms amortize the sharpening
+
+objective (1) into a dedicated post-training/fine-tuning phase:
+
+• SFT-Sharpening filters responses where the self-reward rself(y | x; πbase) is large and fine-tunes on the resulting dataset, invoking common SFT pipelines (Amini et al., 2024; Sessa et al., 2024; Gui et al., 2024; Pace et al., 2024).
+
+• RLHF-Sharpening directly applies reinforcement learning techniques (e.g., PPO (Schulman et al., 2017) or DPO (Rafailov et al., 2023)) to optimize the self-reward function rself(y | x; πbase).
+
+In the remainder of the paper, we introduce a theoretical framework to analyze the performance of these algorithms, and validate our findings empirically. Our main contributions are as follows.
+
+Maximum-likelihood sharpening objective (Section 3.1). As a concrete proposal for one source of hidden knowledge, we focus on self-rewards defined by the model’s sequence-level log-probabilities:
+
+rself(y | x; πbase) := log πbase(y | x) (2)
+
+This is a stylized self-reward function, which offers perhaps the simplest objective for self-improvement in the absence of external feedback (i.e., purely supervision-free), yet also connects self-improvement to a rich body of theoretical computer science literature on computational trade-offs for optimization (inference) versus sampling (Appendix B). We view Eq. (2) as a clean and minimal objective that reveals the interplay between hidden knowledge, computational bottlenecks, and self-improvement in generative model. In spite of its simplicity, we show empirically that maximum-likelihood sharpening is already sufficient to achieve non-trivial performance gains over greedy decoding on a range of reasoning tasks with several language models;
+
+1More sophisticated decoding strategies like normalized/regularized sequence likelihood (Meister et al., 2020) or chain-of- thought decoding (Wang and Zhou, 2024) use various metrics of model “confidence” to guide sampling in the absence of external verifiers; these too admit an informal interpretation as “sharpening”. See Appendix B.
+
+cf. Figure 1. We believe it can serve as a starting point toward understanding forms of self-improvement that use more sophisticated self-rewarding or judging but are less amenable to theoretical analysis (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024).
+
+A statistical framework for sharpening (Sections 3.2 and 3.3). Though the goal of sharpening is computational in nature, we recast self-training according to the maximum-likelihood sharpening objective Eq. (2) as a statistical problem where we aim to produce a model approximating (1) using a polynomial number of (i) sample prompts x ∼µ, (ii) sampling queries of the form y ∼πbase(x), and (iii) likelihood evaluations of the form πbase(y | x). Evaluating the efficiency of the algorithm through the number of such queries, this abstraction offers a natural way to evaluate the performance of self-improvement/sharpening algorithms and establish fundamental limits and minimax optimality, similar to the role of information-based complexity in optimization (Nemirovski et al., 1983; Traub et al., 1988; Raginsky and Rakhlin, 2011; Agarwal et al., 2012), statistical query complexity in computational learning theory (Blum et al., 1994; Kearns, 1998; Feldman, 2012, 2017), and query complexity more broadly. We use our framework to prove new lower bounds and fundamental limits which highlight the importance of the base model’s coverage (that is, probability mass placed on high-quality responses).
+
+Analysis of sharpening algorithms (Section 4). Within our statistical framework for maximum- likelihood sharpening, we show that SFT-Sharpening and RLHF-Sharpening provably converge to sharpened models, establishing several results:
+
+• Optimality of SFT-Sharpening. We show that SFT-Sharpening succeeds at learning a sharpened model whenever πbase has sufficient coverage, and is minimax optimal in a worst-case sense. Perhaps surprisingly, we show that a novel variant based on adaptive sampling can bypass this lower bound.
+
+• Benefits of RLHF-Sharpening. We show that RLHF-Sharpening also succeeds at learning a sharpened model and achieves similar performance to SFT-Sharpening when πbase has sufficient coverage. However, we show that this algorithm can bypass the need for coverage—improving over SFT-Sharpening—by leveraging deliberate exploration of the response space.
+
+Empirical investigation (Section 5). We empirically explore the extent to which our theoretical framework can aid language models in a variety of tasks. We first consider three choices of self-reward, including maximum-likelihood sharpening, and sharpen via a practical approximation, inference-time best-of- N sampling: given a prompt x ∈X, we draw N responses y1, . . . , yN ∼πbase(· | x) and return the response by = arg maxyi rself(yi | x); this is equivalent to Stiennon et al. (2020); Gao et al. (2023); Yang et al. (2024) and is a popular approach in modern deployments.2 We consider an extensive list of model-dataset pairs and find that sharpening, even with the stylized maximum-likelihood self-reward, often improves performance over greedy decoding. We then implement one of our algorithms, SFT-Sharpening, on a subset of these model-dataset pairs and observe a significant positive effect on performance, indicating that sharpening can indeed be amortized. An overview of our inference-time experiments can be found in Figure 1.
+
+1.3 Related Work
+Our work is most directly related to a growing body of empirical research that studies self-training for language models in a supervision-free setting with no external feedback (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024). The specific algorithms for self-improvement/sharpening we study can be viewed as applications of standard alignment algorithms (Amini et al., 2024; Sessa et al., 2024; Gui et al., 2024; Pace et al., 2024; Christiano et al., 2017; Bai et al., 2022a; Ouyang et al., 2022; Rafailov et al., 2023) with a specific choice of reward function. However, the maximum likelihood sharpening objective (2) used for our theoretical results has been relatively unexplored within the alignment and self-improvement literature.
+
+On the theoretical side, current understanding of self-training is limited. One line of work, focusing on the self-distillation objective (Hinton et al., 2015) for classification and regression, aims to provide convergence
+
+2We mention in passing that inference-time best-of-N sampling enjoys provable guarantees for maximizing the maximum-likelihood sharpening objective when N is sufficiently large. See Appendix C for details.
+
+guarantees for self-training in stylized setups such as linear models (Mobahi et al., 2020; Frei et al., 2022; Das and Sanghavi, 2023; Das et al., 2024; Pareek et al., 2024), with Allen-Zhu and Li (2020) giving guarantees for feedforward neural networks and Boix-Adsera (2024) proposing a general PAC-style framework. To the best of our knowledge, our work is the first to study self-training in a general framework that subsumes language modeling.
+
+See Appendix B for a more extensive discussion of related work.
+
+Notation. For an integer n ∈N, we let [n] denote the set {1, . . . , n}. For a set X, we let ∆(X) denote the set of all probability distributions over X. We adopt standard big-oh notation, and write f = eO(g) to denote that f = O(g · max{1, polylog(g)}), a ≲b as shorthand for a = O(b), and a ≍b as shorthand for a = Θ(b).
+
+2 Sharpening Algorithms for Self-Improvement
+This section introduces the two families of self-improvement algorithms for sharpening that we study. Going forward, we omit the dependence of rself on πbase when it is clear from context. We use the notation arg maxπ∈Π or arg minπ∈Π to denote exact optimization over a user-specified model class Π for theoretical results (Agarwal et al., 2019; Foster and Rakhlin, 2023); empirically, these operations can be implemented by training a neural network to low loss.
+
+2.1 Self-Improvement through SFT: SFT-Sharpening
+SFT-Sharpening filters responses for which the self-reward rself(y | x) is large, and applies standard supervised fine-tuning on the resulting dataset (Amini et al., 2024; Sessa et al., 2024; Gui et al., 2024; Pace et al., 2024). This can be viewed as amortizing inference-time sharpening via the effective-but-costly best-of-N sampling approach (Brown et al., 2024; Snell et al., 2024; Wu et al., 2024b). Concretely, suppose we have a collection of prompts x1, . . . , xn. For each prompt, we sample N responses yi,1, . . . , yi,N ∼πbase(· | xi), then compute the best-of-N response yBoN
+
+i = arg maxj∈[N]{rself(yi,j | xi)}, scoring via the model’s self-reward function. We compute the sharpened model via supervised fine-tuning on the best-of-N responses:
+
+n X
+
+bπBoN = arg max
+
+log π(yBoN
+
+i | xi).
+
+π∈Π
+
+i=1
+
+SFT-Sharpening is a simple, flexible self-training scheme, and converges to a sharpened model as n, N →∞. In Appendix D, we consider a variant of SFT-Sharpening based on adaptive sampling, which adjusts the number of sampled responses adaptively for better performance.
+
+2.2 Self-Improvement through RLHF: RLHF-Sharpening
+A drawback of the SFT-Sharpening algorithm is that it may ignore useful information contained in the self-reward function rself(y | x). Fixing a regularization parameter β > 0 throughout, our second class of algorithms solve a KL-regularized reinforcement learning problem in the spirit of RLHF and other alignment methods (Christiano et al., 2017; Bai et al., 2022a; Ouyang et al., 2022; Rafailov et al., 2023). Defining Eπ[·] = Ex∼µ,y∼π(·|x)[·] and DKL(π ∥πbase) = Eπ
+
+log π(y|x) πbase(y|x)
+
+
+
+
+
+, we choose
+
+{Eπ[rself(y | x)] −βDKL(π ∥πbase)}. (3)
+
+bπ ≈arg max
+
+π∈Π
+
+β = arg maxπ∈Π{Eπ[rself(y | x)] −βDKL(π ∥πbase)} for this objective has the form
+
+The exact optimizer π⋆
+
+β−1rself(y | x)
+
+π⋆
+
+ 
+
+
+
+β(y | x) ∝πbase(y | x) · exp
+
+,
+
+which converges to the solution to the sharpening objective in Eq. (1) as β →0. Thus, Eq. (3) can be seen to encourage sharpening.
+
+There are many choices for what RLHF/alignment algorithm one might use to solve (3). For our theoretical results, we implement Eq. (3) using an approach inspired by DPO and its reward-based variants (Rafailov et al., 2023; Gao et al., 2024). Given a dataset D = {(x, y, y′)} of n examples sampled via x ∼µ and y, y′ ∼πbase(y | x), we consider the algorithm that solves
+
+β log π(y | x) πbase(y | x) −β log π(y′ | x) πbase(y′ | x) −
+
+2
+
+
+
+rself(y | x) −rself(y′ | x)
+
+X
+
+ 
+
+bπ ∈arg min
+
+. (4)
+
+π∈Π
+
+(x,y,y′)∈D
+
+In the sequel (Section 4), we show that this approach leads to comparable guarantees to SFT-Sharpening, but that a more sophisticated DPO variant that incorporates online exploration (Xie et al., 2024) can offer provable benefits.
+
+3 A Statistical Framework for Sharpening
+This section introduces the theoretical framework within which we will analyze the SFT-Sharpening and RLHF-Sharpening algorithms. We first introduce the maximum-likelihood sharpening objective as a stylized self-reward function, then introduce our statistical framework for sharpening.
+
+3.1 Maximum-Likelihood Sharpening
+Our theoretical results focus on the maximum-likelihood sharpening objective given by
+
+rself(y | x) := log πbase(y | x),
+
+which we aim to maximize using conditional samples y ∼πbase(· | x) from the base model. This is a simple and stylized self-reward function, but we will show that it enjoys a rich theory. In particular, we can restate the problem of sharpening with this self-reward through the lens of amortization.
+
+Can we efficiently amortize maximum likelihood inference (optimization) for a conditional distribution πbase(y | x) given access to a sampling oracle that can sample y ∼πbase(· | x)?
+
+The tacit assumption in this framing is that the maximum-likelihood response constitutes a useful form of hidden knowledge. Maximum-likelihood sharpening connects the study of self-improvement to a large body of research in theoretical computer science demonstrating computational reductions between optimization (inference) and sampling (generation) (Kirkpatrick et al., 1983; Lovász and Vempala, 2006; Singh and Vishnoi,
+
+2014; Ma et al., 2019; Talwar, 2019). Our sharpening framework offers a new learning-theoretic perspective by focusing on the problem of amortizing this type of reduction.
+
+We evaluate the quality of an approximately sharpened model as follows. Let
+
+y⋆(x) := arg max
+
+log πbase(y | x);
+
+y∈Y
+
+we interpret y⋆(x) ⊂Y as a set to accommodate non-unique maximizers, and will write y⋆(x) to indicate a unique maximizer when it exists (i.e., when y⋆(x) = {y⋆(x)}).
+
+Definition 3.1 (Sharpened model). We say that a model bπ is (ϵ, δ)-sharpened relative to πbase if
+
+Px∼µ[bπ(y⋆(x) | x) ≥1 −δ] ≥1 −ϵ.
+
+That is, an (ϵ, δ)-sharpened model places at least 1 −δ mass on arg-max responses on all but an ϵ-fraction of prompts under µ. For small δ and ϵ, we are guaranteed that bπ is a high-quality generator: sampling from the model will produce an arg-max response with high probability for most prompts.
+
+Maximum-likelihood sharpening for autoregressive models. Though our most general results are agnostic to the structure of X, Y, and πbase, our primary motivation is the autoregressive setting in which Y = VH for a vocabulary space V and sequence length H, and where πbase has the autoregressive structure πbase(y1:H | x) = QH
+
+h=1 πbase,h(yh | y1:h−1, x) for y = y1:H ∈Y. We observe that when the response y = (y1, . . . , yH) ∈Y = VH is a sequence of tokens, the maximum-likelihood sharpening objective (2) sharpens toward the sequence-level arg-max response:
+
+log πbase(y1:H | x). (5)
+
+arg max
+
+y1:H
+
+Although somewhat stylized, Eq. (5) is a non-trivial (in general, computationally intractable; see Appendix E) solution concept. We view the sequence-level arg-max as a form of hidden knowledge that cannot necessarily be uncovered through naive sampling or greedy decoding.
+
+Role of δ for autoregressive models. As can be verified through simple examples, beam-search and greedy tokenwise decoding do not return an exact (or even approximate) solution to (5) in general. There is one notable exception: If the model has already been sharpened to δ < 1/2 and the arg-max sequence is unique, then greedy decoding will succeed.
+
+Proposition 3.1 (Greedy decoding succeeds for sharpened policies). Let π = π1:H be an autoregressive model defined over response space Y = VH. For a given prompt x ∈X, if y⋆(x) = {y⋆(x)} is a singleton and
+
+π(y⋆(x) | x) > 1/2, then the greedy decoding strategy that selects
+
+πh(yh | by1, . . . , byh−1, x)
+
+byh = arg max
+
+yh∈V
+
+guarantees that by = y⋆(x). This result is tight, in the sense that there exist π with π(y⋆(x) | x) ≤1/2 for which greedy decoding fails to recover y⋆(x).
+
+This means that if we start from an un-sharpened model, it can suffice to focus on sharpening to δ < 1/2.
+
+3.2 Sample Complexity Framework
+As described, sharpening in the sense of Definition 3.1 is a purely computational problem, which makes it difficult to evaluate the quality and optimality of self-improvement algorithms. To address this, we introduce a novel statistical framework for sharpening, inspired by the success of oracle complexity in optimization (Nemirovski et al., 1983; Traub et al., 1988; Raginsky and Rakhlin, 2011; Agarwal et al., 2012) and statistical
+
+query complexity in computational learning theory (Blum et al., 1994; Kearns, 1998; Feldman, 2012, 2017).
+
+Definition 3.2 (Sample-and-evaluate framework). In the sample-and-evaluate framework, the algorithm designer does not have explicit access to the base model πbase. Instead, they access πbase only through sample-
+
+and-evaluate queries: The learner is allowed to sample n prompts x ∼µ. For each prompt x, they can sample N responses y1, y2, . . . yN ∼πbase(· | x) and observe the likelihood πbase(yi | x) for each such response. The efficiency, or sample complexity, of the algorithm is measured through the total number of sample-and-evaluate queries m := n · N.
+
+This framework can be seen to capture algorithms like SFT-Sharpening and RLHF-Sharpening (implemented with DPO), which only access the base model πbase through i) sampling responses via y ∼πbase(· | x) (gener- ation), and ii) evaluating the likelihood πbase(y | x) (verification) for these responses. We view the sample complexity m = n·N as a natural statistical abstraction for the computational complexity of self-improvement (a clear parallel to oracle complexity for optimization algorithms), one which is amenable to information-
+
+theoretic lower bounds.3 We will aim to show that, under appropriate assumptions, SFT-Sharpening and RLHF-Sharpening can learn an (ϵ, δ)-sharpened model with sample complexity
+
+m = poly(ϵ−1, δ−1, Cprob)
+
+where Cprob is a potentially problem-dependent constant.
+
+3Concretely, the sample complexity m = n · N is a lower bound on the running time of any algorithm that operates in the sample-and-evaluate framework.
+
+3.3 Fundamental Limits
+Before diving into our analysis of SFT-Sharpening and RLHF-Sharpening in the sample-and-evaluate framework, let us take a brief detour to give a sense for how sample complexity guarantees for sharpening should scale. To this end, we will prove a lower bound or fundamental limit on the sample complexity of any algorithm in the sample-and-evaluate framework.
+
+Intuitively, the performance of any sharpening algorithm based on sampling should depend on how well the base model πbase covers the arg-max response y⋆(x). To capture this, we define the following coverage coefficient:4
+
+ 1 πbase(y⋆(x) | x)
+
+
+
+Ccov = Ex∼µ
+
+. (6)
+
+h
+
+i
+
+More generally, for a model π, we define yπ(x) = arg maxy∈Y π(y | x) and Ccov(π) = Ex∼µ
+
+1 π(yπ(x)|x)
+
+.
+
+Our main lower bound shows that for worst-case choice of Π, the coverage coefficient acts as a lower bound on the sample complexity of any sharpening algorithm.
+
+Theorem 3.1 (Lower bound for sharpening). Fix an integer d ≥1 and parameters ϵ ∈(0, 1) and C ≥1. There exists a class of models Π such that (i) log |Π| ≍d(1+log(Cϵ−1)), (ii) supπ∈Π Ccov(π) ≲C, and (iii) yπ(x) is a singleton for all π ∈Π, x ∈X. Any sharpening algorithm bπ that achieves E[Px∼µ[bπ(yπbase(x) | x) > 1/2]] ≥ 1 −ϵ for all πbase ∈Π must collect a total number of samples m = n · N at least
+
+m ≳ C log |Π| ϵ2 · (1 + log(Cϵ−1)).
+
+This result shows that the complexity of any (ϵ, 1/2 −δ)-sharpening algorithm (for δ > 0) in the sample- and-evaluate framework must depend polynomially on the coverage coefficient Ccov, as well as the accuracy parameter ϵ. The lower bound also depends on the expressivity of πbase, as captured by the model class complexity term log|Π|. We will show in the sequel that it is possible to match this lower bound. Note that this result also implies a lower bound for the general sharpening problem (i.e., general rself), since maximum-likelihood sharpening is a special case.
+
+Remark 3.1 (Relaxed notions of sharpening and coverage). The notion of coverage in Eq. (6) is somewhat stringent, since it requires that πbase place large mass on y⋆(x) on average. In Appendix F, we introduce a more general and permissive notion of approximate sharpening (Definition F.1), which allows the model to sharpen toward approximate arg-max responses (in the sense that log πbase(y | x) ≥(1 −γ) maxy∈Y log πbase(y | x)
+
+for an approximation parameter γ > 0). This notion of sharpening leads to significantly weaker coverage requirements, and we state generalized versions of all our main results which accommodate this in the appendix.
+
+We close this section by noting that numerous recent works—focusing on inference-time computation—show
+
+that standard language models exhibit favorable coverage with respect to desirable responses (Brown et al., 2024; Snell et al., 2024; Wu et al., 2024b). We replicate these findings in our experimental setup in Appendix A. These works suggest that, despite the exponentially large response space, the coverage coefficient Ccov may be small in standard language modeling tasks.
+
+4 Analysis of Sharpening Algorithms
+Equipped with the sample complexity framework from Section 3, we now prove that the SFT-Sharpening and RLHF-Sharpening families of algorithms provably learn a sharpened model for the maximum likelihood sharpening objective under natural statistical assumptions.
+
+Throughout this section, we treat the model class Π as a fixed, user-specified parameter. Our results—in the tradition of statistical learning theory—allow for general classes Π, and are agnostic to the structure beyond standard generalization arguments.
+
+4This quantity can be interpreted as a special case of the L1-concentrability coefficient (Farahmand et al., 2010; Xie and Jiang, 2020; Zanette et al., 2021; Amortila et al., 2024) studied in the theory of offline reinforcement learning.
+
+4.1 Analysis of SFT-Sharpening
+Recall that when we specialize to the maximum-likelihood sharpening self-reward, the SFT-Sharpening algorithm takes the form
+
+n X
+
+bπBoN = arg max
+
+log πbase(yBoN
+
+i | xi),
+
+π∈Π
+
+i=1
+
+where yBoN
+
+i = arg maxj∈[N]{log πbase(yi,j | xi)} for yi,1, . . . , yi,N ∼πbase(· | xi).
+
+To analyze SFT-Sharpening, we first make a realizability assumption. Let πBoN
+
+N (x) be the distribution of the random variable yBoN
+
+N (x) ∼arg max{log πbase(yi | x) | y1, . . . , yN ∼πbase(x)}.
+
+Assumption 4.1. The model class Π satisfies πBoN
+
+N ∈Π.
+
+Our main guarantee for SFT-Sharpening is as follows.
+
+Theorem 4.1 (Sample complexity of SFT-Sharpening). Let ρ, δ ∈(0, 1) be given, and suppose we set N = N ⋆log(2δ−1) for a parameter N ⋆∈N. If Assumption 4.1 holds, then for any n ∈N, SFT-Sharpening produces a model bπ such that with probability at least 1 −ρ,
+
+δ · log(|Π|ρ−1)
+
+Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≲1
+
+n + Ccov
+
+N ⋆.
+
+In particular, given (ϵ, δ), by setting n = c · log|Π|
+
+δϵ and N ⋆= c · Ccov
+
+ϵ for an appropriate constant c > 0, we are guaranteed that Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≤ϵ, and have total sample complexity
+
+Ccov log(|Π|ρ−1) log(δ−1)
+
+
+
+. (7)
+
+m = O
+
+δϵ2
+
+This result shows that SFT-Sharpening, via Eq. (7), is minimax optimal in the sample-and-evaluate framework when δ is constant. In particular, the sample complexity bound in Eq. (7) matches the lower bound in Theorem 3.1 up to polynomial dependence on δ and logarithmic factors. Whether the 1/δ factor in Eq. (7) can be removed is an interesting technical question, but may not be practically consequential because—as discussed in Section 3.2—the regime δ < 1/2 is most meaningful for autoregressive language modeling.
+
+Remark 4.1 (On realizability and coverage). Realizability assumptions such as Assumption 4.1 (which asserts that the class Π is powerful enough to model the distribution of the best-of-N responses) are standard in learning theory (Agarwal et al., 2019; Lattimore and Szepesvári, 2020; Foster and Rakhlin, 2023), though certainly non-trivial (see Appendix E for a natural example where they may not hold). The coverage assumption, while also standard, when combined with the hypothesis that high-likelihood responses are desirable, suggests that
+
+πbase generates high-quality responses with reasonable probability. In general, doing so may require leveraging non-trivial serial computation at inference time via procedures such as Chain-of-Thought (Wei et al., 2022). Although recent work shows that such serial computation cannot be amortized (Li et al., 2024; Malach, 2023),
+
+SFT-Sharpening instead amortizes the parallel computation of best-of-N sampling, and thus has different representational considerations.
+
+Benefits of adaptive sampling. SFT-Sharpening is optimal in the sample-and-evaluate framework, but we show in Appendix D that a variant which selects the number of responses adaptively based on the prompt x can bypass this lower bound, improving the ϵ-dependence in Eq. (7) from 1 ϵ2 to 1
+
+ϵ .
+
+4.2 Analysis of RLHF-Sharpening
+We now turn our attention to theoretical guarantees for the RLHF-Sharpening algorithm family, which uses tools
+
+from reinforcement learning to optimize the self-reward function. When specialized to maximum-likelihood sharpening, the RL objective used by RLHF-Sharpening takes the form
+
+{Eπ[log πbase(y | x)] −βDKL(π ∥πbase)}
+
+bπ ≈arg max
+
+π∈Π
+
+β = arg maxπ∈Π{Eπ[log πbase(y | x)] −βDKL(π ∥πbase)} for this objective
+
+for β > 0. The exact optimizer π⋆
+
+β(y | x) ∝π1+β−1
+
+has the form π⋆
+
+base (y | x), which converges to a sharpened model (per Definition 3.1) as β →0.
+
+The key challenge we encounter in this section is the mismatch between the RL reward log πbase(y | x) and the sharpening desideratum bπ(y⋆(x) | x). For example, suppose a unique argmax—say, y⋆(x)—and second-to-argmax—say, y′(x)—are nearly as likely under πbase. Then the RL reward Ebπ[log πbase(y | x)] must be optimized to extremely high precision before bπ can be guaranteed to distinguish the two. To quantify this effect, we introduce a margin condition.
+
+Assumption 4.2 (Margin). For a margin parameter γmargin > 0, the base model πbase satisfies
+
+y∈Y πbase(y | x) ≥(1 + γmargin) · πbase(y′ | x) ∀y′ /∈y⋆(x), ∀x ∈supp(µ).
+
+max
+
+SFT-Sharpening does not suffer from the pathology in the example above, because once y⋆(x) and y′(x) are drawn in a batch of N responses, we have yBoN
+
+i = y⋆(xi) regardless of margin. However, as we shall show in Section 4.2.2, the RLHF-Sharpening algorithm is amenable to online exploration, which may improve dependence on other problem parameters.
+
+4.2.1 Guarantees for RLHF-Sharpening with Direct Preference Optimization
+The first of our theoretical results for RLHF-Sharpening takes an offline reinforcement learning approach, whereby we implement Eq. (3) using a reward-based variant of Direct Preference Optimization (DPO) (Rafailov et al., 2023; Gao et al., 2024). Let Dpref = {(x, y, y′)} be a dataset of n examples sampled via x ∼µ,
+
+y, y′ ∼πbase(y | x). For a parameter β > 0, we consider the algorithm that solves
+
+β log π(y | x) πbase(y | x) −β log π(y′ | x) πbase(y′ | x) −
+
+2
+
+
+
+log πbase(y | x) −log πbase(y′ | x)
+
+X
+
+ 
+
+bπ ∈arg min
+
+. (8)
+
+π∈Π
+
+(x,y,y′)∈Dpref
+
+Assumptions. Per Rafailov et al. (2023), the solution to Eq. (8) coincides with that of Eq. (2) asymptotically. To provide finite-sample guarantees, we make a number of statistical assumptions. First, we make a natural realizability assumption (e.g., Zhu et al. (2023); Xie et al. (2024)).
+
+Assumption 4.3 (Realizability). The model class Π satisfies π⋆
+
+β ∈Π.5
+
+Next, we define two concentrability coefficients for a model π:
+
+" π(y | x)
+
+β#
+
+ π(y | x) πbase(y | x)
+
+
+
+Cπ = Eπ
+
+, and Cπ/π′;β := Eπ
+
+. (9)
+
+π′(y | x)
+
+The following result shows that both coefficients are bounded for the KL-regularized model π⋆
+
+β.
+
+Lemma 4.1. The model π⋆
+
+β satisfies Cπ⋆
+
+β ≤Ccov and Cπbase/π⋆
+
+β;β ≤|Y|.
+
+Motivated by this result, we assume the coefficients in Eq. (9) are bounded for all π ∈Π.
+
+Assumption 4.4 (Concentrability). All π ∈Π satisfy Cπ ≤Cconc for a parameter Cconc ≥Ccov, and Cπbase/π;β ≤Closs for a parameter Closs ≥|Y|.
+
+By Lemma 4.1, this assumption is consistent with Assumption 4.3 for reasonable bounds on Cconc and Closs; note that our sample complexity bounds will only incur logarithmic dependence on Closs.
+
+Main result. Our sample complexity guarantee for RLHF-Sharpening (via Eq. (8)) is as follows.
+
+5See Remark 4.1 for a discussion of this assumption.
+
+Theorem 4.2. Let ϵ, δ, ρ ∈(0, 1) be given. Set β ≲γmarginδϵ, and suppose that Assumptions 4.2 to 4.4 hold with parameters Cconc, Closs, and γmargin > 0. For an appropriate choice for n, the DPO algorithm (Eq. (8)) ensures that with probability at least 1 −ρ, Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≤ϵ, and has sample complexity
+
+!
+
+Cconc log3(Closs|Π|ρ−1)
+
+m = eO
+
+.
+
+γ2
+
+marginδ2ϵ2
+
+Compared to the guarantee for SFT-Sharpening, RLHF-Sharpening learns a sharpened model with the same dependence on the accuracy ϵ, but a worse dependence on δ; as we primarily consider δ constant (cf. Propo- sition 3.1), we view this as relatively unimportant. We further remark that RLHF-Sharpening uses N = 2 responses per prompt, while SFT-Sharpening uses many (N ≈Ccov/ϵ) responses but fewer prompts. Other notable differences include:
+
+• RLHF-Sharpening requires the margin condition in Assumption 4.2, and has sample complexity scaling with γ−1
+
+margin. We believe this dependence is natural for algorithms based on reinforcement learning, as it relates suboptimality with respect to the reward function rself(y | x) = log πbase(y | x) (i.e., Ex∼µ
+
+maxy∈Y log πbase(y | x) −Ey∼bπ(x)[log πbase(y | x)]
+
+
+
+
+
+≤ϵ, the objective minimized by reinforcement learning) to approximate sharpening error Px∼µ[bπ(y⋆(x) | x) ≤1 −δ]. However, it is not clear if the precise dependence we pay is necessary.
+
+• RLHF-Sharpening requires a bound on the uniform coverage parameter Cconc, which is larger than the parameter Ccov required by SFT-Sharpening in general. We expect that this assumption can be removed by incorporating pessimism in the vein of (Liu et al., 2024; Huang et al., 2024). Also, RLHF-Sharpening requires a bound on the parameter Closs. This grants control over the range of the reward function log πbase(y | x), which can otherwise be unbounded. Since the dependence on Closs is only logarithmic, we view this as fairly mild. Overall, the guarantee in Theorem 4.2 may be somewhat pessimistic; it would be interesting if the result can be improved to match the sample complexity of SFT-Sharpening.
+
+4.2.2 Benefits of Exploration
+The sample complexity guarantees in Theorem 4.2 scale with the coverage parameter Ccov = E[1/πbase(y⋆(x)|x)], which in general is unavoidable in the sample-and-evaluate framework via our lower bound, Theorem 3.1. Al- though Ccov is a problem-dependent parameter, in the worst case it can be as large as |Y| (which is exponential in sequence length for autoregressive models). Fortunately, unlike SFT-Sharpening, the RLHF-Sharpening ob- jective (3) is amenable to RL algorithms employing active exploration, leading to improved sample complexity when the class Π has additional structure.
+
+Our below guarantees for RLHF-Sharpening replace the assumption of bounded coverage with boundedness of a structural parameter for the model class Π known as the “sequential extrapolation coefficient” (SEC) (Xie et al., 2023, 2024), which we denote by SEC(Π). The formal definition is deferred to Appendix J.2.
+
+Conceptually, SEC(Π) may thought of as a generalization of the eluder dimension (Russo and Van Roy, 2013; Jin et al., 2021). It can always be bounded by the coverability coefficient of the model class (Xie et al., 2024) and can be as large as Cconc in the worst case, so that bounds based on the SEC reflect improvements that are possible in favorable instances.
+
+Beyond boundedness of the SEC, we require a bound on the range of the log-probabilities of πbase.
+
+≤Rmax.
+
+log 1 πbase(y|x)
+
+Assumption 4.5 (Bounded log-probabilities). For all π ∈Π, (x, y) ∈X × Y,
+
+We expect that the dependence on Rmax in our result can be replaced with log(Closs) (Assumption 4.4), but we omit this extension to simplify presentation.
+
+We appeal to (a slight modification of) XPO, an iterative language model alignment algorithm due to Xie et al. (2024). XPO is based on the objective in Eq. (8), but unlike DPO, incorporates a bonus term to encourage
+
+exploration to leverage online interaction. See Appendix J.2 for a detailed overview.
+
+Main result. The main guarantee for RLHF-Sharpening with XPO is as follows.
+
+Theorem 4.3 (Informal version of Theorem J.2). Suppose that Assumptions 4.2 and 4.5 hold with parameters γmargin, Rmax > 0, and that Assumption 4.3 holds with β = γmargin/(2 log(2|Y|/δ)). For any m ∈N and ρ ∈(0, 1), XPO (Algorithm 1), when configured appropriately, produces an (ϵ, δ)-sharpened model bπ ∈Π with probability at least 1 −ρ, and uses sample complexity6
+
+!
+
+SEC(Π) · log(|Π|ρ−1)
+
+m = eO
+
+.
+
+γ2
+
+marginδ2ϵ2
+
+The takeaway from Theorem 4.3 is that there is no dependence on the coverage coefficient for πbase. Instead, the rate depends on the complexity of exploration, as governed by the sequential extrapolation coefficient SEC(Π). We emphasize that while we present guarantees for XPO under the sequential extrapolation coefficient for concreteness, we expect similar guarantees can derived for other active exploration algorithms and complexity measures (Jiang et al., 2017; Foster et al., 2021; Jin et al., 2021; Xie et al., 2023).
+
+Example: Linearly parameterized models. As a stylized example of a model class Π where active exploration dramatically improves the sample complexity of sharpening, we consider the class Πϕ,B of linear softmax models. This class consists of models of the form
+
+πθ(y | x) ∝exp(⟨ϕ(x, y), θ⟩),
+
+where θ ∈Rd is a parameter vector with ∥θ∥2 ≤B, and ϕ(x, y) ∈Rd is a known feature map with ∥ϕ(x, y)∥≤1. The sequential extrapolation coefficient for this class can be bounded as SEC(Π) = eO(d), and the optimal KL-regularized model π⋆
+
+β is a linear softmax model (i.e., π⋆
+
+β ∈Π) whenever the base model πbase is itself a linear softmax model. This leads to the following result.
+
+Theorem 4.4. Fix ϵ, δ, ρ ∈(0, 1) and B > 0. Suppose that (i) πbase = πθ⋆is a linear softmax model with ∥θ⋆∥2 ≤ γmarginB 3 log(2|Y|/δ); (ii) πbase satisfies Assumption 4.2 with parameter γmargin. Algorithm 1, with base model πbase, reward function r(x, y) := log πbase(x, y), and model class Πϕ,B, returns an (ϵ, δ)-sharpened model with probability at least 1 −ρ, and with sample complexity m = poly(ϵ−1, δ−1, γ−1
+
+margin, d, B, log(|Y|/ρ)).
+
+Importantly, Theorem 4.4 has no dependence on the coverage parameter Ccov, scaling only with the dimension d of the softmax model class.
+
+For a quantitative comparison, we note that even for the simple special case of the linear softmax model class, it is straightforward to construct examples of models πbase where Ccov = E[1/πbase(y⋆(x)|x)] ≍|Y| ≍exp(Ω(d)), yet Assumption 4.2 is satisfied with γmargin = Ω(1). For such models, SFT-Sharpening will incur exp(Ω(d)) sample complexity; see Example J.1 for details. Hence, Theorem 4.4 represents an exponential improvement, obtained by exploiting the structure of the self-reward function in a way that goes beyond SFT-Sharpening.
+
+Remark 4.2 (Non-triviality). Theorem 4.4 is quite stylized in the sense that if the parameter vector θ⋆of πbase is known, then it is trivial to directly compute the parameter vector for the sharpened model π⋆
+
+β (which corre- sponds to rescaling θ⋆). Algorithm 1 is interesting and non-trivial nonetheless because it does not have explicit
+
+knowledge of θ⋆, as it operates in the sample-and-evaluate oracle model (Definition 3.2). Moreover, the guaran- tee generalizes to any model class Π for which SEC(Π) can be bounded; see Theorem J.2 for the formal statement.
+
+5 Experiments
+In this section we explore the sharpening mechanism empirically. We consider inference-time experiments that demonstrate that self-improvement through sharpening is possible, as well as training-time experiments that successfully amortize the cost of self-improvement, thereby avoiding computational overhead at inference time. We first describe the general experimental setup, then turn to the results of our experiments.
+
+6Technically, Algorithm 1 operates in a slight generalization of the sample-and-evaluate framework (Definition 3.2), where the algorithm is allowed to query πbase(y | x) for arbitrary x, y. We expect that our lower bound (Theorem 3.1) can be extended to to show that dependence on Ccov is necessary in the worst case even in this more general framework. Algorithm 1 is fundamentally using additional instance-dependent structure (via the SEC) to avoid dependence on the coverage parameter, Ccov.
+
+5.1 Experimental Setup
+We experiment with sharpening using the following models, all of which (except for gpt-3.5-turbo-instruct)
+
+are available on https://huggingface.co; we provide HuggingFace model identifiers below.
+
+1. Phi models: We use several models from the Phi family (Abdin et al., 2024), specifically Phi3-Mini (“microsoft/Phi-3-mini-4k-instruct”), Phi3-Small (“microsoft/Phi-3-small-8k-instruct”), Phi3-Medium (“microsoft/Phi-3-medium-4k-instruct”), and Phi3.5-Mini (“microsoft/Phi-3.5-mini-instruct”).
+
+2. Llama3.2-3B-Instruct (“meta-llama/Llama-3.2-3B-Instruct”) (Dubey et al., 2024).
+
+3. Mistral-7B-Instruct-v0.3 (“mistralai/Mistral-7B-Instruct-v0.3”) (Jiang et al., 2023).
+
+4. gpt-3.5-turbo-instruct (Brown et al., 2020): We access this model via the OpenAI API.
+
+5. llama2-7b-game24-policy-hf (“OhCherryFire/llama2-7b-game24-policy-hf”): We use the model of Wan et al. (2024), which is a Llama-2 model finetuned on the GameOf24 task (Yao et al., 2024). We use this model only for experiments with GameOf24.
+
+We consider the following tasks:
+
+1. GSM8k: We use the above models to generate responses to prompts from the GSM-8k dataset (Cobbe et al., 2021) where the goal is to generate a correct answer to an elementary school math question. For inference-time experiments, we take the first 256 examples from the test set in the “main” subset.7
+
+2. MATH: We use the above models to generate responses to prompts from the MATH dataset (Hendrycks et al., 2021), which consists of more difficult math questions. For inference-time experiments, we consider “all” subsets and take the first 256 examples of the test set where the solution matches the regular expression (\d*).8
+
+3. ProntoQA: We use the above models to generate responses to prompts from the ProntoQA dataset (Saparov and He, 2023), which consists of chain-of-thought-style reasoning questions with boolean
+
+answers. For inference-time experiments, we take the first 256 examples from the training set.9
+
+4. MMLU: We use the above models to generate responses to prompts from three subsets of the MMLU dataset (Hendrycks et al., 2020), specifically college_biology (Bio), college_physics (Phys), and college_chemistry (Chem), all of which consist of multiple choice questions.10 For inference-time experiments, we take the first 256 examples of the test set for each subset.
+
+5. GameOf24: We use only the model of Wan et al. (2024) (i.e., llama2-7b-game24-policy-hf), on the GameOf24 task (Yao et al., 2024). The prompts are four numbers and the goal is to combine the numbers with standard arithmetic operations to reach the number ‘24.’ For inference-time experiments, we use both the train and test splits of the dataset.11
+
+All of our experiments were run on 40G NVIDIA A100 GPUs, 192G AMD MI300X GPUs, or through the OpenAI API.
+
+5.2 Validation of Inference-Time Sharpening
+We first validate the sharpening mechanism (i.e., the phenomenon that responses from a model with high
+
+self-reward rself enjoy high performance on downstream tasks) through inference-time experiments, focusing on the maximum likelihood self-reward. For each (model, task) pair, we sample N generations per prompt with temperature 1 and return the best of the N generations according to the maximum-likelihood sharpening self-reward function rself(y | x) = log πbase(y | x); we compare against greedy decoding as a baseline, whose accuracy is displayed in Figure 3(d).
+
+7https://huggingface.co/datasets/openai/gsm8k. 8https://huggingface.co/datasets/lighteval/MATH. 9https://huggingface.co/datasets/longface/prontoqa-train. 10https://huggingface.co/datasets/cais/mmlu. 11https://github.com/princeton-nlp/tree-of-thought-llm/tree/master/src/tot/data/24
+
+Implementation details. For all models and datasets except for GameOf24, we used 1-shot prompting to ensure that models conform to the desired output format and to elicit chain of thought reasoning (for GameOf24 we do not provide a demonstration in the prompt). We set the maximum length of decoding to be 512 tokens. We used 10 seeds for all (model, task) pairs with a maximum value of N = 50 in Best-of-N sampling. We simulated N responses for N < 50 by subsamplng the 50 generated samples. For Best-of-N sampling, we always use temperature 1.0. Since greedy decoding is a deterministic strategy, there is no need to average over multiple seeds for each (model, task) pair. In all experiments, we collect both the responses and their log-likelihoods under the reference model (i.e., the original model from which samples were generated).
+
+Results. We display our findings in Figure 1(a) and in Figure 2; because we only consider a single model for GameOf24, we separate the results for this task into Figure 4. We visualize performance—measured through normalized accuracy improvement over greedy decoding. We also visualize log-likelihoods (under πbase) of the selected responses in Figure 5. We find that:
+
+1. Across all (model, task) pairs, inference-time Best-of-N sharpening (using rself(y | x) = log πbase(y | x)) improves over naïve sampling with temperature 1.0.
+
+2. For all datasets, Best-of-N sharpening improves upon standard greedy decoding, for at least one model.
+
+3. Analogously, for every model, there is at least one dataset for which Best-of-N sharpening improves over greedy decoding.
+
+We further explore the relationship between sequence-level log-probabilities and generation quality in Figure
+
+6, where we plot the empirical distributions of responses sampled with temperature 1 from the base model for a variety of model-dataset pairs, conditioned on whether or not the response is correct. We find that the distribution of log probabilities conditioned on correctness stochastically dominates the distribution conditioned on incorrectness in each (model, task) pair evaluated, which provides more evidence that maximum likelihood
+
+sharpening represent a reasonable self-improvement target.
+
+We mention several other observations from the experiments. First, in most cases, performance and log-
+
+likelihood saturate at relatively small values of N, typically around 10 or 20. This suggests that significant improvements can be obtained with relatively low computational overhead. Second, in some cases, performance can degrade as N increases. We found that this happens for two reasons: (1) the performance of the reference model is poor and so rself does not provide a good signal (e.g., with Llama3.2-3B-Instruct) and (2) the Best-of-N criteria selects for short responses, which have higher log-likelihood but cannot leverage the computational and representational benefits of chain-of-thought, thereby yielding worse performance (e.g., with gpt-3.5-turbo-instruct on GSM8k).
+
+5.3 Inference-Time Sharpening with other Self-Reward Functions
+Although we focus on rself(y | x) = log πbase(y | x) throughout the paper, the sharpening framework is significantly more general.12 As such, we experiment with inference-time sharpening for other choices for rself:
+
+1. Length-normalized log-likelihood: rself(y | x) = 1 |y| log πbase(y | x) where |y| is the length, in tokens, of the response.
+
+2. Majority (self-consistency): All datasets except GameOf24 have multiple-choice, boolean, or numerical answers. Although we allow responses to contain chain-of-thought tokens, we can extract the answer from each response and use the most-frequently-occuring answer. This can be seen as a sample-based approximation to the following self-reward function: rself(y | x) = P
+
+y′:y′ans=yans πbase(y′ | x), where yans are the “answer” tokens in the full response y.
+
+Finally, as a skyline we consider the coverage criterion (Brown et al., 2024), where we simply check if any of the sampled responses corresponds to the correct answer. This criterion is a skyline and does not fit into sharpening framework, as it uses knowledge of the ground truth (external) task reward function.
+
+12Although we do not experiment with model-as-judge approaches (e.g., Huang et al., 2022), which obtain self-reward by re-prompting, we note that they can be cast in the sharpening framework by simply defining the self reward rself(y | x) to be the output of the model when prompted with a verification/scoring prompt, the original prompt x and the candidate response y.
+
+MATH
+
+GSM8K
+
+140
+
+115
+
+120
+
+110
+
+100
+
+105
+
+% Lift over Greedy
+
+% Lift over Greedy
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+80
+
+100
+
+60
+
+95
+
+40
+
+90
+
+20
+
+85
+
+0
+
+80
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(a)
+
+(b)
+
+ProntoQA
+
+Bio
+
+120
+
+50
+
+115
+
+Log Probability over Greedy
+
+0
+
+110
+
+% Lift over Greedy
+
+50
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+105
+
+100
+
+100
+
+150
+
+95
+
+200
+
+90
+
+250
+
+85
+
+300
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(c)
+
+(d)
+
+Phys
+
+Chem
+
+250
+
+125
+
+120
+
+225
+
+115
+
+200
+
+% Lift over Greedy
+
+% Lift over Greedy
+
+110
+
+175
+
+105
+
+100
+
+150
+
+95
+
+125
+
+90
+
+100
+
+85
+
+75
+
+80
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(e)
+
+(f)
+
+Figure 2: Percent lift in accuracy of inference-time BoN-sharpening over greedy decoding in each task as N is varied. For many task-model pairs, the accuracy improves as N increases, demonstrating the efficacy of maximum likelihood sharpening.
+
+BoN-Norm: % Lift over Greedy
+
+Majority: % Lift over Greedy
+
+4.4 -0.4 7.0 -1.2 7.2 5.2
+
+19.7 5.1 0.3 7.1 12.5 8.7
+
+Phi3 (Mini)
+
+Phi3 (Mini)
+
+0.8 5.0 1.5 6.0 4.9 0.7
+
+19.4 8.7 1.2 11.1 6.9 1.5
+
+Phi3.5 (Mini)
+
+Phi3.5 (Mini)
+
+2.1 7.3 -4.6 3.3 2.4 -11.8
+
+17.1 11.4 -14.4 2.5 7.9 -9.4
+
+Phi3 (Small)
+
+Phi3 (Small)
+
+0.1 -1.7 0.5 0.2 6.5 -1.3
+
+16.0 6.1 5.0 3.6 13.2 1.3
+
+Phi3 (Medium)
+
+Phi3 (Medium)
+
+28.6 17.1 2.8 7.6 25.9 4.0
+
+72.2 48.8 38.5 19.8 19.5 10.5
+
+Mistral-7B
+
+Mistral-7B
+
+4.3 1.3 3.6 -12.7 79.3 20.3
+
+17.5 11.6 9.6 11.5 99.3 59.7
+
+Llama3.2-3B
+
+Llama3.2-3B
+
+3.4 1.2 -5.9 -1.8 7.1 -7.9
+
+35.5 18.2 4.6 7.0 11.0 7.4
+
+GPT-3.5
+
+GPT-3.5
+
+MATH
+
+GSM8K
+
+ProntoQA Bio
+
+Phys
+
+Chem
+
+MATH
+
+GSM8K
+
+ProntoQA Bio
+
+Phys
+
+Chem
+
+(a)
+
+(b)
+
+Pass@50: Accuracy (%)
+
+Greedy: Accuracy (%)
+
+96.6 97.3 98.8 99.2 99.9 98.1
+
+66.0 87.1 50.4 80.6 65.7 52.0
+
+Phi3 (Mini)
+
+Phi3 (Mini)
+
+97.0 96.8 90.9 97.5 98.8 96.7
+
+67.6 84.4 50.8 77.1 68.6 55.0
+
+Phi3.5 (Mini)
+
+Phi3.5 (Mini)
+
+97.9 97.3 90.3 98.8 97.2 96.3
+
+72.3 79.3 59.4 85.4 74.5 66.0
+
+Phi3 (Small)
+
+Phi3 (Small)
+
+98.4 98.3 83.3 99.0 99.0 94.7
+
+73.4 86.7 47.3 88.2 70.6 60.0
+
+Phi3 (Medium)
+
+Phi3 (Medium)
+
+81.9 94.0 99.7 98.8 98.2 98.0
+
+23.0 46.9 50.0 61.8 36.3 42.0
+
+Mistral-7B
+
+Mistral-7B
+
+93.8 95.8 100.0 99.6 99.8 99.2
+
+58.2 76.6 47.7 61.8 14.7 30.0
+
+Llama3.2-3B
+
+Llama3.2-3B
+
+96.0 96.6 95.1 98.5 99.9 99.4
+
+55.9 70.3 49.6 68.8 51.0 53.0
+
+GPT-3.5
+
+GPT-3.5
+
+MATH
+
+GSM8K
+
+ProntoQA Bio
+
+Phys
+
+Chem
+
+MATH
+
+GSM8K
+
+ProntoQA Bio
+
+Phys
+
+Chem
+
+(c)
+
+(d)
+
+Figure 3: Performance of alternative self-reward functions for inference-time BoN sharpening: Percent accuracy improvement over greedy decoding for (a) BoN sharpening with length-normalized log probability and (b) majority voting, with both demonstrating efficacy on a range of model-task pairs. (c) Coverage of correct answer, a skyline demonstrating that most model-task pairs produce the correct answer in at least one completion out of 50 for most prompts. (d) Accuracy of greedy decoding baseline on each model-task pair.
+
+Results are displayed in Figure 3. For length-normalized log-likelihood (a) and majority (b), we see qualitatively similar behavior to (unnormalized) log-likelihood: inference-time sharpening via these self-reward functions offers improvement over both vanilla (temperature 1.0) sampling and greedy decoding. In both cases, the improvements are generally larger than those obtained with log-likelihood. Finally, examining the coverage criteria, we see that with N = 50 samples, all of the models almost always produce a correct answer on all tasks, raising the possibility of other self-reward functions that further improve performance.
+
+5.4 Training-Time Sharpening with SFT-Sharpening
+In addition to inference-time experiments, we also evaluate training-time sharpening, and demonstrate empirically that SFT-Sharpening effectively amortizes inference-time BoN. Due to limited computational resources, we restrict our attention to a subset of the model-task pairs considered in Section 5.2 that have particularly promising inference-time BoN performance. For each pair, we evaluate the performance of SFT-Sharpening as a means to amortize the inference-time cost of multiple generations.
+
+For each of the chosen model-dataset pairs (cf. Table 1), we sample N = 50 responses with temperature
+
+Model Dataset % Lift over Greedy (Accuracy) Lift over Greedy (Likelihood)
+
+Phi3.5-Mini MATH 19.24 ± 2.41 48.33 ± 0.17 Phi3.5-Mini GSM8k 1.82 ± 0.64 1.49 ± 0.55 Phi3.5-Mini ProntoQA 12.46 ± 1.08 5.64 ± 0.01 Mistral-7B MATH 8.88 ± 5.55 5.71 ± 3.00
+
+Table 1: Experimental results for SFT-Sharpening
+
+1 for each prompt in the dataset and select the most likely (according to the relevant reference model). We then combine these likely responses with the prompts in order to form a training corpus and train with the SFT-Sharpening objective. We apply Low Rank Adaptation (Hu et al., 2021) to the model, sweeping over LoRA rank, learning rate scheduler, and weight decay in order to return the best optimized model.13 We report the specific hyperparameters chosen in Table 2. On all models, we used a learning rate of 3 × 10−4
+
+with linear decay to zero and gradient clamping at 0.1.
+
+Results. Table 1 reports our results for SFT-Sharpening. We report best model checkpoint during training for each model-dataset pair, averaged across 3 random seeds, with responses are sampled with temperature 1 from the fine-tuned model. We report (i) the percent lift in accuracy on the dataset with respect to the greedy generation of the reference model; and (ii) the increase in average sequence level log-likelihood with respect to the same. For all model-dataset pairs, we observe improvement on both metrics, demonstrating that some amortization is possible with SFT-Sharpening.
+
+Next, in Figures 7 and 8 (Appendix A), we display the evolution of the metrics in Table 1 throughout training for each model-dataset pair. In Figure 7, we find that while Phi3.5-Mini is quite well-behaved on MATH and ProntoQA, the training curve for GSM8k is quite noisy. The log-probability appears to be a significantly less useful proxy for accuracy on this dataset than for the others; similar phenomena were observed in Block et al. (2023) in a variety of tasks. In Figure 8, we find that for Mistral-7B-Instruct-v0.3 on MATH, we achieve
+
+improvement after training for sufficiently long, but the optimization suffers an substantial initial drop and spends ∼90% of the gradient steps recovering before improvement is observed; we speculate that this is a function of insufficient hyper-parameter tuning for the optimization itself, rather than a fundamental barrier.
+
+Finally, in Figure 9 (Appendix A), we investigate the effect of the parameter N on the performance of SFT-Sharpening for Phi3.5-Mini on MATH. In particular, in forming our training set, we choose N ∈{10, 25, 50} and repeat the procedure described above, averaging our results over three seeds. We find that increasing N leads to a modest increase in the sequence-level log-likelihood, in accordance with our theory, and a consequent increase in the accuracy of the fine-tuned model.
+
+6 Conclusion
+We view our theoretical framework for sharpening as a starting point toward a foundational understanding
+
+of self-improvement that can guide the design and evaluation of algorithms. To this end, we raise several directions for future research.
+
+• Representation learning. A conceptually appealing feature of our framework is that it is agnostic to the structure of the model under consideration, but an important direction for future work is to study the dynamics of self-improvement for specific models/architectures and understand the representations that these models learn under self-training.
+
+• Richer forms of self-reward. Our theoretical results study the dynamics of self-training in a stylized framework where the model uses its own log-probabilities as a self-reward. Empirical research on self-improvement leverages more sophisticated approaches (e.g., specific prompting techniques) (Huang
+
+13In all experiments involving Phi3.5-Mini we use a batch size of 4; unfortunately, due to a known numerical issue with LoRA on Mistral-7B-Instruct-v0.3 involving batch size > 1, we use a batch of 1 in this case. Because of this choice, instead of the 30 epochs we use to train our other models, for Mistral-7B-Instruct-v0.3, we run only 10 epochs.
+
+et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023; Yuan et al., 2024) and it is important to understand when and how these forms of self-improvement are beneficial.
+
+Acknowledgments
+We thank Sivaraman Balakrishnan, Miro Dudík, Susan Dumais, John Langford, Qinghua Liu, and Yuda Song
+
+for helpful discussions.
+
+References
+Marah Abdin, Jyoti Aneja, Hany Awadalla, Ahmed Awadallah, Ammar Ahmad Awan, Nguyen Bach, Amit
+
+Bahree, Arash Bakhtiari, Jianmin Bao, Harkirat Behl, et al. Phi-3 technical report: A highly capable language model locally on your phone. arXiv:2404.14219, 2024.
+
+Samira Abnar, Mostafa Dehghani, and Willem Zuidema. Transferring inductive biases through knowledge
+
+distillation. arXiv:2006.00555, 2020.
+
+Alekh Agarwal, Peter L Bartlett, Pradeep Ravikumar, and Martin J Wainwright. Information-theoretic lower
+
+bounds on the oracle complexity of stochastic convex optimization. IEEE Transactions on Information Theory, 2012.
+
+Alekh Agarwal, Daniel Hsu, Satyen Kale, John Langford, Lihong Li, and Robert Schapire. Taming the
+
+monster: A fast and simple algorithm for contextual bandits. In International Conference on Machine Learning, 2014.
+
+Alekh Agarwal, Nan Jiang, Sham M Kakade, and Wen Sun. Reinforcement learning: Theory and algorithms.
+
+https://rltheorybook.github.io/, 2019. Version: January 31, 2022.
+
+Zeyuan Allen-Zhu and Yuanzhi Li. Towards understanding ensemble, knowledge distillation and self-distillation
+
+in deep learning. arXiv:2012.09816, 2020.
+
+Afra Amini, Tim Vieira, and Ryan Cotterell. Variational best-of-n alignment. arXiv:2407.06057, 2024.
+
+Philip Amortila, Dylan J Foster, and Akshay Krishnamurthy. Scalable online exploration via coverability. In
+
+Forty-first International Conference on Machine Learning, 2024.
+
+Yuntao Bai, Andy Jones, Kamal Ndousse, Amanda Askell, Anna Chen, Nova DasSarma, Dawn Drain,
+
+Stanislav Fort, Deep Ganguli, Tom Henighan, Nicholas Joseph, Saurav Kadavath, Jackson Kernion, Tom Conerly, Sheer El-Showk, Nelson Elhage, Zac Hatfield-Dodds, Danny Hernandez, Tristan Hume, Scott Johnston, Shauna Kravec, Liane Lovitt, Neel Nanda, Catherine Olsson, Dario Amodei, Tom Brown, Jack Clark, Sam McCandlish, Chris Olah, Ben Mann, and Jared Kaplan. Training a helpful and harmless assistant with reinforcement learning from human feedback. arXiv:2204.05862, 2022a.
+
+Yuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion, Andy Jones, Anna Chen,
+
+Anna Goldie, Azalia Mirhoseini, Cameron McKinnon, et al. Constitutional ai: Harmlessness from ai feedback. arXiv:2212.08073, 2022b.
+
+Francisco Barahona. On the computational complexity of ising spin glass models. Journal of Physics A:
+
+Mathematical and General, 1982.
+
+Matthew James Beal. Variational algorithms for approximate Bayesian inference. University of London,
+
+University College London, 2003.
+
+Emmanuel Bengio, Moksh Jain, Maksym Korablyov, Doina Precup, and Yoshua Bengio. Flow network
+
+based generative models for non-iterative diverse candidate generation. Advances in Neural Information Processing Systems, 2021.
+
+Yoav Benjamini and Yosef Hochberg. Controlling the false discovery rate: a practical and powerful approach
+
+to multiple testing. Journal of the Royal Statistical Society: Series B, 1995.
+
+Adam Block, Dylan J Foster, Akshay Krishnamurthy, Max Simchowitz, and Cyril Zhang. Butterfly effects of
+
+SGD noise: Error amplification in behavior cloning and autoregression. arXiv:2310.11428, 2023.
+
+Avrim Blum, Merrick Furst, Jeffrey Jackson, Michael Kearns, Yishay Mansour, and Steven Rudich. Weakly
+
+learning DNF and characterizing statistical query learning using Fourier analysis. In Symposium on Theory of Computing, 1994.
+
+Enric Boix-Adsera. Towards a theory of model distillation. arXiv preprint arXiv:2403.09053, 2024.
+
+Bradley Brown, Jordan Juravsky, Ryan Ehrlich, Ronald Clark, Quoc V Le, Christopher Ré, and Azalia
+
+Mirhoseini. Large language monkeys: Scaling inference compute with repeated sampling. arXiv:2407.21787, 2024.
+
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind
+
+Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel Ziegler, Jeffrey Wu, Clemens Winter, Chris Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford, Ilya Sutskever, and Dario Amodei. Language models are few-shot learners. In Advances in Neural Information Processing Systems, 2020.
+
+Cristian Buciluˇa, Rich Caruana, and Alexandru Niculescu-Mizil. Model compression. In SIGKDD International
+
+Conference on Knowledge Discovery and Data Mining, 2006.
+
+Zixiang Chen, Yihe Deng, Huizhuo Yuan, Kaixuan Ji, and Quanquan Gu. Self-play fine-tuning converts weak
+
+language models to strong language models. arXiv:2401.01335, 2024.
+
+Paul F Christiano, Jan Leike, Tom Brown, Miljan Martic, Shane Legg, and Dario Amodei. Deep reinforcement
+
+learning from human preferences. Advances in Neural Information Processing Systems, 2017.
+
+Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias
+
+Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, et al. Training verifiers to solve math word problems. arXiv:2110.14168, 2021.
+
+Stephen A Cook. The complexity of theorem-proving procedures. In Symposium on Theory of Computing,
+
+1971.
+
+Thomas M Cover. Elements of information theory. John Wiley & Sons, 1999.
+
+Rudrajit Das and Sujay Sanghavi. Understanding self-distillation in the presence of label noise. In International
+
+Conference on Machine Learning, 2023.
+
+Rudrajit Das, Inderjit S Dhillon, Alessandro Epasto, Adel Javanmard, Jieming Mao, Vahab Mirrokni, Sujay
+
+Sanghavi, and Peilin Zhong. Retraining with predicted hard labels provably increases model accuracy. arXiv:2406.11206, 2024.
+
+Jacob Devlin. Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv:1810.04805, 2018.
+
+Bin Dong, Jikai Hou, Yiping Lu, and Zhihua Zhang. Distillation ≈early stopping? Harvesting dark knowledge
+
+utilizing anisotropic information retrieval for overparameterized neural network. arXiv:1910.01255, 2019.
+
+Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman,
+
+Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. The llama 3 herd of models. arXiv:2407.21783, 2024.
+
+Ronen Eldan, Frederic Koehler, and Ofer Zeitouni. A spectral condition for spectral gap: Fast mixing in
+
+high-temperature Ising models. Probability Theory and Related Fields, 2022.
+
+Amir-massoud Farahmand, Csaba Szepesvári, and Rémi Munos. Error propagation for approximate policy
+
+and value iteration. Advances in Neural Information Processing Systems, 2010.
+
+Vitaly Feldman. A complete characterization of statistical query learning with applications to evolvability.
+
+Journal of Computer and System Sciences, 2012.
+
+Vitaly Feldman. A general characterization of the statistical query complexity. In Conference on Learning
+
+Theory, 2017.
+
+Dylan J Foster and Alexander Rakhlin. Foundations of reinforcement learning and interactive decision making.
+
+Dylan J Foster, Sham M Kakade, Jian Qian, and Alexander Rakhlin. The statistical complexity of interactive
+
+decision making. arXiv:2112.13487, 2021.
+
+Spencer Frei, Difan Zou, Zixiang Chen, and Quanquan Gu. Self-training converts weak learners to strong
+
+learners in mixture models. In International Conference on Artificial Intelligence and Statistics, 2022.
+
+Tommaso Furlanello, Zachary Lipton, Michael Tschannen, Laurent Itti, and Anima Anandkumar. Born again
+
+neural networks. In International Conference on Machine Learning, 2018.
+
+Leo Gao, John Schulman, and Jacob Hilton. Scaling laws for reward model overoptimization. In International
+
+Conference on Machine Learning, 2023.
+
+Zhaolin Gao, Jonathan D Chang, Wenhao Zhan, Owen Oertell, Gokul Swamy, Kianté Brantley, Thorsten
+
+Joachims, J Andrew Bagnell, Jason D Lee, and Wen Sun. REBEL: Reinforcement learning via regressing relative rewards. arXiv:2404.16767, 2024.
+
+Samuel Gershman and Noah Goodman. Amortized inference in probabilistic reasoning. In Annual Meeting
+
+of the Cognitive Science Society, 2014.
+
+Google. Palm 2 technical report. arXiv:2305.10403, 2023.
+
+Akhilesh Gotmare, Nitish Shirish Keskar, Caiming Xiong, and Richard Socher. A closer look at deep learning
+
+heuristics: Learning rate restarts, warmup and distillation. In International Conference on Learning Representations, 2019.
+
+Yves Grandvalet and Yoshua Bengio. Semi-supervised learning by entropy minimization. Advances in Neural
+
+Information Processing Systems, 2004.
+
+Lin Gui, Cristina Gârbacea, and Victor Veitch. BoNBoN alignment for large language models and the
+
+sweetness of best-of-n sampling. arXiv:2406.00832, 2024.
+
+Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt.
+
+Measuring massive multitask language understanding. arXiv:2009.03300, 2020.
+
+Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and
+
+Jacob Steinhardt. Measuring mathematical problem solving with the math dataset. arXiv:2103.03874, 2021.
+
+Geoffrey Hinton, Oriol Vinyals, and Jeff Dean. Distilling the knowledge in a neural network. arXiv:1503.02531,
+
+2015.
+
+Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and
+
+Weizhu Chen. Lora: Low-rank adaptation of large language models. arXiv:2106.09685, 2021.
+
+Edward J Hu, Moksh Jain, Eric Elmoznino, Younesse Kaddar, Guillaume Lajoie, Yoshua Bengio, and Nikolay
+
+Malkin. Amortizing intractable inference in large language models. arXiv:2310.04363, 2023.
+
+Audrey Huang, Wenhao Zhan, Tengyang Xie, Jason D Lee, Wen Sun, Akshay Krishnamurthy, and Dylan J
+
+Foster. Correcting the mythos of KL-regularization: Direct alignment without overparameterization via Chi-squared Preference Optimization. arXiv:2407.13399, 2024.
+
+Jiaxin Huang, Shixiang Shane Gu, Le Hou, Yuexin Wu, Xuezhi Wang, Hongkun Yu, and Jiawei Han. Large
+
+language models can self-improve. arXiv:2210.11610, 2022.
+
+Albert Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego
+
+de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, et al. Mistral 7b. arXiv:2310.06825, 2023.
+
+Nan Jiang, Akshay Krishnamurthy, Alekh Agarwal, John Langford, and Robert E Schapire. Contextual
+
+decision processes with low Bellman rank are PAC-learnable. In International Conference on Machine Learning, 2017.
+
+Chi Jin, Qinghua Liu, and Sobhan Miryoosefi. Bellman Eluder dimension: New rich classes of RL problems,
+
+and sample-efficient algorithms. Advances in Neural Information Processing Systems, 2021.
+
+Richard M Karp. Reducibility among combinatorial problems. Springer, 1972.
+
+Michael Kearns. Efficient noise-tolerant learning from statistical queries. Journal of the ACM, 1998.
+
+Scott Kirkpatrick, C Daniel Gelatt Jr, and Mario P Vecchi. Optimization by simulated annealing. Science,
+
+1983.
+
+Tor Lattimore and Csaba Szepesvári. Bandit algorithms. Cambridge University Press, 2020.
+
+Leonid Anatolevich Levin. Universal sequential search problems. Problemy peredachi informatsii, 1973.
+
+Zhiyuan Li, Hong Liu, Denny Zhou, and Tengyu Ma. Chain of thought empowers transformers to solve
+
+inherently serial problems. arXiv:2402.12875, 2024.
+
+Zhihan Liu, Miao Lu, Shenao Zhang, Boyi Liu, Hongyi Guo, Yingxiang Yang, Jose Blanchet, and Zhaoran
+
+Wang. Provably mitigating overoptimization in RLHF: Your SFT loss is implicitly an adversarial regularizer. arXiv:2405.16436, 2024.
+
+László Lovász and Santosh Vempala. Fast algorithms for logconcave functions: Sampling, rounding, integration
+
+and optimization. In Symposium on Foundations of Computer Science, 2006.
+
+Yi-An Ma, Yuansi Chen, Chi Jin, Nicolas Flammarion, and Michael I Jordan. Sampling can be faster than
+
+optimization. Proceedings of the National Academy of Sciences, 2019.
+
+Eran Malach. Auto-regressive next-token predictors are universal learners. arXiv:2309.06979, 2023.
+
+Clara Meister, Tim Vieira, and Ryan Cotterell. If beam search is the answer, what was the question?
+
+Hossein Mobahi, Mehrdad Farajtabar, and Peter Bartlett. Self-distillation amplifies regularization in hilbert
+
+space. Advances in Neural Information Processing Systems, 2020.
+
+Sidharth Mudgal, Jong Lee, Harish Ganapathy, YaGuang Li, Tao Wang, Yanping Huang, Zhifeng Chen,
+
+Heng-Tze Cheng, Michael Collins, Trevor Strohman, et al. Controlled decoding from language models. arXiv:2310.17022, 2023.
+
+Arkadii Nemirovski, David Borisovich Yudin, and Edgar Ronald Dawson. Problem complexity and method
+
+efficiency in optimization. Wiley, 1983.
+
+OpenAI. GPT-4 technical report. arXiv:2303.08774, 2023.
+
+Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang,
+
+Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe. Training language models to follow instructions with human feedback. Advances in Neural Information Processing Systems, 2022.
+
+Alizée Pace, Jonathan Mallinson, Eric Malmi, Sebastian Krause, and Aliaksei Severyn. West-of-n: Synthetic
+
+preference generation for improved reward modeling. arXiv:2401.12086, 2024.
+
+Jing-Cheng Pang, Pengyuan Wang, Kaiyuan Li, Xiong-Hui Chen, Jiacheng Xu, Zongzhang Zhang, and Yang
+
+Yu. Language model self-improvement by reinforcement learning contemplation. arXiv:2305.14483, 2023.
+
+Divyansh Pareek, Simon S Du, and Sewoong Oh. Understanding the gains from repeated self-distillation.
+
+Hieu Pham, Zihang Dai, Qizhe Xie, and Quoc V Le. Meta pseudo labels. In Conference on Computer Vision
+
+and Pattern Recognition, 2021.
+
+Ori Press, Ravid Shwartz-Ziv, Yann LeCun, and Matthias Bethge. The entropy enigma: Success and failure
+
+of entropy minimization. arXiv:2405.05012, 2024.
+
+Yuxiao Qu, Tianjun Zhang, Naman Garg, and Aviral Kumar. Recursive introspection: Teaching language
+
+model agents how to self-improve. arXiv:2407.18219, 2024.
+
+Rafael Rafailov, Archit Sharma, Eric Mitchell, Christopher D Manning, Stefano Ermon, and Chelsea Finn.
+
+Direct preference optimization: Your language model is secretly a reward model. Advances in Neural Information Processing Systems, 2023.
+
+Maxim Raginsky and Alexander Rakhlin. Information-based complexity, feedback and dynamics in convex
+
+programming. IEEE Transactions on Information Theory, 2011.
+
+Mamshad Nayeem Rizve, Kevin Duarte, Yogesh S Rawat, and Mubarak Shah. In defense of pseudo-labeling:
+
+An uncertainty-aware pseudo-label selection framework for semi-supervised learning. arXiv:2101.06329, 2021.
+
+Daniel Russo and Benjamin Van Roy. Eluder dimension and the sample complexity of optimistic exploration.
+
+In Advances in Neural Information Processing Systems, 2013.
+
+Abulhair Saparov and He He. Language models are greedy reasoners: A systematic formal analysis of
+
+chain-of-thought. In International Conference on Learning Representations, 2023.
+
+Igal Sason and Sergio Verdú. f-divergence inequalities. IEEE Transactions on Information Theory, 2016.
+
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization
+
+algorithms. arXiv:1707.06347, 2017.
+
+Pier Giuseppe Sessa, Robert Dadashi, Léonard Hussenot, Johan Ferret, Nino Vieillard, Alexandre Ramé,
+
+Bobak Shariari, Sarah Perrin, Abe Friesen, Geoffrey Cideron, et al. Bond: Aligning LLMs with Best-of-N distillation. arXiv:2407.14622, 2024.
+
+Max Simchowitz, Kevin Jamieson, and Benjamin Recht. The simulator: Understanding adaptive sampling in
+
+the moderate-confidence regime. In Conference on Learning Theory, 2017.
+
+Mohit Singh and Nisheeth K Vishnoi. Entropy, optimization and counting. In Symposium on Theory of
+
+Computing, 2014.
+
+Charlie Snell, Jaehoon Lee, Kelvin Xu, and Aviral Kumar. Scaling LLM test-time compute optimally can be
+
+more effective than scaling model parameters. arXiv:2408.03314, 2024.
+
+Yuda Song, Gokul Swamy, Aarti Singh, J Andrew Bagnell, and Wen Sun. Understanding preference fine-tuning
+
+through the lens of coverage. arXiv:2406.01462, 2024.
+
+Nisan Stiennon, Long Ouyang, Jeffrey Wu, Daniel Ziegler, Ryan Lowe, Chelsea Voss, Alec Radford, Dario
+
+Amodei, and Paul F Christiano. Learning to summarize with human feedback. Advances in Neural Information Processing Systems, 2020.
+
+Kevin Swersky, Yulia Rubanova, David Dohan, and Kevin Murphy. Amortized bayesian optimization over
+
+discrete spaces. In Conference on Uncertainty in Artificial Intelligence, 2020.
+
+Kunal Talwar. Computational separations between sampling and optimization. Advances in Neural Information
+
+Processing Systems, 32, 2019.
+
+Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay
+
+Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, Dan Bikel, Lukas Blecher, Cristian Canton Ferrer, Moya Chen, Guillem Cucurull, David Esiobu, Jude Fernandes, Jeremy Fu, Wenyin Fu, Brian Fuller, Cynthia Gao, Vedanuj Goswami, Naman Goyal, Anthony Hartshorn, Saghar Hosseini, Rui Hou, Hakan Inan, Marcin Kardas, Viktor Kerkez, Madian Khabsa, Isabel Kloumann, Artem Korenev, Punit Singh Koura, Marie-Anne Lachaux, Thibaut Lavril, Jenya Lee, Diana Liskovich, Yinghai Lu, Yuning Mao, Xavier Martinet, Todor Mihaylov, Pushkar Mishra, Igor Molybog, Yixin Nie, Andrew Poulton, Jeremy Reizenstein, Rashi Rungta, Kalyan Saladi, Alan Schelten, Ruan Silva, Eric Michael Smith, Ranjan Subramanian, Xiaoqing Ellen Tan, Binh Tang, Ross Taylor, Adina Williams, Jian Xiang Kuan, Puxin Xu, Zheng Yan, Iliyan Zarov, Yuchen Zhang, Angela Fan, Melanie Kambadur, Sharan Narang, Aurelien Rodriguez, Robert Stojnic, Sergey Edunov, and Thomas Scialom. Llama 2: Open foundation and fine-tuned chat models. arXiv:2307.09288, 2023.
+
+Joseph F Traub, Grzegorz W Wasilkowski, and Henryk Woźniakowski. Information-based complexity. Academic
+
+Press Professional, Inc., 1988.
+
+S. A. van de Geer. Empirical Processes in M-Estimation. Cambridge University Press, 2000.
+
+Ziyu Wan, Xidong Feng, Muning Wen, Stephen Marcus McAleer, Ying Wen, Weinan Zhang, and Jun Wang.
+
+Alphazero-like tree-search can guide large language model decoding and training. International Conference on Machine Learning, 2024.
+
+Dequan Wang, Evan Shelhamer, Shaoteng Liu, Bruno Olshausen, and Trevor Darrell. Tent: Fully test-time
+
+adaptation by entropy minimization. arXiv:2006.10726, 2020.
+
+Tianlu Wang, Ilia Kulikov, Olga Golovneva, Ping Yu, Weizhe Yuan, Jane Dwivedi-Yu, Richard Yuanzhe
+
+Pang, Maryam Fazel-Zarandi, Jason Weston, and Xian Li. Self-taught evaluators. arXiv:2408.02666, 2024.
+
+Xuezhi Wang and Denny Zhou. Chain-of-thought reasoning without prompting. arXiv:2402.10200, 2024.
+
+Yizhong Wang, Yeganeh Kordi, Swaroop Mishra, Alisa Liu, Noah A Smith, Daniel Khashabi, and Hannaneh
+
+Hajishirzi. Self-instruct: Aligning language models with self-generated instructions. arXiv:2212.10560, 2022.
+
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al.
+
+Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems, 2022.
+
+Wing Hung Wong and Xiaotong Shen. Probability inequalities for likelihood ratios and convergence rates of
+
+sieve mles. The Annals of Statistics, 1995.
+
+Tianhao Wu, Weizhe Yuan, Olga Golovneva, Jing Xu, Yuandong Tian, Jiantao Jiao, Jason Weston, and
+
+Sainbayar Sukhbaatar. Meta-rewarding language models: Self-improving alignment with llm-as-a-meta- judge. arXiv:2407.19594, 2024a.
+
+Yangzhen Wu, Zhiqing Sun, Shanda Li, Sean Welleck, and Yiming Yang. An empirical analysis of compute-
+
+optimal inference for problem-solving with language models. arXiv:2408.00724, 2024b.
+
+Yue Wu, Zhiqing Sun, Huizhuo Yuan, Kaixuan Ji, Yiming Yang, and Quanquan Gu. Self-play preference
+
+optimization for language model alignment. arXiv:2405.00675, 2024c.
+
+Tengyang Xie and Nan Jiang. Q* approximation schemes for batch reinforcement learning: A theoretical
+
+comparison. In Conference on Uncertainty in Artificial Intelligence, 2020.
+
+Tengyang Xie, Dylan J Foster, Yu Bai, Nan Jiang, and Sham M Kakade. The role of coverage in online
+
+reinforcement learning. In International Conference on Learning Representations, 2023.
+
+Tengyang Xie, Dylan J Foster, Akshay Krishnamurthy, Corby Rosset, Ahmed Awadallah, and Alexander
+
+Rakhlin. Exploratory preference optimization: Harnessing implicit Q*-approximation for sample-efficient RLHF. arXiv:2405.21046, 2024.
+
+Wei Xiong, Hanze Dong, Chenlu Ye, Han Zhong, Nan Jiang, and Tong Zhang. Gibbs sampling from human
+
+feedback: A provable KL-constrained framework for RLHF. arXiv:2312.11456, 2023.
+
+Joy Qiping Yang, Salman Salamatian, Ziteng Sun, Ananda Theertha Suresh, and Ahmad Beirami. Asymptotics
+
+of language model alignment. arXiv:2404.01730, 2024.
+
+Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Tom Griffiths, Yuan Cao, and Karthik Narasimhan. Tree
+
+of thoughts: Deliberate problem solving with large language models. Advances in Neural Information Processing Systems, 2024.
+
+Chenlu Ye, Wei Xiong, Yuheng Zhang, Nan Jiang, and Tong Zhang. A theoretical analysis of Nash learning
+
+from human feedback under general KL-regularized preference. arXiv:2402.07314, 2024.
+
+Weizhe Yuan, Richard Yuanzhe Pang, Kyunghyun Cho, Sainbayar Sukhbaatar, Jing Xu, and Jason Weston.
+
+Self-rewarding language models. arXiv:2401.10020, 2024.
+
+Andrea Zanette, Martin J Wainwright, and Emma Brunskill. Provable benefits of actor-critic methods for
+
+offline reinforcement learning. Advances in Neural Information Processing Systems, 2021.
+
+Eric Zelikman, Yuhuai Wu, Jesse Mu, and Noah Goodman. Star: Bootstrapping reasoning with reasoning.
+
+Advances in Neural Information Processing Systems, 2022.
+
+Tong Zhang. From ϵ-entropy to KL-entropy: Analysis of minimum information complexity density estimation.
+
+The Annals of Statistics, 2006.
+
+Stephen Zhao, Rob Brekelmans, Alireza Makhzani, and Roger Baker Grosse. Probabilistic inference in
+
+language models via twisted sequential monte carlo. International Conference on Machine Learning, 2024.
+
+Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin,
+
+Zhuohan Li, Dacheng Li, Eric Xing, et al. Judging LLM-as-a-judge with MT-bench and chatbot arena. Advances in Neural Information Processing Systems, 2024.
+
+Banghua Zhu, Michael Jordan, and Jiantao Jiao. Principled reinforcement learning with human feedback
+
+from pairwise or k-wise comparisons. In International Conference on Machine Learning, 2023.
+
+Part I
+
+
+Additional Discussion and Results
+
+
+A Additional Experimental Results
+In this section we display omitted figures discussed in Section 5.
+
+Model Dataset Weight Decay LoRA Rank
+
+Phi3.5-Mini MATH 0.1 16 Phi3.5-Mini GSM8k 0.5 16 Phi3.5-Mini ProntoQA 0.0 16 Mistral-7B-Instruct-v0.3 MATH 1.0 8
+
+Table 2: Hyperparameters for training-time sharpening experiments with SFT-Sharpening.
+
+Game24: % Lift over Greedy
+
+Game24: Lift over Greedy
+
+140
+
+0.5
+
+Llama (SFT)
+
+130
+
+Log Probability over Greedy
+
+0.0
+
+120
+
+% Lift over Greedy
+
+0.5
+
+110
+
+1.0
+
+100
+
+1.5
+
+90
+
+2.0
+
+80
+
+2.5
+
+70
+
+3.0
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+Figure 4: Effect of inference-time BoN-sharpening on GameOf24 with finetuned llama2-7b-game24-policy-hf model from Wan et al. (2024).
+
+MATH
+
+GSM8K
+
+25
+
+50
+
+25
+
+0
+
+Log Probability over Greedy
+
+Log Probability over Greedy
+
+0
+
+25
+
+25
+
+50
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+50
+
+75
+
+75
+
+100
+
+100
+
+125
+
+125
+
+150
+
+150
+
+175
+
+175
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(a)
+
+(b)
+
+ProntoQA
+
+Bio
+
+40
+
+50
+
+20
+
+Log Probability over Greedy
+
+Log Probability over Greedy
+
+0
+
+0
+
+50
+
+20
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+100
+
+40
+
+60
+
+150
+
+80
+
+200
+
+100
+
+250
+
+120
+
+140
+
+300
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(c)
+
+(d)
+
+Phys
+
+Chem
+
+50
+
+100
+
+Log Probability over Greedy
+
+Log Probability over Greedy
+
+0
+
+0
+
+50
+
+100
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+Phi3 (Mini) Phi3.5 (Mini) Phi3 (Small) Phi3 (Medium) Mistral-7B Llama3.2-3B GPT-3.5
+
+100
+
+200
+
+150
+
+300
+
+200
+
+400
+
+250
+
+300
+
+500
+
+0 10 20 30 40 50 N
+
+0 10 20 30 40 50 N
+
+(e)
+
+(f)
+
+Figure 5: Effect of N on average sequence level log-probabilities for inference-time BoN-sharpening on various model-task pairs, compared to greedy decoding baseline. As predicted by theory, the likelihood of sequences sampled with BoN-sharpening increases with N.
+
+Phi3.5 (Mini) on MATH
+
+Phi3.5 (Mini) on GSM8K
+
+140
+
+350
+
+Correct Incorrect
+
+Correct Incorrect
+
+120
+
+300
+
+100
+
+250
+
+80
+
+200
+
+Count
+
+Count
+
+60
+
+150
+
+40
+
+100
+
+20
+
+50
+
+0
+
+0
+
+400 300 200 100 0 Log Probability
+
+350 300 250 200 150 100 50 0 Log Probability
+
+(a)
+
+(b)
+
+Phi3.5 (Mini) on ProntoQA
+
+Mistral-7B on MATH
+
+70
+
+90
+
+Correct Incorrect
+
+Correct Incorrect
+
+80
+
+60
+
+70
+
+50
+
+60
+
+40
+
+50
+
+Count
+
+Count
+
+40
+
+30
+
+30
+
+20
+
+20
+
+10
+
+10
+
+0
+
+0
+
+500 400 300 200 100 0 Log Probability
+
+500 400 300 200 100 0 Log Probability
+
+(c)
+
+(d)
+
+Figure 6: Distribution of sequence-level log-probabilities for responses sampled with temperature 1, conditioned on whether or not the response is correct. We consider four model-dataset pairs: (a) (Phi3.5-Mini, MATH); (b) (Phi3.5-Mini, GSM8k); (c) (Phi3.5-Mini, ProntoQA); (d) (Mistral-7B-Instruct-v0.3, MATH). In all cases
+
+except perhaps (c), conditioning on correctness of the response leads to a noticeable increase in log-probabilities, further justifying the use of sequence-level log-probabilities as a self-reward for self-improvement.
+
+Phi3.5 (Mini) on MATH
+
+Phi3.5 (Mini) on MATH
+
+60
+
+70
+
+60
+
+Log Probability over Greedy
+
+50
+
+Accuracy over Greedy (%)
+
+50
+
+40
+
+40
+
+30
+
+SFT Inference
+
+30
+
+20
+
+20
+
+10
+
+10
+
+SFT Inference
+
+0
+
+0
+
+10
+
+10
+
+0K 5K 10K 15K 20K 25K 30K Checkpoint
+
+0K 5K 10K 15K 20K 25K 30K Checkpoint
+
+(a)
+
+(b)
+
+Phi3.5 (Mini) on GSM8K
+
+Phi3.5 (Mini) on GSM8K
+
+6
+
+60
+
+Log Probability over Greedy
+
+Accuracy over Greedy (%)
+
+50
+
+4
+
+40
+
+2
+
+30
+
+SFT Inference BoN
+
+20
+
+0
+
+10
+
+2
+
+SFT Inference BoN
+
+0
+
+4
+
+10
+
+0K 5K 10K 15K 20K 25K Checkpoint
+
+0K 5K 10K 15K 20K 25K Checkpoint
+
+(c)
+
+(d)
+
+Phi3.5 (Mini) on ProntoQA
+
+Phi3.5 (Mini) on ProntoQA
+
+8
+
+120
+
+SFT Inference
+
+Log Probability over Greedy
+
+6
+
+100
+
+Accuracy over Greedy (%)
+
+80
+
+4
+
+60
+
+SFT Inference
+
+2
+
+40
+
+0
+
+20
+
+2
+
+0
+
+4
+
+20
+
+5K 10K 15K 20K 25K Checkpoint
+
+5K 10K 15K 20K 25K Checkpoint
+
+(e)
+
+(f)
+
+Figure 7: Evolution of Phi3.5-Mini under SFT-Sharpening (N = 50) on different datasets, as measured by (i) % lift over Greedy in accuracy; and (ii) difference in average sequence-level log-probability of generated
+
+responses under the reference model. The fine-tuned model learns to produce generations with high probability under the reference model, and consequently enjoys an increase in accuracy compared to the base model. However, the model does not fully reach the performance of inference-time BoN sharpening.
+
+Mistral-7B on MATH
+
+Mistral-7B on MATH
+
+80
+
+200
+
+60
+
+Log Probability over Greedy
+
+Accuracy over Greedy (%)
+
+100
+
+40
+
+0
+
+20
+
+0
+
+100
+
+20
+
+200
+
+40
+
+SFT Inference
+
+SFT Inference
+
+300
+
+60
+
+80
+
+400
+
+0K 20K 40K 60K 80K 100K 120K Checkpoint
+
+0K 20K 40K 60K 80K 100K 120K Checkpoint
+
+(a)
+
+(b)
+
+Figure 8: Evolution of Mistral-7B-Instruct-v0.3 under SFT-Sharpening (N = 50) on MATH, as measured by (i) % lift over Greedy in accuracy; and (ii) difference in average sequence-level log-probability of generated responses under the reference model.
+
+% Lift in Accuracy over Greedy
+
+Lift in Log Probability over Greedy
+
+25
+
+60
+
+Log Probability over Greedy
+
+50
+
+20
+
+% Lift over Greedy
+
+40
+
+15
+
+30
+
+10
+
+20
+
+N=10 N=25 N=50
+
+N=10 N=25 N=50
+
+5
+
+10
+
+0
+
+0
+
+0K 5K 10K 15K 20K 25K 30K Checkpoint
+
+0K 5K 10K 15K 20K 25K 30K Checkpoint
+
+(a)
+
+(b)
+
+Figure 9: Effect of N on SFT-Sharpening for Phi3.5-Mini on MATH. We report (a) % lift in accuracy over greedy; and (b) lift in sequence-level log-likelihood (averaged over the dataset). In both cases, we see that increasing N leads to greater lift, in accordance with theory.
+
+B Detailed Discussion of Related Work
+In this section, we discuss related work in greater detail, including relevant works not already covered.
+
+Self-improvement and self-training. Our work is most directly related to a growing body of empirical research that studies self-improvement/self-training for language models in a supervision-free setting in which there is no external feedback (Huang et al., 2022; Wang et al., 2022; Bai et al., 2022b; Pang et al., 2023), and takes a first step toward providing a theoretical understanding for these methods. There is also a closely related body of research on “LLM-as-a-Judge” techniques, which investigates approaches to designing self-reward functions rself, often based on specific prompting techniques (Zheng et al., 2024; Yuan et al., 2024; Wu et al., 2024a; Wang et al., 2024).
+
+A somewhat complementary line of research develops algorithms based on self-training and self-play (Zelikman et al., 2022; Chen et al., 2024; Wu et al., 2024c; Qu et al., 2024), but leverages various forms of external feedback (e.g., positive examples for SFT or explicit reward signal). These methods typically outperform feedback-free self-improvement methods (Zelikman et al., 2022). However, in many scenarios, obtaining external feedback can be costly or laborious; it may require collecting high-quality labeled/annotated data, rewriting examples in a formal language, etc. Thus, these two approaches are not directly comparable.
+
+We also mention that the self-improvement problem we study is related to a classical line of research on self-distillation (Buciluˇa et al., 2006; Hinton et al., 2015; Devlin, 2018; Pham et al., 2021; Rizve et al., 2021),
+
+but this specific form of self-training has received limited investigation in the context of language modeling.
+
+Entropy minimization. Sharpening is also closely related to a line of work on entropy minimization or minimum entropy regularization, where we seek models that have high predictive accuracy and low entropy/uncertainty. This line of work originated in the semi-supervised learning literature (Grandvalet and Bengio, 2004) and was popularized as a test-time adaptation method in computer vision (c.f., Wang et al., 2020; Press et al., 2024). Maximum-likelihood sharpening, especially via RL, is closely related in that Eq. (3) with β →0 and rself = log πbase maximizes Eπ[log πbase(y | x)] rather than −H(π) = Eπ[log π(y | x)]. (It is important that the latter is optimized continuously with πbase as an initialization, but when this is
+
+done it can be seen to sharpen πbase, at least heuristically.) Prior work in this direction is largely empirical, focused on computer vision domains with small output spaces Y, and hence studies statistical benefits of entropy minimization. In contrast, we initiate a theoretical study of sharpening, are primarily motivated by applications to language modeling with exponentially large output spaces, and view sharpening primarily as a computational phenomena. However, it would be interesting to understand whether statistical benefits observed in computer vision translate to the language modeling setting.
+
+Alignment and RLHF. The specific algorithms for self-improvement/sharpening we study can be viewed as special cases of standard alignment algorithms, including classical RLHF methods (Christiano et al., 2017; Bai et al., 2022a; Ouyang et al., 2022), direct alignment (Rafailov et al., 2023), and (inference-time or training-time) best-of-N methods (Amini et al., 2024; Sessa et al., 2024; Gui et al., 2024; Pace et al., 2024). However, the maximum likelihood sharpening objective (2) used for our theoretical results has been relatively unexplored within the alignment literature.
+
+Inference-time decoding. Many inference-time decoding strategies such as greedy/low-temperature decoding, beam-search (Meister et al., 2020), and chain-of-thought decoding (Wang and Zhou, 2024) can be viewed as instances of inference-time sharpening for specific choices of the self-reward function rself. More sophisticated inference-time search strategies such tree search and MCTS (Yao et al., 2024; Wan et al., 2024; Mudgal et al., 2023; Zhao et al., 2024) are also related, though this line of work frequently makes use of external reward signals or verification, which is somewhat complementary to our work.
+
+Theoretical guarantees for self-training. On the theoretical side, current understanding of self-training is limited. One line of work, focusing on the self-distillation objective (Hinton et al., 2015) for binary classification and regression, aims to provide convergence guarantees for self-training in stylized setups such
+
+as linear models (Mobahi et al., 2020; Das and Sanghavi, 2023; Das et al., 2024; Pareek et al., 2024), with Allen-Zhu and Li (2020) giving guarantees for feedforward neural networks. Perhaps most closely related to our work is Frei et al. (2022), who show that self-training on a model’s pseudo-labels can amplify the margin for linear logistic regression. However, to the best of our knowledge, our work is the first to study self-training in a general framework that subsumes language modeling.
+
+Our results for RLHF-Sharpening are related to a body of work that provides sample complexity guarantees for alignment methods (Zhu et al., 2023; Xiong et al., 2023; Ye et al., 2024; Huang et al., 2024; Liu et al., 2024; Song et al., 2024; Xie et al., 2024), but our results leverage the structure of the maximum-likelihood sharpening self-reward function rself(y | x) = log πbase(y | x), and provide guarantees for the sharpening objective in Definition 3.1 instead of the usual notion of reward suboptimality used in reinforcement learning theory.
+
+Lastly, we mention that our results—particularly our amortization perspective on self-improvement—are related to work that studies representational advantages afforded by additional inference time (Malach, 2023; Li et al., 2024). These work focus on truly sequential tasks, while our work focuses on the complementary question of amortizing parallel computation. Thus the representational implications are quite different.
+
+Optimization versus sampling. The maximum-likelihood sharpening objective we introduce in Section 3 connects the study of self-improvement to a large body of research in theoretical computer science on computational tradeoffs (e.g., separations and equivalences) between optimization and sampling (Barahona, 1982; Kirkpatrick et al., 1983; Lovász and Vempala, 2006; Singh and Vishnoi, 2014; Ma et al., 2019; Talwar, 2019; Eldan et al., 2022). On the one hand, this line of research highlights that there exist natural classes of distributions for which sampling is tractable, yet maximum likelihood optimization is intractable, and vice-versa. On the other hand, various works in this line of research also demonstrate computational reductions between optimization and sampling, whereby optimization can be reduced to sampling and vice-versa.
+
+Our setting indeed includes natural model classes where one should not expect there to be a computational reduction from optimization (arg maxy∈Y πbase(y | x)) to sampling (y ∼πbase(· | x)), and hence inference-time sharpening is computationally intractable (Proposition E.1). Of course, coverage assumptions eliminate this intractability. For training-time sharpening (where the goal is to amortize across prompts by training a sharpened model, as formulated in Section 3) the obstacle in natural, concrete model classes is not just computational but in fact representational (Proposition E.2). Regarding the latter point, we note that while amortized Bayesian inference has received extensive investigation empirically (Beal, 2003; Gershman and Goodman, 2014; Swersky et al., 2020; Bengio et al., 2021; Hu et al., 2023), we are unaware of theoretical guarantees outside of this work.
+
+C Guarantees for Inference-Time Sharpening
+In this section, we give theoretical guarantees for the inference-time best-of-N sampling algorithm for sharpening described in Section 3.1, under the maximum-likelihood sharpening self-reward function
+
+rself(y | x; πbase) = log πbase(y | x).
+
+Recall that given a prompt x ∈X, the inference-time best-of-N sampling algorithm draws N responses y1, . . . , yn ∼πbase(· | x), then return the response by = arg maxyi log πbase(yi | x). We show that this algorithm returns an approximate maximizer for the maximum-likelihood sharpening objective whenever the base policy πbase has sufficient coverage. For a parameter γ ∈[0, 1) we define
+
+
+
+
+
+y⋆
+
+γ(x) :=
+
+y | πbase(y | x) ≥(1 −γ) · max
+
+y∈Y πbase(y | x)
+
+as the set of (1 −γ)-approximate maximizers for log πbase(y | x) (see Appendix F.1 for background on y⋆
+
+γ(x)).
+
+Proposition C.1. Let a prompt x ∈X be given. For any ρ ∈(0, 1) and γ ∈[0, 1), as long as
+
+N ≥ log(ρ−1) πbase(y⋆γ(x) | x),
+
+inference-time best-of-N sampling produces a response by ∈y⋆
+
+γ(x) with probability at least 1 −ρ.
+
+Proof of Proposition C.1. Fix a prompt x ∈X, failure probability ρ ∈(0, 1), and parameter γ ∈(0, 1). By definition of the set y⋆
+
+γ(x), by ∈y⋆
+
+γ(x) if and only if there exists i ∈[N] such that yi ∈y⋆
+
+γ(x). The complement of this event, i.e., that yi /∈y⋆
+
+γ(x) for all i ∈[N], has probability
+
+N.
+
+P
+
+yi /∈y⋆
+
+1 −πbase(y⋆ γ(x) | x)
+
+ 
+
+
+
+ 
+
+γ(x), ∀i ∈[N]
+
+=
+
+Rearranging the right-hand side, we have
+
+
+
+ 1 1 −πbase(y⋆γ | x)
+
+
+
+N = exp
+
+1 −πbase(y⋆ γ | x)
+
+−N · πbase(y⋆
+
+ 
+
+ 
+
+
+
+−N log
+
+≤exp
+
+γ | x)
+
+,
+
+
+
+1 1−πbase(y⋆γ|x) 
+
+since log(x) ≥1 −1
+
+≥πbase(y⋆
+
+x for x > 0, which implies that log
+
+γ | x). Thus, as long as
+
+N ≥ log(ρ−1) πbase(y⋆γ|x), we have
+
+P
+
+≤exp(−log(ρ−1)) = ρ.
+
+yi /∈y⋆
+
+−N · πbase(y⋆
+
+ 
+
+
+
+ 
+
+
+
+γ(x), ∀i ∈[N]
+
+≤exp
+
+γ | x)
+
+We conclude that with probability at least 1 −ρ, there exists i ∈[N] such that yi ∈y⋆
+
+γ(x), and by ∈y⋆
+
+γ(x) as a result.
+
+D Guarantees for SFT-Sharpening with Adaptive Sampling
+SFT-Sharpening is a simple and natural self-training scheme, and converges to a sharpened policy as n, N →∞. However, using a fixed response sample size N may be wasteful for prompts where the model is confident. To this end, in this section we introduce and analyze, a variant of SFT-Sharpening based on adaptive sampling, which adjusts the number of sampled responses adaptively.
+
+Algorithm. We present the adaptive SFT-Sharpening algorithm only for the special case of the maximum likelihood sharpening self-reward. Let a stopping parameter µ > 0 be given. For xi ∈X, and yi,1, yi,2 . . . ∼ πbase(· | xi), define a stopping time (e.g., Benjamini and Hochberg (1995)) via:
+
+
+
+
+
+k : 1 max1≤j≤k πbase(yi,j | xi) ≤k
+
+. (10)
+
+Nµ(xi) := inf
+
+µ
+
+The adaptive SFT-Sharpening algorithm computes adaptively sampled responses yAdaBoN
+
+i via
+
+yAdaBoN
+
+
+
+i ∼arg max
+
+log πbase(yi,j | xi) | yi,1, . . . , yi,Nµ(xi)
+
+,
+
+then trains the sharpened model through SFT:
+
+n X
+
+bπAdaBoN = arg max
+
+log π(yAdaBoN
+
+i | xi).
+
+π∈Π
+
+i=1
+
+Critically, by using scheme in Eq. (10), this algorithm can stop sampling responses for the prompt xi if it becomes clear that the confidence is large.
+
+Theoretical guarantee. We now show that adaptive SFT-Sharpening enjoys provable benefits over its non-adaptive counterpart through the dependence on the accuracy parameter ϵ > 0.
+
+Given x ∈X, and y1, y2 . . . ∼πbase(x), let Nµ(x) := inf{k : 1 max1≤i≤k πbase(yi|x) ≤k/µ}, and define a random
+
+variable yAdaBoN(x) ∼arg max
+
+. Let πAdaBoN
+
+
+
+µ (x) denote the distribution over yAdaBoN(x). We make the following realizability assumption.
+
+log πbase(yi | x) | y1, . . . , yNµ ∼πbase(x)
+
+Assumption D.1. The model class Π satisfies πAdaBoN
+
+µ ∈Π.
+
+Compared to SFT-Sharpening, we require a somewhat stronger coverage coefficient given by
+
+ 1 maxy∈Y πbase(y | x)
+
+
+
+Ccov = Ex∼µ
+
+.
+
+This definition coincides with Eq. (6) when the arg-max response is unique, but is larger in general.
+
+Our main theoretical guarantee for adaptive SFT-Sharpening is as follows.
+
+Theorem D.1. Let δ, ρ ∈(0, 1) be given. Set µ = ln(2δ−1), and assume Assumption D.1 holds. Then with probability at least 1 −ρ, the adaptive SFT-Sharpening algorithm has
+
+Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≲log(|Π|ρ−1)
+
+δn ,
+
+and has sample complexity E[m] = n · Ccov log(δ−1). Taking n ≳log(|Π|ρ−1)
+
+δϵ ensures that with probability at least 1 −ρ, Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≤ϵ, and gives total sample complexity
+
+Ccov log(|Π|ρ−1) log(δ−1)
+
+
+
+E[m] = O
+
+.
+
+δϵ
+
+Compared to the result for SFT-Sharpening in Theorem 4.1, this shows that adaptive SFT-Sharpening achieves sample complexity scaling with 1
+
+ϵ instead of 1 ϵ2 . We believe the dependence on Ccov for this algorithm is tight, as the adaptive stopping rule used in the algorithm can be overly conservative when |y⋆(x)| is large.
+
+A matching lower bound. We now prove a complementary lower bound, which shows that the ϵ- dependence in Theorem D.1 is tight. To do so, we consider the following adaptive variant of the sample-and- evaluate framework.
+
+Definition D.1 (Adaptive sample-and-evaluate framework). In the Adaptive Sample-and-Evaluate framework, the learner is allowed to sample n prompts x ∼µ, and sample an arbitrary, adaptively chosen number of samples y1, y2, · · · ∼πbase(· | x) before sampling a new prompt x′ ∼µ. In this framework we define sample complexity m as the total number of pairs (x, y) sampled by the algorithm, which is a random variable.
+
+Our main lower bound is as follows.
+
+Theorem D.2 (Lower bound for sharpening under adaptive sampling). Fix an integer d ≥1 and parameters ϵ ∈(0, 1) and C ≥1. There exists a class of models Π such that (i) log |Π| ≂d(1 + log(Cϵ−1)), (ii) supπ∈Π Ccov(π) ≲C, and (iii) yπ(x) is a singleton for all π ∈Π, for which any sharpening algorithm bπ in the adaptive sample-and-evaluate framework that achieves E[Px∼µ[bπ(yπbase(x) | x) > 1/2]] ≥1 −ϵ for all πbase ∈Π must collect a total number of samples m = n · N at least
+
+E[m] ≳ C log |Π| ϵ · (1 + log(Cϵ−1)).
+
+Theorem D.2 is a special case of a more general theorem, Theorem 3.1′, which is stated and proven in Appendix H.
+
+E Computational and Representational Challenges in Sharpening
+In this section, we make several basic observations about the inherent computational and representational challenges of maximum-likelihood sharpening. First, in Appendix E.1, we focus on computational challenges, and show that computing a sharpened response for a given prompt x can be computationally intractable in general, even when sampling y ∼πbase(· | x) can be performed efficiently. Then, in Appendix E.2, we shift our focus to representational challenges, and show that even if πbase is an autoregressive model, the “sharpened”
+
+version of πbase may not be representable as an autoregressive model with the same architecture. These results motivate the statistical assumptions (coverage and realizability) made in our analysis of SFT-Sharpening and RLHF-Sharpening in Section 4.
+
+To make the results in this section precise, we work in perhaps the simplest special case of autoregressive language modelling, where the model class consists of multi-layer linear softmax models. Formally, let X be the space of prompts, and let Y := VH be the space of responses, where V is the vocabulary space and H is the horizon. For a collection of fixed/known d-dimensional feature mappings ϕh : X × Vh →Rd and a norm parameter B, we define the model class Πϕ,B,H as the set of models
+
+H Y
+
+πθh(yh | x, y1:h−1) (11)
+
+πθ(y1:H | x) =
+
+h=1
+
+where
+
+πθ(yh | x, y1:h−1) ∝exp(⟨ϕ(x, y1:h), θh⟩)
+
+and θ = (θ1, . . . , θH) ∈(Rd)H is any tuple with ∥θh∥2 ≤B for all h ∈[H].
+
+E.1 Computational Challenges
+Given query access to ϕ, for any given parameter vector θ and prompt x, sampling from a linear softmax model πθ (Eq. (11)) is computationally tractable, since it only requires time poly(H, |V|, d). Similarly, evaluating πθ(y1:H | x) for given prompt x and response y1:H is computationally tractable. However, the following proposition shows that computing the sharpened response arg maxy1:H∈VH πθ(y1:H | x) for a given parameter θ and response x is NP-hard. Hence, even inference-time sharpening is computationally intractable in the worst case.
+
+Proposition E.1. Set X = {⊥} and V = {−1, 1}. Set d = d(H) := H + H2 + H3. Identifying [d] with [H] ⊔[H]2 ⊔[H]3, we define ϕh : X × Vh →Rd by ϕh(⊥, y1:h)i = yi and ϕh(⊥, y1:h)(i,j) = yiyj and
+
+ϕh(⊥, y1:h)(i,j,k) = yiyjyk. There is a function B(H) ≤poly(H) such that the following problem is NP-hard: given θ = (θ1, . . . , θH) with maxh∈[H]∥θh∥2 ≤B(H), compute any element of arg maxy1:H∈VH πθ(y1:H | x).
+
+Note that our results in Section 4 and Appendix C bypass this hardness through the assumption that the coverage parameter Ccov is bounded.
+
+Proof of Proposition E.1. Fix H and recall that d(H) = H + H2 + H3. We define three collection of basis vectors: {eh}h∈[H] cover the first H coordinates,
+
+h,h′∈[H]2 cover the next H2 coordinates,
+
+
+
+e(h,h′)
+
+h,h′,h′′∈[H]3 cover the last H3 coordinates. Suppose we define θ1, . . . , θH−2 = 0, so that πθ(yh|x, y1:h−1) = 1/2 for all 1 ≤h ≤H −2. Define θH−1 = P
+
+
+
+and
+
+e(h,h′,h′′)
+
+1≤i,j≤H−2 Jije(i,j,H−1) for a matrix J ∈R(H−2)×(H−2) to be specified later, and define θH = B
+
+2 (e(H−1,H) + eH). Then 2H−2 · πθ(y1:H | ⊥) ≤1/2 for any y1:H with yH−1 = −1 or yH = −1, since this implies that πθH(yH | ⊥, y1:H−1) ≤1/2. Meanwhile, for any y1:H with yH−1 = yH = 1, we have
+
+P
+
+
+
+2H−2 · πθ(y1:H | ⊥) = exp
+
+i,j≤H−2 Jijyiyj
+
+ · exp(B) exp(B) + exp(−B).
+
+P
+
+
+
+
+
+−P
+
+exp
+
+i,j≤H−2 Jijyiyj
+
++ exp
+
+i,j≤H−2 Jijyiyj
+
+Let G be any graph on vertex set [H −2] and let J = −A(G) where A(G) is the adjacency matrix of G. Then among y1:H with yH−1 = yH = 1, 2H−2 · πθ(y1:H | ⊥) is maximized when y1:H−2 corresponds to a max-cut in G. If G has an odd number of edges, then some max-cut removes strictly more than half of the edges, and for the corresponding sequence y1:H we have 2H−2·πθ(y1:H | ⊥) ≥(1/2+Ω(1))·(1−exp(−Ω(B))), which is greater than 1/2 when we take B := H and H is sufficiently large. Thus, computing arg maxy1:H∈VH πθ(y1:H | ⊥) yields a max-cut of G. It is well-known that computing a max-cut in a graph is NP-hard, and the assumption that G has an odd number of edges is without loss of generality.
+
+E.2 Representational Challenges
+To give provable guarantees for our sharpening algorithms, we required certain realizability assumptions, which in particular posited that the model class actually contains a “sharpened” version of πbase (Assumptions 4.1 and 4.3). In the simple example of a single-layer linear softmax model classes (corresponding to H = 1 in the above definition), Assumption 4.3 is in fact satisfied, and the sharpened model can be obtained by increasing the temperature of πbase. However, multi-layer linear softmax models with H ≫1 are more realistic. The following proposition shows that as soon as H ≥2, multi-layer linear softmax model classes may not be closed under sharpening. This illustrates a potential drawback of training-time sharpening compared to inference-time sharpening, which requires no realizability assumptions. It also provides a simple example where greedy decoding does not yield a sequence-level arg-max response (since increasing temperature in a multi-layer softmax model class exactly converges to the greedy decoding).
+
+Proposition E.2. Let X = {⊥}, V = [n], and H = d = 2. For any n sufficiently large, there is a multi-layer linear softmax policy class Πϕ,B,H and a policy πbase ∈Πϕ,B,H such that y⋆
+
+1:H := arg maxy1:H∈VH πθ(y1:H | ⊥) is unique, but for all B′ > B and π ∈Πϕ,B′,H, it holds that π(y⋆
+
+1:H | ⊥) ≤1/2.
+
+Proof of Proposition E.2. Throughout, we omit the dependence on the prompt ⊥for notational clarity. Since H = 2, the model class consists of models πθ of the form
+
+πθ(a) = πθ1(y1)πθ2(y2 | y1) = exp(⟨ϕ1(y1), θ1⟩)
+
+exp(⟨ϕ2(y1:2), θ2⟩)
+
+Zθ2(y1) (12)
+
+Zθ1
+
+for Zθ1 := P
+
+y1∈V exp(⟨ϕ1(y1), θ1⟩) and Zθ2(y1) := P
+
+y2∈V exp(⟨ϕ2(y1:2), θ2⟩).
+
+Define ϕ1 by:
+
+  
+
+e1 if i = 1 e1 if i = 2 e2 if i ≥3
+
+ϕ1(i) =
+
+.
+
+ 
+
+Define ϕ2 by:
+
+  
+
+e1 if i = 2, j = 1 e2 if i = 2, j̸ = 1 0 if i̸ = 2
+
+ϕ2(i, j) =
+
+.
+
+ 
+
+Define πbase := πθ⋆where θ⋆
+
+1 := θ⋆ 2 := B · e1 for a parameter B ≥log(n). Then πbase(1) = πbase(2) and πbase(i) ≤e−Bπbase(2) for all i ∈{3, . . . , n}. Moreover, πbase(· | i) = Unif([n]) for all i̸ = 2, and πbase(j | 2) ≤e−Bπbase(1 | 2) for all j̸ = 1. Thus,
+
+πbase(2, 1) = πbase(2)πbase(1 | 2) ≥ 1 2 + (n −2)e−B · 1 1 + (n −1)e−B ≥Ω(1)
+
+whereas πbase(i, j) = O(1/n) for all (i, j)̸ = (2, 1). Thus, (2, 1) is the sequence-level argmax for sufficiently large n. However, for any πθ of the form described in Eq. (12), we have
+
+πθ(2, 1) ≤πθ(2) ≤ πθ(2) πθ(1) + πθ(2) = 1
+
+2
+
+since ϕ(1) = ϕ(2). This means that there is no B′ for which Πϕ,B′,H contains an (ϵ, δ)-sharpened policy for πbase for any δ > 1/2.
+
+Part II
+Proofs
+
+F Preliminaries
+
+
+F.1 Guarantees for Approximate Maximizers
+Recall that the theoretical guarantees for sharpening algorithms in Section 4 provide convergence to the set y⋆(x) := arg maxy∈Y πbase(y | x) of (potentially non-unique) maximizers for the maximum-likelihood sharpening self-reward function log πbase(y | x). These guarantees require that the base model πbase places sufficient provability mass on y⋆(x), which may not always be realistic. To address this, throughout this appendix we state and prove more general versions of our theoretical results that allow for approximate maximizers, and consequently enjoy weaker coverage assumptions
+
+For a parameter γ ∈[0, 1) we define
+
+
+
+
+
+y⋆
+
+γ(x) :=
+
+y | πbase(y | x) ≥(1 −γ) · max
+
+y∈Y πbase(y | x)
+
+as the set of (1 −γ)-approximate maximizers for log πbase(y | x). We quantify the quality of a sharpened model as follows.
+
+Definition F.1 (Sharpened model). We say that a model bπ is (ϵ, δ, γ)-sharpened relative to πbase if
+
+Px∼µ
+
+y⋆
+
+
+
+ 
+
+
+
+
+
+γ(x) | x
+
+≥1 −δ
+
+≥1 −ϵ.
+
+bπ
+
+That is, an (ϵ, δ, γ)-sharpened policy places at least 1 −δ mass on (1 −γ)-approximate arg-max responses on all but an ϵ-fraction of prompts under µ.
+
+Lastly, we will make use of the following generalized coverage coefficient
+
+ 1 πbase(y⋆γ(x) | x)
+
+
+
+Ccov,γ = Ex∼µ
+
+,
+
+which has Ccov,γ ≤Ccov.
+
+F.2 Technical Tools
+For a pair of probability measures P and Q with a common dominating measure ω, Hellinger distance is defined via
+
+!2
+
+Z r
+
+dP dω −
+
+dQ
+
+r
+
+H(P, Q) =
+
+D2
+
+dω.
+
+dω
+
+Lemma F.1 (MLE for conditional density estimation (e.g., Wong and Shen (1995); van de Geer (2000); Zhang (2006))). Consider a conditional density π⋆: X →∆(Y). Let D = {(xi, yi)}n
+
+i=1 be a dataset in which (xi, yi) are drawn i.i.d. as xi ∼µ ∈∆(X) and yi ∼π⋆(· | x). Suppose we have a finite function class
+
+Π ⊂(X →∆(Y)) such that π⋆∈Π. Define the maximum likelihood estimator
+
+X
+
+bπ := arg max
+
+log π(y | x).
+
+π∈Π
+
+(x,y)∈D
+
+Then with probability at least 1 −ρ,
+
+≤2 log(|Π|ρ−1)
+
+Ex∼µ
+
+D2
+
+H(bπ(· | x), π⋆(· | x))
+
+
+
+
+
+n .
+
+Lemma F.2 (Elliptic potential lemma). Let λ, K > 0, and let A1, . . . , AT ∈Rd×d be positive semi-definite matrices with Tr(At) ≤K for all t ∈[T]. Fix Γ0 = λId and Γt = λId + Pt
+
+i=1 Ai for t ∈[T]. Then
+
+T X
+
+t−1At) ≤dK log (T +1)K
+
+Tr(Γ−1
+
+λ λ log(1 + K/λ).
+
+t=1
+
+Proof of Lemma F.2. Fix t ∈[T]. Since Tr(At) ≤1, there is some pt ∈∆(Rd) such that At = Ea∼pt[aa⊤] and P[∥a∥2 ≤1] = 1. Now observe that
+
+log det(Γt) = log det(Γt−1 + At)
+
+= log det(Γt−1) + log det(Id + Γ−1/2
+
+t−1 AtΓ−1/2
+
+t−1 )
+
+
+
+h
+
+i
+
+Id + Γ−1/2
+
+t−1 aa⊤Γ−1/2
+
+Ea∼pt
+
+= log det(Γt−1) + log det
+
+t−1
+
+≥log det(Γt−1) + Ea∼pt log det(Id + Γ−1/2
+
+t−1 aa⊤Γ−1/2
+
+t−1 )
+
+= log det(Γt−1) + Ea∼pt log(1 + a⊤Γ−1
+
+t−1a).
+
+Now a⊤Γ−1
+
+t−1a ≤1/λ with probability 1, where λ = λmin(Γ0). We know that λx log(1 + 1/λ) ≤log(1 + x) for all x ∈[0, 1/λ]. Thus,
+
+log det(Γt) ≥log det(Γt−1) + λ log(1 + 1/λ)Ea∼pta⊤Γ−1
+
+t−1a.
+
+Summing over t ∈[T], we get
+
+T X
+
+Tr(Γ−1
+
+log det(ΓT ) ≥log det(Γ0) + λ log(1 + 1/λ)
+
+t−1At).
+
+t=1
+
+Finally note that λmax(ΓT ) ≤T + 1 so log det(ΓT ) ≤d log T, whereas log det(Γ0) ≥d log λ. Thus,
+
+T X
+
+t−1At) ≤ d log T +1
+
+Tr(Γ−1
+
+λ λ log(1 + 1/λ)
+
+t=1
+
+as claimed.
+
+Lemma F.3 (Freedman’s inequality, e.g. Agarwal et al. (2014)). Let (Zt)T
+
+t=1 be a martingale difference sequence adapted to filtration (Ft)T −1
+
+t=0 . Suppose that |Zt| ≤R holds almost surely for all t. For any δ ∈(0, 1) and η ∈(0, 1/R), it holds with probability at least 1 −δ that
+
+T X
+
+T X
+
+t |Ft−1] + log(1/δ)
+
+E[Z2
+
+Zt ≤η
+
+η .
+
+t=1
+
+t=1
+
+t=1 be a sequence of random variables adapted to filtration (Ft)T −1
+
+Corollary F.1. Let (Zt)T
+
+t=0 . Suppose that Zt ∈[0, R] holds almost surely for all t. For any δ ∈(0, 1), it holds with probability at least 1 −δ that
+
+T X
+
+T X
+
+E[Zt|Ft−1] ≤2
+
+Zt + 4R log(1/δ).
+
+t=1
+
+t=1
+
+Proof of Corollary F.1. Observe that for any t ∈[T],
+
+E[(Zt −E[Zt | Ft−1])2 | Ft−1] ≤E[Z2
+
+t | Ft−1]
+
+≤R · E[Zt | Ft−1].
+
+Applying Lemma F.3 to the sequence (E[Zt | Ft−1] −Zt)T
+
+t=1, which is a martingale difference sequence with elements supported almost surely on [−R, R], we get for any η ∈(0, 1/R) that with probability at least 1 −δ,
+
+T X
+
+T X
+
+E[(Zt −E[Zt | Ft−1])2 | Ft−1] + log(1/δ)
+
+(E[Zt | Ft−1] −Zt) ≤η
+
+η
+
+t=1
+
+t=1
+
+T X
+
+E[Zt | Ft−1] + log(1/δ)
+
+≤ηR
+
+η .
+
+t=1
+
+Set η = 1/(2R). Simplifying gives
+
+T X
+
+T X
+
+E[Zt | Ft−1] ≤2
+
+Zt + 4R log(1/δ).
+
+t=1
+
+t=1
+
+as claimed.
+
+G Proofs from Section 3.1
+Proof of Proposition 3.1. We prove the result by induction. Fix x ∈X, and let y⋆
+
+1, . . . , y⋆ H := y⋆(x). Fix h ∈[H], and assume by induction that byh′ = y⋆
+
+h′ for all h′ < h. We claim that in this case,
+
+πh(y⋆
+
+h | by1, . . . , byh−1, x) = πh(y⋆
+
+h | y⋆
+
+1, . . . , y⋆ h−1, x) > 1/2,
+
+which implies that byh = y⋆
+
+h. To see this, we observe that by Bayes’ rule,
+
+π(y⋆
+
+1, . . . , y⋆ H | x) ≤π(y⋆
+
+1, . . . , y⋆ h | x)
+
+h Y
+
+πh′(y⋆
+
+h′ | y⋆
+
+1, . . . , y⋆ h′−1, x) ≤πh(y⋆
+
+h | y⋆
+
+1, . . . , y⋆ h−1, x).
+
+=
+
+h′=1
+
+If we were to have πh(y⋆
+
+1, . . . , y⋆ h−1, x) ≤1/2, it would contradict the assump- tion that π(y⋆
+
+h | by1, . . . , byh−1, x) = πh(y⋆
+
+h | y⋆
+
+1, . . . , y⋆ H | x) > 1/2. This proves the result.
+
+H Proofs from Section 3.3
+Below, we state and prove a generalization of Theorems 3.1 and D.2 which allows for approximate maximizers in the sense of Definition F.1, as well as a more general coverage coefficient.
+
+To state the result, for a model π, we define
+
+
+
+
+
+yπ
+
+y | π(y | x) ≥(1 −γ) · max
+
+y∈Y π(y | x)
+
+γ (x) =
+
+.
+
+Next, for any integer p ∈N, we define
+
+1/p
+
+
+
+ 1 (π(yπγ (x) | x))p
+
+E
+
+Ccov,γ,p(π) =
+
+,
+
+with the convention that Ccov,γ,p = Ccov,γ,p(πbase). Our most general lower bound, Theorem 3.1′, holds in the regime where γ = 1/2, and thus the best responsey has bounded margin away from suboptimal responses.
+
+Theorem 3.1′ (Lower bound for sharpening). Fix integers d ≥1 and p ≥1 and parameters ϵ ∈(0, 1) and C ≥1, and set γ = 1/2. There exists a class of models Π such that i) log |Π| ≍d(1 + log(Cϵ−1/p)), ii)
+
+supπ∈Π Ccov,γ,p(π) ≲C, and iii) yπ
+
+γ (x) is a singleton for all π ∈Π, for which any sharpening algorithm bπ that attains E
+
+Px∼µ[bπ(yπbase γ (x)) > 1/2]
+
+
+
+
+
+≥1 −ϵ for all πbase ∈Π must collect a total number of samples m = n · N at least
+
+( C log |Π| ϵ1+1/p(1+log(Cϵ−1/p)) sample-and-evaluate oracle,
+
+m ≳
+
+C log |Π| ϵ1/p(1+log(Cϵ−1/p)) adaptive sample-and-evaluate oracle.
+
+Proof of Theorem 3.1′. Let parameters d, p ∈N and ϵ > 0 be given, and set γ = 1/2. Let M ∈N and ∆> 0 be parameters to be chosen later. Let X = {x0, x1, . . . , xd} and Y = {y0, y1, . . . , yM} be arbitrary
+
+discrete sets (with |X| = d + 1 and |Y| = M + 1).
+
+Construction of prompt distribution and model class. We use the same construction for the non-adaptive and adaptive lower bounds in the theorem statement. We define the prompt distribution µ via
+
+d X
+
+µ := (1 −∆)δx0 + ∆
+
+δxi,
+
+d
+
+i=1
+
+where δx denotes the Dirac delta distribution on element x.
+
+As the first step toward constructing the model class Π, we introduce a family of distributions (P0, P1, . . . , PM) on Y as follows
+
+
+
+
+
+P0 = δy0, ∀i ≥1, Pi = 1 (1 −γ)M δyi +
+
+1 M
+
+1 − γ (M −1)(1 −γ)
+
+X
+
+δyj.
+
+j∈[M]\{i}
+
+Next, for or any index I = (j1, j2, . . . , jd) ∈[M]d, define a model
+
+(
+
+P0 i = 0 Pji i > 0 .
+
+πI(xi) =
+
+We define the model class as
+
+Π := {πI : I ∈[M]d},
+
+which we note has
+
+log |Π| = d log M.
+
+Preliminary technical results. Define
+
+yI
+
+γ (x) := {y : πI(y | x) ≥(1 −γ) max
+
+y∈Y πI(y | x)}.
+
+The following property is immediate.
+
+Lemma H.1. Let I = (j1, . . . , jd) ∈[d]M. Then yI
+
+γ (xi) = {yji} if i > 0, and yI
+
+γ (x0) = {y0}.
+
+In view of this result, we define yI(x) = arg maxy πI(y | x) as the unique arg-max response for x.
+
+Going forward, let us fix the algorithm under consideration. Let PI[·] denote the law over the dataset used by the algorithm when the true instance is πI (including possible randomness and adaptivity from the algorithm itself), and let EI[·] denote the corresponding expectation. The following lemma is a basic technical result.
+
+Lemma H.2 (Reduction to classification). Let bπ be the model produced by an algorithm with access to a (adaptive) sample-and-evaluate oracle for πI. Suppose that for some ϵ ≥0,
+
+EI∼Unif EI Px∼µ[bπ(yI
+
+γ (x) | x) > 1/2] ≥1 −ϵ.
+
+Define bI = (bj1, . . . ,bjd) via bji = arg maxj bπ(yj | xi), and write I = (j⋆
+
+1, . . . , j⋆ d). Then,
+
+d X
+
+1 d
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+≤ϵ/∆.
+
+i=1
+
+Proof of Lemma H.2. As established in Lemma H.1, under instance I, yI
+
+i } for any i ∈[d]. Thus, whenever bπ(yI
+
+γ (xi) = {yj⋆
+
+γ (xi)) > 1/2, j⋆
+
+i = arg maxj bπ(yj | xi) =: bji. The result follows by noting that the event {∃i ∈[d] : x = xi} occurs with probability at least ∆under x ∼µ.
+
+Lower bound under sample-and-evaluate oracle. Recall that in the non-adaptive framework, the sample complexity m is fixed. In light of Lemma H.2, it suffices to establishes the following claim.
+
+Lemma H.3. There exists a universal constant c > 0 such that for all M ≥8, if m ≤cdM/∆, then
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+≥1/8 for all i.
+
+With this, the result follows by selecting ∆= 16ϵ, with which Lemma H.2 implies that any algorithm with
+
+EI∼Unif EI Px∼µ[bπ(yI
+
+γ (x) | x) > 1/2] ≥1−ϵ must have m ≳dM/∆. To conclude, we choose M ≍1+Cϵ−1/p, which gives m ≍dM/∆≍dCϵ−(1+1/p) ≍ϵ−(1+1/p) log Π/ log(1 + Cϵ1/p). Finally, we check that with this choice, all π ∈Π satisfy
+
+Ccov,γ,p(π) = (Px∼µ[x = x0] + (M(1 −γ))pPx∼µ[x̸ = x0])1/p
+
+= ((1 −∆) + (M(1 −γ))p∆)1/p
+
+≲((1 −∆) + (8C(1 −γ))p)1/p ≲C.
+
+Proof of Lemma H.3. Let i ∈[d] be fixed. Of the m = n · N tuples (x, y, log πbase(y | x)) that are observed by the algorithm, let mi denote the (random) number of such examples for which x = xi. From Markov’s inequality, we have
+
+P[mi ≤2∆m/d] ≥1
+
+2 (13)
+
+Going forward, let D = {(x, y, log πbase(y | x))} denote the dataset collected by the algorithm, which has |D| = m. Let Ei denote the event that, for prompt x = xi, (i) there are at least two distinct responses yj for which (xi, yj) /∈D; and (ii) there are no pairs (xi, y) ∈D for which πbase(y | xi) > 1 M . Since Ei is a measurable function of D, we can write
+
+EI∼Unif EI h
+
+i
+
+≥EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+I{bji̸ = j⋆
+
+i } · I {Ei}
+
+i }
+
+= EI∼Unif EI h
+
+h
+
+ii
+
+I{Ei} EI∼P[I=·|D]
+
+I{bji̸ = j⋆
+
+, (14)
+
+i }
+
+where I ∼P[I = · | D] is sampled from the posterior distribution over I conditioned on the dataset D. Observe that conditioned on Ei, the posterior distribution over j⋆
+
+i under I ∼P[I = · | D] is uniform over the set of
+
+h
+
+i
+
+indices j ∈[M] for which (xi, yj) /∈D, and this set has size at least 2. Hence, I{Ei} EI∼P[I=·|D]
+
+I{bji̸ = j⋆
+
+i }
+
+≥
+
+1 2, and resuming from Eq. (14), we have
+
+≥1
+
+2 EI∼Unif EI [I{Ei}] ≥1 2 EI∼Unif PI [Ei ∩{mi ≤2∆m/d}]
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+≥1
+
+4 EI∼Unif PI [Ei | mi ≤2∆m/d] ,
+
+where the last inequality is from Eq. (13). Finally, we can check that under the law PI, the probability of the event Ei—conditioned on the value mi—is at least the probability that (xi, yj⋆
+
+i ), (xi, yj′) /∈D for an arbitrary fixed index j′̸ = j⋆
+
+i , which on the event {mi ≤2∆m/d} is at least
+
+mi
+
+2∆m/d
+
+
+
+
+
+1 −3 M
+
+1 −3 M
+
+≥
+
+,
+
+where we have used that γ = 1/2. The value above is at least 1 4 whenever m ≤c · dM/∆for a suffi-
+
+ciently small absolute constant c > 0. For this value of m, we conclude that EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+≥
+
+1 4 EI∼Unif PI [Ei | {mi ≤2∆m/d}] ≥1 8.
+
+Lower bound under adaptive sample-and-evaluate oracle. In the adaptive framework, we let mi denote the (potentially random) number of tuples (x, y, log πbase(y | x)) observed by the algorithm in which x = xi. Note that unlike the non-adaptive framework, the distribution over mi depends on the underlying instance I with which the algorithm interacts.
+
+To begin, from Lemma H.2 and Markov’s inequality, if bπ satisfies the guarantee EI∼Unif EI Px∼µ[bπ(yI
+
+γ (x)) > 1/2] ≥1 −ϵ, then there exists a set of indices Sgood ⊂[d] such that14
+
+≤2ϵ
+
+|Sgood| ≥⌊d/2⌋, ∀i ∈Sgood, EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+∆. (15)
+
+i }
+
+We now appeal to the following lemma.
+
+Lemma H.4. As long as M ≥6, it holds that for all i ∈[d],
+
+≥1
+
+4e EI∼Unif EI [I{mi ≤M/3}] .
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+Combining Lemma H.4 with Eq. (15), it follows that there exist absolute constant c1, c2, c3 > 0 such that if ∆= c1 · ϵ, then for all i ∈Sgood,
+
+EI∼Unif PI[mi ≥c2M] ≥c3.
+
+Thus, with this choice for ∆, we have that i ∈Sgood,
+
+EI∼Unif EI [mi] ≳M,
+
+and we can lower bound the algorithm’s expected sample complexity by summing over i ∈Sgood:
+
+
+
+
+
+EI∼Unif EI [m] ≥EI∼Unif EI
+
+X
+
+≳|Sgood|M ≳dM.
+
+mi
+
+i∈Sgood
+
+The result now follows by tuning M ≍1 + Cϵ−1/p as in the proof of the lower bound for non-adaptive sampling, which gives E[m] ≳dM ≍dCϵ−1/p ≍ϵ−1/p log Π/ log(1 + Cϵ1/p) and Ccov,γ,p(π) ≲C for all π ∈Π.
+
+Proof of Lemma H.4. Let i ∈[d] be fixed. Let D = {(x, y, log πbase(y | x))} denote the dataset collected by the algorithm at termination, which has |D| = m. Let Ei denote the event that, for prompt x = xi, (i) there are at least two distinct responses yj for which (xi, yj) /∈D; and (ii) there are no pairs (xi, y) ∈D for which πbase(y | xi) > 1 M . Since Ei is a measurable function of D, we can write
+
+EI∼Unif EI h
+
+i
+
+≥EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+I{bji̸ = j⋆
+
+i } · I {Ei}
+
+i }
+
+= EI∼Unif EI h
+
+h
+
+ii
+
+I{Ei} EI∼P[I=·|D]
+
+I{bji̸ = j⋆
+
+, (16)
+
+i }
+
+where I ∼P[I = · | D] is sampled from the posterior distribution over I conditioned on the dataset D. Observe that conditioned on Ei, the posterior distribution over j⋆
+
+i under I ∼P[I = · | D] is uniform over the set of
+
+h
+
+i
+
+indices j ∈[M] for which (xi, yj) /∈D, and this set has size at least 2. Hence, I{Ei} EI∼P[I=·|D]
+
+I{bji̸ = j⋆
+
+i }
+
+≥
+
+1 2, and resuming from Eq. (16), we have
+
+≥1
+
+2 EI∼Unif EI [I{Ei}]
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+≥1
+
+2 EI∼Unif PI [Ei ∩{mi ≤M/3}]
+
+= 1
+
+PI [Ei | mi ≤M/3] · PI[mi ≤M/3]
+
+2 EI∼Unif 
+
+
+
+.
+
+14We emphasize that the set Sgood is not a random variable, and depends only on the algorithm itself.
+
+i ), (xi, yj′) /∈D for an arbitrary fixed index j′̸ = j⋆
+
+The event Ei is a superset of the event Ei,j′ that (xi, yj⋆
+
+i . Thus,
+
+PI [Ei | mi ≤M/3] ≥PI [Ei,j′ | mi ≤M/3]
+
+Moreover, we can realize the law of PI considering an infinite tape, associated to index i, of i.i.d. samples y ∼πbase(· | xi), and taking the first mi elements on this tape to be the samples (x, y, log πbase(y | x)) ∈D with x = xi (see, e.g. Simchowitz et al. (2017) for an argument of this form). On the event {mi ≤M/3}, the mi samples in (x, y, log πbase(y | x)) ∈D with x = xi are a subset of the first M/3 samples from the index-i tape. Viewed in this way, we can lower bound the probability of Ei,j by the probability of the event ˜Ei,j′ that the first M/3 y’s on the index-i tape contain neither j⋆
+
+i , nor the designated index j′. As these first M/3 y’s are not chosen adaptively, the probability of ˜Ei,j′ is at least
+
+mi
+
+M/3
+
+
+
+
+
+1 −3 M
+
+1 −3 M
+
+≥1
+
+≥
+
+2e,
+
+as long as M ≥6 and γ = 1/2. We conclude that
+
+≥1
+
+4e EI∼Unif EI [I{mi ≤M/3}] .
+
+EI∼Unif EI h
+
+i
+
+I{bji̸ = j⋆
+
+i }
+
+I Proofs from Section 4.1 and Appendix D
+The following theorem is a generalization of Theorem 4.1 which allows for approximate maximizers in the sense of Definition F.1.
+
+Theorem 4.1′. Let ρ, δ ∈(0, 1) be given, and suppose we set N = N ⋆log(2δ−1) for a parameter N ⋆∈N. Then for any n ∈N, SFT-Sharpening ensures that with probability at least 1 −ρ, for any γ ∈(0, 1), the output
+
+model bπ satisfies
+
+δ · log(|Π|ρ−1)
+
+≲1
+
+n + Ccov,γ
+
+Px∼µ
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −2δ
+
+N ⋆.
+
+Ccov,γ
+
+log|Π|
+
+δϵ and N ⋆= C4.1
+
+In particular, given (ϵ, δ, γ), by setting n = C4.1
+
+ϵ for a sufficiently large absolute constant C4.1 > 0, we are guaranteed that
+
+Px∼µ
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ
+
+≤ϵ.
+
+The total sample complexity is
+
+Ccov,γ log(|Π|ρ−1) log(δ−1)
+
+
+
+m = O
+
+.
+
+δϵ2
+
+Proof of Theorem 4.1′. Under realizability of πBoN
+
+N (Assumption 4.1), Lemma F.1 implies that the output of SFT-Sharpening satisfies, with probability at least 1 −ρ,
+
+stat := 2 log(|Π|/ρ)
+
+Ex∼µ
+
+bπ(· | x), πBoN
+
+D2
+
+≤ε2
+
+
+
+ 
+
+
+
+n . (17)
+
+N (· | x)
+
+H
+
+Henceforth we condition on the event that Eq. (17) holds. Let
+
+
+
+
+
+x ∈X | N ⋆≥ 1 πbase(y⋆γ(x) | x)
+
+Xgood :=
+
+denote the set of prompts for which πbase places sufficiently high mass on y⋆
+
+γ(x). We can bound
+
+Px∼µ
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ
+
+≤Px∼µ
+
++ Px∼µ[x /∈Xgood]. (18)
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ, x ∈Xgood
+
+To bound the first term in Eq. (18), note that if x ∈Xgood, then πBoN
+
+N (y⋆
+
+γ(x) | x) ≥1 −δ/2. Indeed, observe that y ∼πBoN
+
+N (· | x) /∈y⋆
+
+γ(x) if and only if y1, . . . , yN ∼πbase(x) have yi /∈y⋆
+
+γ(x) for all i, which happens with probability (1 −πbase(y⋆
+
+γ(x) | x))N ≤(1 −1/N ⋆)N ≤δ/2 since x ∈Xgood. It follows that for any such x, we can lower bound (using the data processing inequality)
+
+2
+
+1 −bπ(y⋆γ(x) | x) − q
+
+q
+
+bπ(· | x), πBoN
+
+D2
+
+1 −πBoN N (y⋆γ(x) | x)
+
+ 
+
+
+
+N (· | x)
+
+≥
+
+H
+
+≳δ · I
+
+bπ(y⋆
+
+
+
+. (19)
+
+γ(x) | x) ≤1 −δ
+
+By Eqs. (17) and (19), it follows that
+
+≲ε2
+
+Px∼µ
+
+stat
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ, x ∈Xgood
+
+δ .
+
+For the second term in Eq. (18), we bound
+
+
+
+
+
+N ⋆< 1 πbase(y⋆γ(x) | x)
+
+Px∼µ[x /∈Xgood] = Px∼µ
+
+ 1 N ⋆πbase(y⋆γ(x) | x) > 1
+
+
+
+= Px∼µ
+
+ 1 πbase(y⋆γ(x) | x)
+
+
+
+≤ 1 N ⋆Ex∼µ
+
+≤Ccov,γ
+
+N ⋆
+
+via Markov’s inequality and the definition of Ccov,γ. Substituting both bounds into Eq. (18) completes the proof.
+
+Proof of Theorem D.1. The proof begins similarly to Theorem 4.1. By realizability of πNµ, Lemma F.1 implies that the output of SFT-Sharpening satisfies, with probability at least 1 −ρ,
+
+stat := 2 log(|Π|/ρ)
+
+Ex∼µ
+
+D2
+
+≤ε2
+
+
+
+ 
+
+
+
+bπ(· | x), πNµ(· | x)
+
+n .
+
+H
+
+Condition on the event that this guarantee holds. We invoke the following lemma, proven in the sequel.
+
+Lemma I.1. Let P be a distribution on a discrete space Y. Let y⋆= arg maxy∈Y P(y) and let P ⋆:= maxy∈Y P(y). Let y1, y2, . . . ∼P, and for any stopping time τ, define
+
+byτ ∈arg max {P(y) : y ∈{y1, . . . , yτ}} .
+
+Next, for a parameter µ > 0, define the stopping time
+
+
+
+
+
+k : 1 max1≤i≤k P(yi) ≤k/µ
+
+Nµ := inf
+
+.
+
+Then
+
+E[Nµ] ≤µ + (1/|y⋆|)
+
+P ⋆ .
+
+In addition, for any stopping time τ ≥Nµ (including τ = Nµ itself), we have P[byτ /∈y⋆] ≤e−|y⋆|µ.
+
+This lemma, with our choice of µ, ensures that for all x ∈X,
+
+πNµ(y⋆(x) | x) ≥1 −e−µ = 1 −δ/2.
+
+Following the reasoning in Eq. (19), this implies that
+
+≳δ · I{bπ(y⋆(x) | x) ≤1 −δ},
+
+D2
+
+ 
+
+
+
+bπ(· | x), πNµ(· | x)
+
+H
+
+so that
+
+Px∼µ[bπ(y⋆(x) | x) ≤1 −δ] ≲ε2
+
+stat
+
+δ
+
+as desired.
+
+To bound the expected sample complexity, we observe that
+
+ 1 + µ πbase(y⋆(x) | x)
+
+
+
+(i)
+
+E[m] = n · E[Nµ(x)]
+
+≤E
+
+= (1 + µ)Ccov,
+
+where inequality (i) invokes Lemma I.1 once more.
+
+Proof of Lemma I.1. Define N ⋆:= µ/P ⋆. To bound the tails of Nµ, define
+
+τ = inf{k | k ≥N ⋆and y⋆∩{y1, . . . , yk}̸ = ∅}.
+
+It follows from the definition that Nµ ≤τ, since for any k ≥N ⋆, if there exists i ≤k such that yi ∈y⋆, then
+
+P ⋆= N ⋆
+
+1 P(yi) = 1
+
+µ ≤k
+
+µ.
+
+Thus, for k ≥N ⋆, we can bound
+
+P[Nµ > k] ≤P[τ > k] = P[Y⋆∩{y1, . . . , yk} = ∅] ≤(1 −|y⋆|P ⋆)k,
+
+and consequently
+
+E[Nµ] ≤E[τ] ≤E[τI{τ ≤N ⋆}] + E[τI{τ > N ⋆}]
+
+X
+
+≤N ⋆+
+
+(1 −|y⋆|P ⋆)k
+
+k>N ⋆
+
+≤N ⋆+ 1 |y⋆|P(y⋆) = µ + 1/|y⋆|
+
+P(y⋆) .
+
+To prove correctness, observe that Nµ ≥N ⋆, because for all y ∈Y, 1 P (y) ≥N ⋆/µ. Hence, any stopping time τ ≥Nµ also satisfies τ ≥N ⋆, and moreover has byτ ∈y⋆whenever y⋆∩{y1, y2, . . . , yτ}̸ = ∅. This fails to occur with probability no more than
+
+N⋆
+
+µ/P ⋆
+
+1 −|y⋆| P ⋆
+
+1 −|y⋆| P ⋆
+
+
+
+
+
+≤e−|y⋆|µ.
+
+=
+
+J Proofs from Section 4.2
+J.1 Proof of Theorem 4.2
+
+We state and prove a generalized version of Theorem 4.2. In the assumptions below, we fix a parameter
+
+γ ∈[0, 1); the setting γ = 0 corresponds to Theorem 4.2.
+
+Assumption J.1 (Coverage). All π ∈Π satisfy Cπ ≤Cconc for a parameter Cconc ≥(1 −γ)−1Ccov,γ, and Cπbase/π;β ≤Closs for a parameter Closs ≥|Y|.
+
+By Lemma 4.1′, Assumption J.1 is consistent with the assumption that π⋆
+
+β ∈Π.
+
+Assumption J.2 (Margin). For all x ∈supp(µ), the initial model πbase satisfies
+
+πbase(y⋆
+
+γ(x) | x) ≥(1 + γmargin) · πbase(y | x) ∀y̸ ∈y⋆
+
+γ(x)
+
+for a parameter γmargin > 0.
+
+Theorem 4.2′. Assume that π⋆
+
+β ∈Π (Assumption 4.3), and that Assumption 4.4 and Assumption 4.2 hold with respect to some γ ∈[0, 1), with parameters Cconc, Closs, and γmargin > 0. For any δ, ρ ∈(0, 1), the DPO algorithm in Eq. (4) ensures that with probability at least 1 −ρ,
+
+
+
+
+
+s
+
+Cconc log3(Closs|Π|ρ−1)
+
+≲ 1 γmarginδ · eO
+
+Px∼µ
+
+bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ
+
+n + β log(Cconc) + γ
+
+
+
+
+
+where eO(·) hides factors logarithmic in n and Cconc and doubly logarithmic in Π, Closs, and ρ−1.
+
+We first state and prove some supporting technical lemmas, then proceed to the proof of Theorem 4.2′.
+
+J.1.1 Technical lemmas
+The following result is a generalization of Lemma 4.1.
+
+Lemma 4.1′. For all γ ∈(0, 1), the model π⋆
+
+β ≤(1 −γ)−1Ccov,γ and Cπbase/π⋆
+
+β satisfies Cπ⋆
+
+β;β ≤|Y|.
+
+Proof of Lemma 4.1′. For any fixed x ∈X, we have
+
+−1
+
+ π⋆
+
+
+
+
+
+π1+β−1
+
+"
+
+#
+
+β(y | x) πbase(y | x)
+
+
+
+base (y | x) πbase(y | x)
+
+base (y′ | x)
+
+π1+β−1
+
+X
+
+Ey∼π⋆
+
+= Ey∼π⋆
+
+·
+
+β(·|x)
+
+β(·|x)
+
+
+
+y′∈Y
+
+−1
+
+
+
+
+
+base (y′ | x)
+
+y∈Y πβ−1
+
+π1+β−1
+
+X
+
+≤max
+
+base(y | x) ·
+
+
+
+y′∈Y
+
+−1
+
+
+
+
+
+base (y′ | x)
+
+≤(1 −γ)−1πβ−1
+
+π1+β−1
+
+X
+
+base(y⋆
+
+γ(x) | x) ·
+
+
+
+y′∈Y
+
+−1
+
+
+
+
+
+= (1 −γ)−1 π1+β−1
+
+base (y⋆
+
+γ(x) | x) πbase(y⋆γ(x) | x) ·
+
+base (y′ | x)
+
+π1+β−1
+
+X
+
+
+
+y′∈Y
+
+−1
+
+y∈y⋆γ(x) π1+β−1
+
+
+
+
+
+P
+
+base (y | x)
+
+base (y′ | x)
+
+π1+β−1
+
+X
+
+= (1 −γ)−1
+
+πbase(y⋆γ(x) | x) ·
+
+
+
+y′∈Y
+
+≤(1 −γ)−1 1 πbase(y⋆γ(x) | x).
+
+β ≤(1 −γ)−1Ccov,γ as claimed.
+
+It follows that Cπ⋆
+
+For the second result, we have
+
+
+
+β
+
+
+
+
+
+ 1 πbase(y | x)
+
+
+
+ 1 πbase(y | x) ·
+
+base (y′ | x)
+
+π1+β−1
+
+X
+
+β;β = Eπbase
+
+≤Eπbase
+
+Cπbase/π⋆
+
+= |Y|.
+
+
+
+y′∈Y
+
+The next lemmas provide bounds on the tails of the self-rewards used in the algorithm.
+
+Lemma J.1. Suppose β ∈[0, 1]. For any model π, with probability at least 1 −δ over the draw of x ∼µ, y, y′ ∼πbase(· | x), we have that for all s > 0,
+
+ π(y′ | x) πbase(y′ | x)
+
+β log
+
+ > log(2Cπbase/π;β) + s
+
+ π(y | x) πbase(y | x)
+
+
+
+
+
+P
+
+−β log
+
+≤exp(−s).
+
+Proof of Lemma J.1. Define
+
+ π(y′ | x) πbase(y′ | x)
+
+β log
+
+.
+
+ π(y | x) πbase(y | x)
+
+
+
+X :=
+
+−β log
+
+By the Chernoff method, we have that with probability at least 1 −δ,
+
+X ≤log(E[exp(X)]) + log(δ−1)
+
+ π(y′ | x) πbase(y′ | x)
+
+β log
+
+
+
+
+
+
+
+ π(y | x) πbase(y | x)
+
+
+
+
+
+Ex∼µ,y,y′∼πbase(x)
+
++ log(δ−1)
+
+−β log
+
+= log
+
+exp
+
+ π(y′ | x) πbase(y′ | x)
+
+
+
+
+
+ π(y | x) πbase(y | x)
+
+
+
+
+
+Ex∼µ,y,y′∼πbase(x)
+
+−β log
+
+≤log
+
+exp
+
+β log
+
+ π(y′ | x) πbase(y′ | x)
+
+!
+
+
+
+
+
+
+
+ π(y | x) πbase(y | x)
+
++ Ex∼µ,y,y′∼πbase(x)
+
++ log(δ−1)
+
+−β log
+
+exp
+
+β log
+
+ π(y′ | x) πbase(y′ | x)
+
+
+
+
+
+
+
+ π(y | x) πbase(y | x)
+
+
+
+
+
+2 Ex∼µ,y,y′∼πbase(x)
+
++ log(δ−1)
+
+−β log
+
+= log
+
+exp
+
+β log
+
+" π(y | x) πbase(y | x) · πbase(y′ | x)
+
+β#!
+
+Ex∼µ,y,y′∼πbase(x)
+
++ log(2δ−1).
+
+= log
+
+π(y′ | x)
+
+As long as β ≤1, by Jensen’s inequality, we can bound
+
+" π(y | x) πbase(y | x) · πbase(y′ | x)
+
+β#
+
+Ex∼µ,y,y′∼πbase(x)
+
+π(y′ | x)
+
+· πbase(y′ | x) π(y′ | x)
+
+"
+
+β#
+
+ π(y | x) πbase(y | x)
+
+
+
+≤Ex∼µ,y′∼πbase(x)
+
+Ey∼πbase(x)
+
+"πbase(y′ | x)
+
+β#
+
+= Ex∼µ,y′∼πbase(x)
+
+π(y′ | x)
+
+= Cπbase/π;β,
+
+which proves the result.
+
+Lemma J.2. Let β ∈[0, 1]. For all models π, we have
+
+ π(y′ | x) πbase(y′ | x)
+
+"β log
+
+4#
+
+
+
+ π(y | x) πbase(y | x)
+
+
+
+Ex∼µ,y,y′∼πbase(·|x)
+
+≤O(log4(Cπbase/π;β) + 1).
+
+−β log
+
+Proof of Lemma J.2. Define
+
+ π(y′ | x) πbase(y′ | x)
+
+β log
+
+.
+
+ π(y | x) πbase(y | x)
+
+
+
+X :=
+
+−β log
+
+Set k = log(2Cπbase/π;β). We can bound
+
+Z ∞
+
+
+
+X4 > t
+
+E
+
+= E
+
+0 I
+
+X4
+
+
+
+
+
+dt
+
+Z ∞
+
+
+
+= 4 E
+
+0 I{X > t}t3dt
+
+Z ∞
+
+0 P[X > t]t3dt
+
+= 4
+
+Z ∞
+
+≤k4 + 4
+
+P[X > t]t3dt
+
+k
+
+Z ∞
+
+≤k4 + 4
+
+ek−tt3dt
+
+k
+
+= k4 + 4(k3 + 3k2 + 6k + 6)
+
+= O(k4 + 1),
+
+where the third-to-last line uses Lemma J.1.
+
+J.1.2 Proof of Theorem 4.2′
+
+Proof of Theorem 4.2′. For any model π ∈Π, define J(π) := Eπ[log πbase(y | x)]. Let bπ ∈Π denote the model returned by the DPO algorithm in Eq. (8). Let Eπ,π′[·] denote shorthand for Ex∼µ,y∼π(x),y′∼π′(x)[·], and for any r : X × Y →R define ∆r(x, y, y′) := r(x, y) −r(x, y′). Define
+
+ π⋆
+
+β(y | x) πbase(y | x)
+
+
+
+r⋆(x, y) := log πbase(y | x) = β log
+
++ Z(x),
+
+
+
+
+
+bπ(y|x) πbase(y|x)
+
+and let br(x, y) := β log
+
+. By a standard argument (Huang et al., 2024), we have
+
+Eπ[br(x, y)] −βDKL(π ∥πbase). (20)
+
+bπ ∈arg max
+
+π:X→∆(Y)
+
+Therefore for any comparator model π⋆: X →∆(Y) (not necessarily in the model class Π), we have
+
+J(π⋆) −J(bπ) = Eπ⋆[r⋆(x, y)] −Ebπ[r⋆(x, y)]
+
+= Eπ⋆[br(x, y)] −βDKL(π⋆∥πbase) −Ebπ[br(x, y)] + βDKL(bπ ∥πbase)
+
++ Eπ⋆[r⋆(x, y) −br(x, y)] + βDKL(π⋆∥πbase) + Ebπ[br(x, y) −r⋆(x, y)] −βDKL(bπ ∥πbase)
+
+≤Eπ⋆[r⋆(x, y) −br(x, y)] + βDKL(π⋆∥πbase) + Ebπ[br(x, y) −r⋆(x, y)] −βDKL(bπ ∥πbase)
+
+h
+
+i
+
+h
+
+i
+
+∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+∆br(x, y, y′) −∆r⋆(x, y, y′)
+
+= Eπ⋆,πbase
+
++ Ebπ,πbase
+
++ βDKL(π⋆∥πbase) −βDKL(bπ ∥πbase) (21)
+
+where the inequality uses Eq. (20). To bound the right-hand side above, we will use the following lemma, which is proven in the sequel.
+
+Lemma J.3. For any model π and any η > 0, we have that
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+i
+
+Eπ,πbase
+
+o1/2
+
+π · 
+
+∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+2 I
+
+n∆r⋆ ≤η,
+
+∆br ≤η
+
+≲C1/2
+
+Eπbase,πbase
+
+i1/4
+
+
+
+h∆r⋆ > η
+
+i
+
+h∆br > η
+
+Pπbase,πbase
+
++ Pπbase,πbase
+
++ C1/2
+
+π (log(Cπbase/bπ;β) + log(Cπbase/π⋆
+
+β;β)) ·
+
+.
+
+Using Lemma J.3 to bound the first two terms of Eq. (21), and using the fact that all π ∈Π have Cπ ≤Cconc and Cπbase/π;β ≤Closs, we have that
+
+J(π⋆) −J(bπ)
+
+o1/2
+
+
+
+∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+2 I
+
+≲(Cπ⋆+ Cconc)1/2 ·
+
+n∆r⋆ ≤η,
+
+∆br ≤η
+
+Eπbase,πbase
+
+i1/4
+
++ (Cπ⋆+ Cconc)1/2 log(Closs) ·
+
+
+
+h∆r⋆ > η
+
+i
+
+h∆br > η
+
+Pπbase,πbase
+
++ Pπbase,πbase
+
++ βDKL(π⋆∥πbase). (22)
+
+π(y′|x) πbase(y′|x)
+
+
+
+
+
+
+
+
+
+, so that ∆bπ = ∆br and
+
+π(y|x) πbase(y|x)
+
+Let us overload notation and write ∆π(x, y, y′) = β log
+
+−β log
+
+∆π⋆
+
+β = ∆r⋆. Since π⋆
+
+β ∈Π, the definition of bπ in Eq. (4) implies that
+
+2
+
+2
+
+
+
+
+
+∆bπ(x, y, y′) −∆π⋆
+
+∆π(x, y, y′) −∆π⋆
+
+X
+
+X
+
+β(x, y, y′)
+
+β(x, y, y′)
+
+≤min
+
+π∈Π
+
+(x,y,y′)∈Dpref
+
+(x,y,y′)∈Dpref
+
+2
+
+
+
+∆π⋆
+
+β(x, y, y′) −∆π⋆
+
+X
+
+β(x, y, y′)
+
+≤
+
+(x,y,y′)∈Dpref
+
+= 0.
+
+Define Bn,ρ := log(2nCloss|Π|ρ−1). It is immediate that
+
+2
+
+
+
+n∆bπ ≤Bn,ρ,
+
+o
+
+∆bπ(x, y, y′) −∆π⋆
+
+∆π⋆
+
+β ≤Bn,ρ
+
+X
+
+I
+
+β(x, y, y′)
+
+≤0.
+
+(x,y,y′)∈Dpref
+
+From here, Bernstein’s inequality and a union bound implies that with probability at least 1 −ρ,
+
+∆bπ(x, y, y′) −∆π⋆
+
+o
+
+2 I
+
+n∆bπ ≤Bn,ρ,
+
+∆π⋆
+
+β ≤Bn,ρ
+
+Eπbase,πbase
+
+β(x, y, y′)
+
+n,ρ log(|Π|ρ−1)
+
+≲B2
+
+n =: ε2
+
+stat.
+
+In particular, if we combine this with Eq. (22) and set η = Bn,ρ, then Lemma J.1 implies that
+
+J(π⋆) −J(bπ) ≲(Cπ⋆+ Cconc)1/2 · εstat + (Cπ⋆+ Cconc)1/2 log(Closs) · ρ1/4 + βDKL(π⋆∥πbase).
+
+Note that the above bound holds for any π⋆: X →∆(Y). We define π⋆by
+
+π⋆(y | x) := πbase(y | x)I[y ∈y⋆
+
+γ(x)] πbase(y⋆γ(x) | x) ,
+
+which can be seen to satisfy Cπ⋆≤Ccov,γ ≤Cconc and DKL(π⋆∥πbase) ≤log(Cπ⋆) ≤log(Cconc). With this choice, we can further bound the expression above by
+
+J(π⋆) −J(bπ) ≲(Cconc)1/2 · εstat + (Cconc)1/2 log(Closs) · ρ1/4 + β log(Cconc)
+
+Given a desired failure probability ρ, applying the bound above with ρ′ := ρ ∧(εstat/ log(Closs))4 then gives
+
+J(π⋆) −J(bπ) ≲(Cconc)1/2 · εstat + β log(Cconc).
+
+Finally, we observe that for our choice of π⋆, under the margin condition with parameter γ, we have
+
+ πbase(y | x)
+
+
+
+
+
+J(π⋆) −J(bπ) = Ex∼µ Ey,y′∼π⋆,bπ
+
+log
+
+πbase(y′ | x)
+
+I{y′̸ ∈y⋆
+
+≳γmargin · Ex∼µ Ey′∼bπ
+
+
+
+
+
+γ(x)}
+
+−γ
+
+≳γmarginδ · Ex∼µ
+
+I{bπ(y⋆
+
+
+
+
+
+γ(x) | x) ≤1 −δ}
+
+−γ
+
+where the first inequality uses Assumption J.2 together with the fact that y ∈y⋆
+
+γ(x) with probability 1 over x ∼µ and y ∼π⋆(· | x). This proves the result.
+
+Proof of Lemma J.3. For any η > 0, we can bound
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+I
+
+i
+
+n∆r⋆ ≤η,
+
+oi
+
+∆br ≤η
+
+Eπ,πbase
+
+≤Eπ,πbase
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+I
+
+n∆r⋆ > η ∨
+
+oi
+
+∆br > η
+
++ Eπ,πbase
+
+.
+
+For the second term above, we can use Cauchy-Schwarz to bound
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+I
+
+n∆r⋆ > η ∨
+
+oi
+
+∆br > η
+
+Eπ,πbase
+
+o1/2
+
+π · 
+
+∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+2 I
+
+n∆r⋆ > η ∨
+
+∆br > η
+
+Eπbase,πbase
+
+≤C1/2
+
+i1/4
+
+π · 
+
+h∆r⋆ > η
+
+i
+
+h∆br > η
+
+≲C1/2
+
+Pπbase,πbase
+
++ Pπbase,πbase
+
+41/4
+
+· 
+
+∆r⋆(x, y, y′)
+
+4 + Eπbase,πbase
+
+∆br(x, y, y′)
+
+Eπbase,πbase
+
+i1/4
+
+π · 
+
+h∆r⋆ > η
+
+i
+
+h∆br > η
+
+≲C1/2
+
+Pπbase,πbase
+
++ Pπbase,πbase
+
+· (log(Cπbase/bπ;β) + log(Cπbase/π⋆ β;β)),
+
+where the last inequality follows from Lemma J.2.
+
+Meanwhile, for the first term, for any λ > 0 we can bound
+
+h∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+I
+
+n∆r⋆ ≤η,
+
+oi
+
+∆br ≤η
+
+Eπ,πbase
+
+o1/2
+
+
+
+∆r⋆(x, y, y′) −∆br(x, y, y′)
+
+2 I
+
+n∆r⋆ ≤η,
+
+∆br ≤η
+
+Eπbase,πbase
+
+≤C1/2
+
+.
+
+π
+
+J.2 Proof of Theorem 4.3 and Theorem 4.4
+
+In this section we prove Theorem 4.3 as well as Theorem 4.4, the application to linear softmax models. For the formal theorem statements, see Theorem J.2 and Theorem J.3 respectively. The section is organized as follows.
+
+• Appendix J.2.1 gives necessary background on KL-regularized policy optimization, as well as the Sequential Extrapolation Coefficient.
+
+• Appendix J.2.2 presents a generic guarantee for XPO under a general choice of reward function.
+
+• Appendix J.2.3 instantiates the result above with the self-reward function r(x, y) := log πbase(y | x) to prove Theorem 4.3.
+
+• Finally, Appendix J.2.4 applies the preceding results to prove Theorem 4.4.
+
+J.2.1 Background
+To begin, we give background on KL-regularized policy optimization and the Sequential Extrapolation Coefficient.
+
+KL-regularized policy optimization. Let β > 0 be given, and let r : X × Y →[−Rmax, Rmax] be an unknown reward function on prompt/action pairs. Define a value function Jβ over model class Π by:
+
+Jβ(π) := Eπ[r(x, y)] −β · DKL(Pπ ∥Pπbase).
+
+We refer to this as a KL-regularized policy optimization objective (we use the term “policy” following the
+
+reinforcement learning literature; for our setting, policies correspond to models). Given query access to r, the goal is to find bπ ∈Π such that
+
+Jβ(π⋆
+
+β) −Jβ(bπ) ≤ϵ
+
+β(y | x) ∝πbase(y | x) exp(β−1r(x, y)) is the model that maximizes Jβ over all models π : X →∆(Y).
+
+where π⋆
+
+We make use of the following assumptions, as in Xie et al. (2024).
+
+Assumption J.3 (Realizability). It holds that π⋆
+
+β ∈Π.
+
+≤Vmax.
+
+β log π(y|x) πbase(y|x)
+
+Assumption J.4 (Bounded density ratios). For all π ∈Π, (x, y) ∈X × Y,
+
+Finally, we require two definitions.
+
+Definition J.1 (Sequential Extrapolation Coefficient for RLHF, (Xie et al., 2024)). For a model class Π, reward function r, reference model πbase, and parameters T ∈N and β, λ > 0, the Sequential Extrapolation Coefficient is defined as
+
+SEC(Π, r, T, β, λ; πbase)
+
+   
+
+   
+
+i2
+
+πbase(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+E(t) h
+
+πbase(y′|x) + r(x, y′)
+
+T X
+
+:= sup π(1),...,π(T )∈Π
+
+
+
+2
+
+πbase(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+λ ∨Pt−1
+
+i=1 E(i)
+
+πbase(y′|x) + r(x, y′)
+
+  
+
+  
+
+t=1
+
+where E(t) denotes expectation over x ∼µ, y ∼π(t)(· | x), and y′ ∼πbase(· | x).
+
+Definition J.2. Let ϵ > 0. We say that Ψ ⊆Π is a ϵ-net for model class Π if for every π ∈Π there exists π′ ∈Ψ such that
+
+log π(y | x)
+
+≤ϵ.
+
+max
+
+x∈X max
+
+π′(y | x)
+
+y∈Y
+
+We write N(Π, ϵ) to denote the size of the smallest ϵ-net for Π.
+
+J.2.2 Guarantees for KL-regularized policy optimization with XPO
+In this section, we give self-contained guarantees for the XPO algorithm (Algorithm 1). XPO was introduced in Xie et al. (2024) for KL-regularized policy optimization in the related setting where the learner only has indirect access to the reward function r through preference data (specifically, pairs of actions labeled via a Bradley-Terry model). Standard offline algorithms for this problem, such as DPO, require bounds on concentrability of the model class (see e.g. Eq. (9)). Xie et al. (2024) show that the XPO algorithm avoids this dependence, and instead requires bounded Sequential Extrapolation Coefficient.
+
+Algorithm 1 is a variant of the XPO algorithm which is adapted to reward-based feedback (as opposed to preference-based feedback), and Theorem J.1 shows that this algorithm enjoys guarantees similar to those of Xie et al. (2024) for this setting. Note that this is not an immediate corollary of the results in Xie et al. (2024), since the sample complexity in the preference-based setting scales with eO(Rmax), and for our application to sharpening it is important to avoid this dependence. However, our algorithm and analysis only diverge from Xie et al. (2024) in a few places.
+
+Theorem J.1 (Variant of Xie et al. (2024, Theorem 3.1)). Suppose that Assumptions J.3 and J.4 hold. For
+
+q
+
+log(2N(Π,ϵdisc)T/ρ)
+
+any T ∈N, ϵdisc, ρ ∈(0, 1), by setting α := β Rmax+Vmax
+
+SEC(Π)T , Algorithm 1 produces a model bπ ∈Π
+
+Algorithm 1 Reward-based variant of Exploratory Preference Optimization (Xie et al., 2024)
+
+input: Base model πbase : X →∆(Y), reward function r : X × Y →R, number of iterations T ∈N, KL regularization coefficient β > 0, optimism coefficient α > 0. Initialize: π(1) ←πbase, D(0) ←∅. for iteration t = 1, . . . , T do
+
+Generate sample: (x(t), y(t), ey(t)) via x(t) ∼µ, y(t) ∼π(t)(· | x(t)), ey(t) ∼πbase(· | x(t)). Update dataset: D(t) ←D(t−1) ∪{(x(t), y(t), ey(t))}. Model optimization with global optimism:
+
+(
+
+π(t+1) ←arg min
+
+log(π(y′ | x))
+
+X
+
+α
+
+π∈Π
+
+(x,y,y′)∈D(t)
+
+β log π(y | x) πbase(y | x) −β log π(y′ | x) πbase(y′ | x) −(r(x, y) −r(x, y′))
+
+2 )
+
+
+
+X
+
+−
+
+.
+
+(x,y,y′)∈D(t)
+
+return: bπ ←arg maxt∈[T +1] Jβ(π(t)). ▷Can estimate Jβ(π(t)) using validation data.
+
+such that with probability at least 1 −ρ,
+
+r
+
+SEC(Π) log(2N(Π, ϵdisc)T/ρ)
+
+β) −Jβ(bπ) ≲(Rmax + Vmax)
+
+bπ ∥π⋆
+
+= Jβ(π⋆
+
+ 
+
+
+
+βDKL
+
+β
+
+T + βϵdisc
+
+p
+
+SEC(Π)T
+
+where SEC(Π) := SEC(Π, r, T, β, V 2
+
+max; πbase).
+
+Proof of Theorem J.1. For compactness, we abbreviate SEC(Π) := SEC(Π, r, T, β, V 2
+
+max; πbase). From Equation (37) of Xie et al. (2024), we have
+
+T X
+
+1 T
+
+Jβ(π⋆
+
+β) −Jβ(π(t))
+
+t=1
+
+T X
+
+≲α
+
+β (Rmax + Vmax)2 · SEC(Π) + β
+
+αT + Vmax
+
+T + 1
+
+E (x,y)∼πbase[β log π(t)(y | x) −β log π⋆
+
+β(y | x)]
+
+T
+
+t=2
+
+2#
+
+πbase(y | x) −r(x, y) −β log π(t)(y′ | x)
+
+T X
+
+"
+
+β log π(t)(y | x)
+
++ β α(Rmax + Vmax)2T
+
+E x∼µ y,y′∼π(t)|x
+
+πbase(y′ | x) + r(x, y′)
+
+t=2
+
+where π(t) := 1 t−1
+
+i<t π(i) ⊗πbase denotes the model that, given x ∈X, samples i ∼Unif([t −1]) and then samples y ∼π(i)(· | x) and y′ ∼πbase(· | x). For any 2 ≤t ≤T, define L(t) : Π →[0, ∞) by
+
+P
+
+L(t)(π) := E (x,y)∼πbase[β log π(y | x) −β log π⋆
+
+β(y | x)]
+
+β log π(y | x) πbase(y | x) −r(x, y) −β log π(y′ | x) πbase(y′ | x) + r(x, y′)
+
+"
+
+2#
+
++ β α(Vmax + Rmax)2 E x∼µ y,y′∼π(t)|x
+
+.
+
+Similarly, define
+
+[β log π(y′ | x) −β log π⋆
+
+β(y′ | x)]
+
+X
+
+bL(t)(π) :=
+
+(x,y,y′)∈D(t)
+
+β log π(y | x) πbase(y | x) −r(x, y) −β log π(y′ | x) πbase(y′ | x) + r(x, y′)
+
+"
+
+2#
+
++ β α(Vmax + Rmax)2
+
+X
+
+(x,y,y′)∈D(t)
+
+where D(t) is the dataset defined in iteration t of Algorithm 1. By Assumption J.3 we have π⋆
+
+β ∈Π, so infπ∈Π bL(t)(π) ≤0. Moreover by definition, π(t) ∈arg minπ∈Π bL(t).
+
+Let Ψ be an ϵdisc-net over Π, of size N(Π, ϵdisc). Fix any π ∈Ψ and 2 ≤t ≤T, and define increments Xi := bL(i)(π) −bL(i−1)(π) for 2 ≤i ≤t, with the notation bL(1)(π) := 0 so that bL(t)(π) = Pt
+
+i=2 Xi. Let Fi be the filtration induced by D(i) and define γi := E[Xi | Fi−1]. Observe that (t −1)L(t)(π) = Pt
+
+i=2 γi. For any i, note that we can write Xi = Yi + Zi where Yi ∈[−Vmax, Vmax] and Zi ∈[0, β/α]. By Corollary F.1, it holds with probability at least 1 −ρ/(2|Π|T)
+
+t X
+
+t X
+
+E[Zi | Fi−1] ≲β
+
+α log(2|Ψ|T/ρ) +
+
+Zi.
+
+i=2
+
+i=2
+
+By Azuma-Hoeffding, it holds with probability at least 1 −ρ/(2|Π|T) that
+
+t X
+
+t X
+
+E[Yi | Fi−1] ≲Vmax
+
+p
+
+T log(2|Ψ|T/ρ) +
+
+Yi.
+
+i=2
+
+i=2
+
+Hence, with probability at least 1 −ρ/(|Ψ|T) we have
+
+(t −1)L(t)(π) ≲β
+
+p
+
+T log(2|Ψ|T/ρ) + bL(t)(π).
+
+α log(2|Ψ|T/ρ) + Vmax
+
+With probability at least 1 −ρ this bound holds for all π ∈Ψ and 2 ≤t ≤T. Henceforth condition on this
+
+event. Fix any π ∈Π and 2 ≤t ≤T. Since Ψ is an ϵ-net for Π, we see by definition of L(t) that there is some π′ ∈Ψ such that
+
+
+
+
+
+|L(t)(π) −L(t)(π′)| ≲βϵdisc + β α(Vmax + Rmax)2 · βϵdisc(Vmax + Rmax) ≤βϵdisc
+
+1 + β α(Vmax + Rmax)
+
+and similarly
+
+
+
+
+
+1 + β α(Vmax + Rmax)
+
+|bL(t)(π) −bL(t)(π′)| ≲(t −1)βϵdisc
+
+.
+
+It follows that, for all 2 ≤t ≤T, since bL(t)(π(t)) ≤0, we get
+
+
+
+
+
+(t −1)L(t)(π(t)) ≲β
+
+1 + β α(Vmax + Rmax)
+
+p
+
+α log(2|Ψ|T/ρ) + Vmax
+
+T log(2|Ψ|T/ρ) + βϵdiscT
+
+.
+
+Hence,
+
+T X
+
+1 T
+
+Jβ(π⋆
+
+β) −Jβ(π(t))
+
+t=1
+
+T X
+
+≲α
+
+β (Rmax + Vmax)2 · SEC(Π) + β
+
+αT + Vmax
+
+T + 1
+
+L(t)(π(t))
+
+T
+
+t=2
+
+r
+
+SEC(Π) log(2|Ψ|T/ρ)
+
+≲(Rmax + Vmax)
+
+p
+
+T + βϵdisc
+
+SEC(Π)T
+
+by taking
+
+s
+
+log(2|Ψ|T/ρ)
+
+α := β Rmax + Vmax
+
+SEC(Π)T .
+
+Since the output bπ of Algorithm 1 satisfies bπ ∈arg maxt∈[T ] Jβ(π(t)), the claimed bound on Jβ(π⋆
+
+β) −Jβ(bπ) is immediate. Finally, observe that by definition of π⋆
+
+β,
+
+π⋆
+
+β(y | x) πbase(y | x)
+
+
+
+
+
+
+
+
+
+r(x, y) −β log bπ(y | x) πbase(y | x)
+
+β) −Jβ(bπ) = E (x,y)∼π⋆
+
+− E (x,y)∼bπ
+
+Jβ(π⋆
+
+r(x, y) −β log
+
+β
+
+π⋆
+
+π⋆
+
+β(y | x) πbase(y | x)
+
+β(y | x) πbase(y | x)
+
+
+
+
+
+
+
+
+
+= E (x,y)∼π⋆
+
+− E (x,y)∼bπ
+
+r(x, y) −β log
+
+r(x, y) −β log
+
+β
+
+"
+
+#
+
+β log bπ(y | x)
+
++ E (x,y)∼bπ
+
+π⋆
+
+β(y | x)
+
+= β log E (x,y)∼πbase[exp(r(x, y))] −β log E (x,y)∼πbase[exp(r(x, y))] + βDKL
+
+bπ ∥π⋆
+
+ 
+
+
+
+β
+
+bπ ∥π⋆
+
+ 
+
+
+
+= βDKL
+
+.
+
+β
+
+This completes the proof.
+
+J.2.3 Applying XPO to maximum-likelihood sharpening
+We now prove Theorem J.2, the formal statement of Theorem 4.3, which applies XPO to maximum-likelihood sharpening. This result is a straightforward corollary of Theorem J.1 with the reward function rself(x, y) := log πbase(y | x), together with the observation that low KL-regularized regret implies sharpness (under Assumption 4.2).
+
+Theorem J.2 (Sharpening via active exploration). There are absolute constants cJ.2, CJ.2 > 0 so that the following holds. Let ϵ, δ, γmargin, ρ, β ∈(0, 1) and T ∈N be given. For base model πbase, define reward function r(x, y) := log πbase(y | x). Let Rmax ≥1 + maxx,y log 1 πbase(y|x). Suppose that πbase satisfies Assumption 4.2 with parameter γmargin, that β−1 ≥2γ−1
+
+margin log(2|Y|/δ), and that there is ϵdisc ∈(0, 1) so that
+
+R2
+
+maxSEC(Π) log(2N(Π, ϵdisc)T/ρ)
+
+T ≥CJ.2
+
+ϵ2δ2β2
+
+and
+
+ϵδ p
+
+ϵdisc ≤cJ.2
+
+SEC(Π)T
+
+β(y | x) ∝π1+β−1
+
+where SEC(Π) := SEC(Π, r, T, β, R2
+
+max; πbase). Also suppose that π⋆
+
+β ∈Π where π⋆
+
+base (y | x).
+
+Then applying Algorithm 1 with base model πbase, reward function r, iteration count T, regularization β, and
+
+q
+
+log(2N(Π,ϵdisc)T/δ)
+
+optimism parameter α := β Rmax
+
+SEC(Π)T yields a model bπ ∈Π such that with probability at least 1−ρ,
+
+Px∼µ[bπ(y⋆(x) | x) < 1 −δ] ≤ϵ.
+
+The total sample complexity is
+
+!
+
+maxSEC(Π) log(N(Π, ϵdisc)/ρ) log2(|Y|δ−1)
+
+R2
+
+m = eO
+
+.
+
+γ2
+
+marginϵ2δ2
+
+Proof of Theorem J.2. By definition of r, we have |r(x, y)| ≤Rmax for all x, y. By assumption, Assumption J.3 is satisfied, and by definition of Rmax, Assumption 4.5 is satisfied with parameter Vmax := βRmax ≤Rmax. It follows from Theorem J.1 that with probability at least 1 −ρ, the output bπ of Algorithm 1 satisfies
+
+r
+
+SEC(Π) log(2N(Π, ϵdisc)T/ρ)
+
+≲(Rmax + Vmax)
+
+bπ ∥π⋆
+
+ 
+
+
+
+βDKL
+
+β
+
+T + βϵdisc
+
+p
+
+SEC(Π)T.
+
+By choice of T and ϵdisc, so long as CJ.2 > 0 is chosen to be a sufficiently large constant and cJ.2 > 0 is chosen to be a sufficiently small constant, we have βDKL
+
+
+
+
+
+≤ 1 12βϵδ, so by e.g. Equation (16) of Sason and
+
+bπ ∥π⋆
+
+β
+
+
+
+
+
+Verdú (2016), D2
+
+bπ, π⋆
+
+≤ϵδ/(12).
+
+H
+
+β
+
+For any x ∈X and y′ ∈Y \ y⋆(x), by Assumption 4.2 and definition of π⋆
+
+β we have
+
+1+β−1
+
+maxy∈Y π⋆
+
+β(y | x) π⋆
+
+maxy∈Y πbase(y | x)
+
+1 π⋆
+
+β(y′ | x) ≥
+
+β(y′ | x) =
+
+πbase(y′ | x)
+
+≥(1 + γmargin)1+β−1 ≥eγmargin/(2β) ≥2|Y|
+
+δ
+
+where the final inequality is by the assumption on β in the theorem statement. Therefore
+
+β(y′ | x) ≥1 −δ
+
+X
+
+π⋆
+
+β(y⋆(x) | x) ≥1 −
+
+π⋆
+
+2.
+
+y′∈Y\y⋆(x)
+
+Now for any x, we can lower bound
+
+2
+
+p
+
+1 −bπ(y⋆(x) | x) − q
+
+D2
+
+bπ(· | x), π⋆
+
+1 −π⋆ β(y⋆(x) | x)
+
+ 
+
+
+
+β(· | x)
+
+≥
+
+H
+
+≥δ
+
+12 · I{bπ(y⋆(x) | x) ≤1 −δ}.
+
+Hence,
+
+Px∼µ[bπ(y⋆(x) | x) < 1 −δ] ≤12
+
+δ Ex∼µD2
+
+bπ(· | x), π⋆
+
+ 
+
+
+
+β(· | x)
+
+H
+
+= 12
+
+δ D2
+
+bπ, π⋆
+
+ 
+
+
+
+H
+
+β
+
+≤ϵ.
+
+as claimed.
+
+J.2.4 Application: linear softmax models
+In this section we apply Theorem 4.3 to the class of linear softmax models, proving Theorem 4.4. This demonstrates that Algorithm 1 can achieve an exponential improvement in sample complexity compared to SFT-Sharpening.
+
+Definition J.3 (Linear softmax model). Let d ∈N be given, and let ϕ : X × Y →Rd be a feature map with ∥ϕ(x, y)∥2 ≤1 for all x, y. Let πzero : X →∆(Y) be the uniform model πzero(y | x) := 1 |Y|, and let B ≥1.15
+
+We consider the linear softmax model class Πϕ,B := {πθ : θ ∈Rd, ∥θ∥2 ≤B} where πθ : X →∆(Y) is defined
+
+by
+
+πθ(y | x) ∝πzero(y | x) exp(⟨ϕ(x, y), θ⟩).
+
+Theorem J.3 (Restatement of Theorem 4.4). Let ϵ, δ, γmargin, ρ ∈(0, 1) be given. Suppose that πbase = πθ⋆∈ Πϕ,B for some θ⋆∈Rd with ∥θ⋆∥2 ≤ γmarginB 3 log(2|Y|/δ). Also, suppose that πbase satisfies Assumption 4.2 with param- eter γmargin. Then Algorithm 1 with base model πbase, reward function r(x, y) := log πbase(x, y), regularization
+
+q
+
+d log(BdT/(ϵδ))+log(T/ρ)
+
+parameter β := γmargin/(2 log(2|Y|/δ)), and optimism parameter α(T) ∝ β B+log(|Y|)
+
+dT log(T ) returns an (ϵ, δ)-sharpened model with probability at least 1 −ρ, and has sample complexity
+
+m = poly(ϵ−1, δ−1, γ−1
+
+margin, d, B, log(|Y|/ρ)).
+
+15We use the notation πzero to highlight the fact that πzero = πθ for θ = 0.
+
+Before proving the result, we unpack the conditions. Theorem J.3 requires the base model πbase to lie in the model class and also satisfy the margin condition (Assumption 4.2). For any constant ϵ, δ > 0, the sharpening algorithm then succeeds with sample complexity poly(d, γ−1
+
+margin, B, log(|Y|)). These conditions are non-vacuous; in fact, there are fairly natural examples for which non-exploratory algorithm such as SFT-Sharpening require sample complexity exp(Ω(d)), whereas all of the above parameters are poly(d). The following is one such example.
+
+Example J.1 (Separation between RLHF-Sharpening and SFT-Sharpening). Set X = {x} and let Y ⊂Rd be a 1/4-packing of the unit sphere in Rd of cardinality exp(Θ(d)). Define ϕ : X × Y →Rd by ϕ(x, y) := y, and let B = Cd log d for an absolute constant C > 0. Fix any y⋆∈Y and define πbase := πθ⋆∈Πϕ,B by θ⋆:= y⋆. Then for any y̸ = y⋆, we have ⟨y, y⋆⟩≤1 −Ω(1), so
+
+πbase(y⋆| x)
+
+πbase(y | x) = exp(⟨y⋆−y, y⋆⟩) = exp(Ω(1)) = 1 + Ω(1).
+
+Thus, πbase satisfies Assumption 4.2 with γmargin = Ω(1). Moreover, ∥θ⋆∥2 = 1 ≤ γmarginB 3 log(2|Y|/δ) for any δ = 1/poly(d), so long as C is a sufficiently large constant. It follows from Theorem 4.4 that Algorithm 1 computes an (ϵ, δ)-sharpened model with sample complexity poly(ϵ−1, δ−1, d). However, since πbase(y⋆| x) ≤ πbase(y | x) · exp(2) for all y ∈Y, it is clear that
+
+ 1 πbase(y⋆(x) | x)
+
+
+
+= 1 πbase(y⋆| x) = Ω(|Y|) = exp(Ω(d)).
+
+Ccov = E
+
+Thus, the sample complexity guarantee for SFT-Sharpening in Theorem 4.1 will incur exponential dependence on d in the sample complexity. It is straightforward to check that this dependence is real for SFT-Sharpening, and not just an artifact of the analysis, since the model that SFT-Sharpening is trying to learn (via MLE) will itself not be sharp in this example, unless exp(Ω(d)) samples are drawn per prompt. ◁
+
+We now proceed to the proof of Theorem J.3, which requires the following bounds on the covering number
+
+and the Sequential Extrapolation Coefficient of Πϕ,B.
+
+Lemma J.4. Let ϵdisc > 0. Then Πϕ,B has an ϵdisc-net of size (6B/ϵdisc)d.
+
+Proof of Lemma J.4. By a standard packing argument, there is a set {θ1, . . . , θN} of size (6B/ϵdisc)d such that for every θ ∈Rd with ∥θ∥2 ≤B there is some i ∈[N] with ∥θi −θ∥2 ≤ϵdisc/2. Now for any x ∈X and y ∈Y,
+
+exp(⟨ϕ(x, y), θi⟩) + log E(x′,y′)∼πzero exp(⟨ϕ(x′, y′), θi⟩)
+
+log πθ(y | x)
+
+πθi(y | x) = log exp(⟨ϕ(x, y), θ⟩)
+
+E(x′,y′)∼πzero exp(⟨ϕ(x′, y′), θ⟩)
+
+= ⟨ϕ(x, y), θ −θi⟩+ log E(x′,y′)∼πzero [exp(⟨ϕ(x′, y′), θ⟩) exp(⟨ϕ(x′, y′), θi −θ⟩)]
+
+E(x′,y′)∼πzero exp(⟨ϕ(x′, y′), θ⟩) .
+
+The first term is bounded by ϵdisc/2 in magnitude. In the second term, we have exp(⟨ϕ(x′, y′), θi −θ⟩) ∈ [exp(−ϵdisc/2), exp(ϵdisc/2)], so the ratio of expectations lies in [exp(−ϵdisc/2), exp(ϵdisc/2)] as well, and so the log-ratio lies in [−ϵdisc/2, ϵdisc/2]. In all, we get
+
+≤ϵdisc. Thus, {πθ1, . . . , πθN } is an ϵdisc-net for Π.
+
+log πθ(y|x)
+
+πθi(y|x)
+
+Lemma J.5. Let r : X × Y →[−Rmax, Rmax] be a reward function and let T ∈N and β > 0. If λ ≥ 4β2B2 + R2 max then for any π⋆∈Πϕ,B,
+
+SEC(Πϕ,B, r, T, β, λ; π⋆) ≲d log(T + 1).
+
+Proof of Lemma J.5. Fix π(1), . . . , π(T ) ∈Πϕ,B. By definition, there are some θ(1), . . . , θ(T ) ∈Rd with ∥θ(t)∥2 ≤B and
+
+π(t)(y | x) ∝πzero(y | x) exp(⟨ϕ(x, y), θ(t)⟩)
+
+for all t ∈[T] and (x, y) ∈X × Y. Similarly, there is some θ⋆∈Rd with ∥θ⋆∥2 ≤B and π⋆(y | x) ∝πzero(y | x) exp(⟨ϕ(x, y), θ⋆⟩).
+
+Define eϕ : X × Y →Rd+1 by eϕ(x, y) := [ϕ(x, y), r(x,y)
+
+Rmax ] and define eθ(t) := [β(θ(t) −θ⋆), −Rmax]. Then for any t ∈[T] we have
+
+i2
+
+π⋆(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+E(t) h
+
+π⋆(y′|x) + r(x, y′)
+
+
+
+2
+
+π⋆(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+λ ∨Pt−1
+
+i=1 E(i)
+
+π⋆(y′|x) + r(x, y′)
+
+i2
+
+E(t) h
+
+⟨eϕ(x, y) −eϕ(x, y′), eθ(t)⟩
+
+=
+
+
+
+2
+
+λ ∨Pt−1
+
+i=1 E(i)
+
+⟨eϕ(x, y) −eϕ(x, y′), eθ(t)⟩
+
+≤ (eθ(t))⊤Σ(t)eθ(t)
+
+λ ∨Pt−1
+
+i=1(eθ(t))⊤Σ(i)eθ(t)
+
+where for each i ∈[T] we have defined Σ(i) := E(i)h
+
+(eϕ(x, y) −eϕ(x, y′))(eϕ(x, y) −eϕ(x, y′))⊤i
+
+. Observe that
+
+2 ≤4β2B2 + R2 max ≤λ by assumption on λ. Therefore,
+
+∥eθ(t)∥2
+
+(eθ(t))⊤Σ(t)eθ(t)
+
+i=1(eθ(t))⊤Σ(i)eθ(t) ≲ (eθ(t))⊤Σ(t)eθ(t)
+
+λ ∨Pt−1
+
+λ + Pt−1
+
+i=1(eθ(t))⊤Σ(i)eθ(t)
+
+≤ (eθ(t))⊤Σ(t)eθ(t)
+
+
+
+
+
+Id + Pt−1
+
+(eθ(t))⊤
+
+i=1 Σ(i)
+
+eθ(t)
+
+!−1/2
+
+!−1/2
+
+
+
+t−1 X
+
+t−1 X
+
+Σ(i)
+
+Σ(t)
+
+Σ(i)
+
+≤λmax
+
+Id +
+
+Id +
+
+
+
+
+
+i=1
+
+i=1
+
+!−1/2
+
+!−1/2
+
+
+
+t−1 X
+
+t−1 X
+
+Σ(i)
+
+Σ(t)
+
+Σ(i)
+
+≤Tr
+
+Id +
+
+Id +
+
+
+
+
+
+i=1
+
+i=1
+
+!−1
+
+
+
+
+
+t−1 X
+
+Σ(i)
+
+Σ(t)
+
+= Tr
+
+Id +
+
+.
+
+
+
+i=1
+
+2 ≲1. Hence by Lemma F.2, we have
+
+Observe that Tr(Σ(t)) ≤maxx,y∥eϕ(x, y)∥2
+
+i2
+
+π⋆(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+E(t) h
+
+π⋆(y′|x) + r(x, y′)
+
+T X
+
+
+
+2
+
+π⋆(y|x) −r(x, y) −β log π(t)(y′|x)
+
+β log π(t)(y|x)
+
+λ ∨Pt−1
+
+i=1 E(i)
+
+π⋆(y′|x) + r(x, y′)
+
+t=1
+
+!−1
+
+
+
+
+
+t−1 X
+
+T X
+
+≲
+
+Σ(i)
+
+Σ(t)
+
+Tr
+
+Id +
+
+
+
+
+
+t=1
+
+i=1
+
+≲d log(T + 1).
+
+Since π(1), . . . , π(T ) ∈Π were arbitrary, this completes the proof.
+
+The proof is now immediate from Theorem J.2 and the above lemmas.
+
+Proof of Theorem J.3. By the assumption on θ⋆and choice of β, the model π⋆
+
+β defined by π⋆
+
+β(y | x) ∝
+
+πbase(y | x)1+β−1 satisfies π⋆
+
+β = π(1+β−1)θ⋆∈Πϕ,B. By Lemma J.4, we have N(Πϕ,B, ϵdisc) ≤(6B/ϵdisc)d. Take
+
+4β2B2 + (2B + log |Y|)2. We know that r(x, y) := log πbase(y | x) satisfies |r(x, y)| ≤2B + log |Y| for all x, y. By Lemma J.5, we therefore get that SEC(Πϕ,B, r, T, β, R2
+
+p
+
+Rmax :=
+
+max; πbase) ≲d log(T + 1). Substituting these bounds into Theorem J.2 yields the claimed result.
+

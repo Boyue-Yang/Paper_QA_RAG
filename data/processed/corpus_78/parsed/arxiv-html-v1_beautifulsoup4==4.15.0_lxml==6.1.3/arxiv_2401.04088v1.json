@@ -1,0 +1,1204 @@
+{
+  "parser_version": "arxiv-html-v1",
+  "parser_backend_version": "beautifulsoup4==4.15.0,lxml==6.1.3",
+  "paper_id": "arxiv_2401.04088",
+  "version": "v1",
+  "title": "Mixtral of Experts",
+  "source_format": "html",
+  "source_sha256": "9f3a55b554c6216cb9fbdce3f9b3e7b3ddad44b97ce1326e8c23f753e74fba02",
+  "source_url": "https://arxiv.org/html/2401.04088v1",
+  "source_path": "data/corpus_78/html/arxiv_2401.04088v1.html",
+  "latex_error_elements": 0,
+  "quality_flags": [],
+  "sections": [
+    {
+      "section_id": "arxiv_2401.04088_v1_s0000",
+      "title": "Abstract",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "abstract1",
+      "path": [
+        "Abstract"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_f982ac8b197df2e9805b",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.1",
+          "text": "We introduce Mixtral 8x7B, a Sparse Mixture of Experts (SMoE) language model. Mixtral has the same architecture as Mistral 7B, with the difference that each layer is composed of 8 feedforward blocks (i.e. experts). For every token, at each layer, a router network selects two experts to process the current state and combine their outputs. Even though each token only sees two experts, the selected experts can be different at each timestep. As a result, each token has access to 47B parameters, but only uses 13B active parameters during inference. Mixtral was trained with a context size of 32k tokens and it outperforms or matches Llama 2 70B and GPT-3.5 across all evaluated benchmarks. In particular, Mixtral vastly outperforms Llama 2 70B on mathematics, code generation, and multilingual benchmarks. We also provide a model fine-tuned to follow instructions, Mixtral 8x7B – Instruct, that surpasses GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B – chat model on human benchmarks. Both the base and instruct models are released under the Apache 2.0 license.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 1071
+        },
+        {
+          "paragraph_id": "p_efc661948a8558be1458",
+          "page": null,
+          "bbox": null,
+          "element_id": "abstract1.2",
+          "text": "Code: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/mixtral-of-experts/",
+          "kind": "text",
+          "char_start": 1073,
+          "char_end": 1172
+        }
+      ],
+      "text": "We introduce Mixtral 8x7B, a Sparse Mixture of Experts (SMoE) language model. Mixtral has the same architecture as Mistral 7B, with the difference that each layer is composed of 8 feedforward blocks (i.e. experts). For every token, at each layer, a router network selects two experts to process the current state and combine their outputs. Even though each token only sees two experts, the selected experts can be different at each timestep. As a result, each token has access to 47B parameters, but only uses 13B active parameters during inference. Mixtral was trained with a context size of 32k tokens and it outperforms or matches Llama 2 70B and GPT-3.5 across all evaluated benchmarks. In particular, Mixtral vastly outperforms Llama 2 70B on mathematics, code generation, and multilingual benchmarks. We also provide a model fine-tuned to follow instructions, Mixtral 8x7B – Instruct, that surpasses GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B – chat model on human benchmarks. Both the base and instruct models are released under the Apache 2.0 license.\n\nCode: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/mixtral-of-experts/"
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0001",
+      "title": "1 Introduction",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S1",
+      "path": [
+        "1 Introduction"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0d3721eef16820d8e723",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p1.1",
+          "text": "In this paper, we present Mixtral 8x7B, a sparse mixture of experts model (SMoE) with open weights, licensed under Apache 2.0. Mixtral outperforms Llama 2 70B and GPT-3.5 on most benchmarks. As it only uses a subset of its parameters for every token, Mixtral allows faster inference speed at low batch-sizes, and higher throughput at large batch-sizes.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 352
+        },
+        {
+          "paragraph_id": "p_c001cfef4ca01cd8686b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p2.1",
+          "text": "Mixtral is a sparse mixture-of-experts network. It is a decoder-only model where the feedforward block picks from a set of 8 distinct groups of parameters. At every layer, for every token, a router network chooses two of these groups (the “experts”) to process the token and combine their output additively. This technique increases the number of parameters of a model while controlling cost and latency, as the model only uses a fraction of the total set of parameters per token.",
+          "kind": "text",
+          "char_start": 354,
+          "char_end": 834
+        },
+        {
+          "paragraph_id": "p_dc0c6e7c92f2423e7691",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p3.1",
+          "text": "Mixtral is pretrained with multilingual data using a context size of 32k tokens. It either matches or exceeds the performance of Llama 2 70B and GPT-3.5, over several benchmarks. In particular, Mixtral demonstrates superior capabilities in mathematics, code generation, and tasks that require multilingual understanding, significantly outperforming Llama 2 70B in these domains. Experiments show that Mixtral is able to successfully retrieve information from its context window of 32k tokens, regardless of the sequence length and the location of the information in the sequence.",
+          "kind": "text",
+          "char_start": 836,
+          "char_end": 1415
+        },
+        {
+          "paragraph_id": "p_b3c191fa08ba08d6f8bf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p4.1",
+          "text": "We also present Mixtral 8x7B – Instruct, a chat model fine-tuned to follow instructions using supervised fine-tuning and Direct Preference Optimization [25]. Its performance notably surpasses that of GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B – chat model on human evaluation benchmarks. Mixtral – Instruct also demonstrates reduced biases, and a more balanced sentiment profile in benchmarks such as BBQ, and BOLD.",
+          "kind": "text",
+          "char_start": 1417,
+          "char_end": 1844
+        },
+        {
+          "paragraph_id": "p_7dda385b42bd1d92a479",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "We release both Mixtral 8x7B and Mixtral 8x7B -- Instruct under the Apache 2.0 license, free for academic and commercial usage, ensuring broad accessibility and potential for diverse applications. To enable the community to run Mixtral with a fully open-source stack, we submitted changes to the vLLM project, which integrates Megablocks CUDA kernels for efficient inference. Skypilot also allows the deployment of vLLM endpoints on any instance in the cloud.",
+          "kind": "text",
+          "char_start": 1846,
+          "char_end": 2305
+        },
+        {
+          "paragraph_id": "p_ea143151c7e75d9b4639",
+          "page": null,
+          "bbox": null,
+          "element_id": "S1.p5.1",
+          "text": "Footnote: 1 1 https://mistral.ai/news/mixtral-of-experts/",
+          "kind": "footnote",
+          "char_start": 2307,
+          "char_end": 2364
+        }
+      ],
+      "text": "In this paper, we present Mixtral 8x7B, a sparse mixture of experts model (SMoE) with open weights, licensed under Apache 2.0. Mixtral outperforms Llama 2 70B and GPT-3.5 on most benchmarks. As it only uses a subset of its parameters for every token, Mixtral allows faster inference speed at low batch-sizes, and higher throughput at large batch-sizes.\n\nMixtral is a sparse mixture-of-experts network. It is a decoder-only model where the feedforward block picks from a set of 8 distinct groups of parameters. At every layer, for every token, a router network chooses two of these groups (the “experts”) to process the token and combine their output additively. This technique increases the number of parameters of a model while controlling cost and latency, as the model only uses a fraction of the total set of parameters per token.\n\nMixtral is pretrained with multilingual data using a context size of 32k tokens. It either matches or exceeds the performance of Llama 2 70B and GPT-3.5, over several benchmarks. In particular, Mixtral demonstrates superior capabilities in mathematics, code generation, and tasks that require multilingual understanding, significantly outperforming Llama 2 70B in these domains. Experiments show that Mixtral is able to successfully retrieve information from its context window of 32k tokens, regardless of the sequence length and the location of the information in the sequence.\n\nWe also present Mixtral 8x7B – Instruct, a chat model fine-tuned to follow instructions using supervised fine-tuning and Direct Preference Optimization [25]. Its performance notably surpasses that of GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B – chat model on human evaluation benchmarks. Mixtral – Instruct also demonstrates reduced biases, and a more balanced sentiment profile in benchmarks such as BBQ, and BOLD.\n\nWe release both Mixtral 8x7B and Mixtral 8x7B -- Instruct under the Apache 2.0 license, free for academic and commercial usage, ensuring broad accessibility and potential for diverse applications. To enable the community to run Mixtral with a fully open-source stack, we submitted changes to the vLLM project, which integrates Megablocks CUDA kernels for efficient inference. Skypilot also allows the deployment of vLLM endpoints on any instance in the cloud.\n\nFootnote: 1 1 https://mistral.ai/news/mixtral-of-experts/"
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0002",
+      "title": "2 Architectural details",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2",
+      "path": [
+        "2 Architectural details"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_6c4ce1a844b11ff616fc",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.T1.1",
+          "text": "Parameter | Value\ndim | $4096$\nn_layers | $32$\nhead_dim | $128$\nhidden_dim | $14336$\nn_heads | $32$\nn_kv_heads | $8$\ncontext_len | $32768$\nvocab_size | $32000$\nnum_experts | $8$\ntop_k_experts | $2$",
+          "kind": "table",
+          "char_start": 0,
+          "char_end": 197
+        },
+        {
+          "paragraph_id": "p_9ffaa1c3635ef4588eef",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.T1",
+          "text": "Table 1: Model architecture.",
+          "kind": "caption",
+          "char_start": 199,
+          "char_end": 227
+        },
+        {
+          "paragraph_id": "p_f6f18b527a1a62ba5e02",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.p1.1",
+          "text": "Mixtral is based on a transformer architecture [31] and uses the same modifications as described in [18], with the notable exceptions that Mixtral supports a fully dense context length of 32k tokens, and the feedforward blocks are replaced by Mixture-of-Expert layers (Section 2.1). The model architecture parameters are summarized in Table 1.",
+          "kind": "text",
+          "char_start": 229,
+          "char_end": 572
+        }
+      ],
+      "text": "Parameter | Value\ndim | $4096$\nn_layers | $32$\nhead_dim | $128$\nhidden_dim | $14336$\nn_heads | $32$\nn_kv_heads | $8$\ncontext_len | $32768$\nvocab_size | $32000$\nnum_experts | $8$\ntop_k_experts | $2$\n\nTable 1: Model architecture.\n\nMixtral is based on a transformer architecture [31] and uses the same modifications as described in [18], with the notable exceptions that Mixtral supports a fully dense context length of 32k tokens, and the feedforward blocks are replaced by Mixture-of-Expert layers (Section 2.1). The model architecture parameters are summarized in Table 1."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0003",
+      "title": "2.1 Sparse Mixture of Experts",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S2.SS1",
+      "path": [
+        "2 Architectural details",
+        "2.1 Sparse Mixture of Experts"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_e53f990db2ea218c4d0b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.F1",
+          "text": "Figure 1: Mixture of Experts Layer. Each input vector is assigned to 2 of the 8 experts by a router. The layer’s output is the weighted sum of the outputs of the two selected experts. In Mixtral, an expert is a standard feedforward block as in a vanilla transformer architecture.",
+          "kind": "caption",
+          "char_start": 0,
+          "char_end": 279
+        },
+        {
+          "paragraph_id": "p_8e8b30170f8b9d005f35",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p1.1",
+          "text": "We present a brief overview of the Mixture of Experts layer (Figure 1). For a more in-depth overview, see [12]. The output of the MoE module for a given input $x$ is determined by the weighted sum of the outputs of the expert networks, where the weights are given by the gating network’s output. i.e. given $n$ expert networks $\\{E_{0},E_{i},...,E_{n-1}\\}$, the output of the expert layer is given by:",
+          "kind": "text",
+          "char_start": 281,
+          "char_end": 682
+        },
+        {
+          "paragraph_id": "p_34f070b965c6a3a151f0",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.Ex1",
+          "text": "\\sum_{i=0}^{n-1}G(x)_{i}\\cdot E_{i}(x).",
+          "kind": "equation",
+          "char_start": 684,
+          "char_end": 723
+        },
+        {
+          "paragraph_id": "p_f5be9a7065b77f638baa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p2.1",
+          "text": "Here, $G(x)_{i}$ denotes the $n$-dimensional output of the gating network for the $i$-th expert, and $E_{i}(x)$ is the output of the $i$-th expert network. If the gating vector is sparse, we can avoid computing the outputs of experts whose gates are zero. There are multiple alternative ways of implementing $G(x)$ [6, 15, 35], but a simple and performant one is implemented by taking the softmax over the Top-K logits of a linear layer [28]. We use",
+          "kind": "text",
+          "char_start": 725,
+          "char_end": 1174
+        },
+        {
+          "paragraph_id": "p_1a3f98c3ca2a29d58ba8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.Ex2",
+          "text": "G(x):=\\text{Softmax}(\\text{TopK}(x\\cdot W_{g})),",
+          "kind": "equation",
+          "char_start": 1176,
+          "char_end": 1224
+        },
+        {
+          "paragraph_id": "p_658d3218405bc14a1896",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p3.1",
+          "text": "where $(\\text{TopK}(\\ell))_{i}:=\\ell_{i}$ if $\\ell_{i}$ is among the top-K coordinates of logits $\\ell\\in\\mathbb{R}^{n}$ and $(\\text{TopK}(\\ell))_{i}:=-\\infty$ otherwise. The value of K – the number of experts used per token – is a hyper-parameter that modulates the amount of compute used to process each token. If one increases $n$ while keeping $K$ fixed, one can increase the model’s parameter count while keeping its computational cost effectively constant. This motivates a distinction between the model’s total parameter count (commonly referenced as the sparse parameter count), which grows with $n$, and the number of parameters used for processing an individual token (called the active parameter count), which grows with $K$ up to $n$.",
+          "kind": "text",
+          "char_start": 1226,
+          "char_end": 1972
+        },
+        {
+          "paragraph_id": "p_8cf8f9ca040ad5c055b7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p4.1",
+          "text": "MoE layers can be run efficiently on single GPUs with high performance specialized kernels. For example, Megablocks [13] casts the feed-forward network (FFN) operations of the MoE layer as large sparse matrix multiplications, significantly enhancing the execution speed and naturally handling cases where different experts get a variable number of tokens assigned to them. Moreover, the MoE layer can be distributed to multiple GPUs through standard Model Parallelism techniques, and through a particular kind of partitioning strategy called Expert Parallelism (EP) [28]. During the MoE layer’s execution, tokens meant to be processed by a specific expert are routed to the corresponding GPU for processing, and the expert’s output is returned to the original token location. Note that EP introduces challenges in load balancing, as it is essential to distribute the workload evenly across the GPUs to prevent overloading individual GPUs or hitting computational bottlenecks.",
+          "kind": "text",
+          "char_start": 1974,
+          "char_end": 2949
+        },
+        {
+          "paragraph_id": "p_e0f5bef7bfa37a8f3c2b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p5.1",
+          "text": "In a Transformer model, the MoE layer is applied independently per token and replaces the feed-forward (FFN) sub-block of the transformer block. For Mixtral we use the same SwiGLU architecture as the expert function $E_{i}(x)$ and set $K=2$. This means each token is routed to two SwiGLU sub-blocks with different sets of weights. Taking this all together, the output $y$ for an input token $x$ is computed as:",
+          "kind": "text",
+          "char_start": 2951,
+          "char_end": 3361
+        },
+        {
+          "paragraph_id": "p_dd6355f7db18c3d30db5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.Ex3",
+          "text": "y=\\sum_{i=0}^{n-1}\\text{Softmax}(\\text{Top2}(x\\cdot W_{g}))_{i}\\cdot\\text{SwiGLU}_{i}(x).",
+          "kind": "equation",
+          "char_start": 3363,
+          "char_end": 3452
+        },
+        {
+          "paragraph_id": "p_8d421395bed879daa00b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S2.SS1.p6.1",
+          "text": "This formulation is similar to the GShard architecture [21], with the exceptions that we replace all FFN sub-blocks by MoE layers while GShard replaces every other block, and that GShard uses a more elaborate gating strategy for the second expert assigned to each token.",
+          "kind": "text",
+          "char_start": 3454,
+          "char_end": 3724
+        }
+      ],
+      "text": "Figure 1: Mixture of Experts Layer. Each input vector is assigned to 2 of the 8 experts by a router. The layer’s output is the weighted sum of the outputs of the two selected experts. In Mixtral, an expert is a standard feedforward block as in a vanilla transformer architecture.\n\nWe present a brief overview of the Mixture of Experts layer (Figure 1). For a more in-depth overview, see [12]. The output of the MoE module for a given input $x$ is determined by the weighted sum of the outputs of the expert networks, where the weights are given by the gating network’s output. i.e. given $n$ expert networks $\\{E_{0},E_{i},...,E_{n-1}\\}$, the output of the expert layer is given by:\n\n\\sum_{i=0}^{n-1}G(x)_{i}\\cdot E_{i}(x).\n\nHere, $G(x)_{i}$ denotes the $n$-dimensional output of the gating network for the $i$-th expert, and $E_{i}(x)$ is the output of the $i$-th expert network. If the gating vector is sparse, we can avoid computing the outputs of experts whose gates are zero. There are multiple alternative ways of implementing $G(x)$ [6, 15, 35], but a simple and performant one is implemented by taking the softmax over the Top-K logits of a linear layer [28]. We use\n\nG(x):=\\text{Softmax}(\\text{TopK}(x\\cdot W_{g})),\n\nwhere $(\\text{TopK}(\\ell))_{i}:=\\ell_{i}$ if $\\ell_{i}$ is among the top-K coordinates of logits $\\ell\\in\\mathbb{R}^{n}$ and $(\\text{TopK}(\\ell))_{i}:=-\\infty$ otherwise. The value of K – the number of experts used per token – is a hyper-parameter that modulates the amount of compute used to process each token. If one increases $n$ while keeping $K$ fixed, one can increase the model’s parameter count while keeping its computational cost effectively constant. This motivates a distinction between the model’s total parameter count (commonly referenced as the sparse parameter count), which grows with $n$, and the number of parameters used for processing an individual token (called the active parameter count), which grows with $K$ up to $n$.\n\nMoE layers can be run efficiently on single GPUs with high performance specialized kernels. For example, Megablocks [13] casts the feed-forward network (FFN) operations of the MoE layer as large sparse matrix multiplications, significantly enhancing the execution speed and naturally handling cases where different experts get a variable number of tokens assigned to them. Moreover, the MoE layer can be distributed to multiple GPUs through standard Model Parallelism techniques, and through a particular kind of partitioning strategy called Expert Parallelism (EP) [28]. During the MoE layer’s execution, tokens meant to be processed by a specific expert are routed to the corresponding GPU for processing, and the expert’s output is returned to the original token location. Note that EP introduces challenges in load balancing, as it is essential to distribute the workload evenly across the GPUs to prevent overloading individual GPUs or hitting computational bottlenecks.\n\nIn a Transformer model, the MoE layer is applied independently per token and replaces the feed-forward (FFN) sub-block of the transformer block. For Mixtral we use the same SwiGLU architecture as the expert function $E_{i}(x)$ and set $K=2$. This means each token is routed to two SwiGLU sub-blocks with different sets of weights. Taking this all together, the output $y$ for an input token $x$ is computed as:\n\ny=\\sum_{i=0}^{n-1}\\text{Softmax}(\\text{Top2}(x\\cdot W_{g}))_{i}\\cdot\\text{SwiGLU}_{i}(x).\n\nThis formulation is similar to the GShard architecture [21], with the exceptions that we replace all FFN sub-blocks by MoE layers while GShard replaces every other block, and that GShard uses a more elaborate gating strategy for the second expert assigned to each token."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0004",
+      "title": "3 Results",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3",
+      "path": [
+        "3 Results"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_b7b72a51672558884ee8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p1.1",
+          "text": "We compare Mixtral to Llama, and re-run all benchmarks with our own evaluation pipeline for fair comparison. We measure performance on a wide variety of tasks categorized as follow:",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 181
+        },
+        {
+          "paragraph_id": "p_7feb4c7345fc22e1cfb8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F2",
+          "text": "Figure 2: Performance of Mixtral and different Llama models on a wide range of benchmarks. All models were re-evaluated on all metrics with our evaluation pipeline for accurate comparison. Mixtral outperforms or matches Llama 2 70B on all benchmarks. In particular, it is vastly superior in mathematics and code generation.",
+          "kind": "caption",
+          "char_start": 183,
+          "char_end": 506
+        },
+        {
+          "paragraph_id": "p_4b9f3a560ffc4a348cbb",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T2.2",
+          "text": "Model | Active Params | MMLU | HellaS | WinoG | PIQA | Arc-e | Arc-c | NQ | TriQA | HumanE | MBPP | Math | GSM8K\nLLaMA 2 7B | 7B | 44.4% | 77.1% | 69.5% | 77.9% | 68.7% | 43.2% | 17.5% | 56.6% | 11.6% | 26.1% | 3.9% | 16.0%\nLLaMA 2 13B | 13B | 55.6% | 80.7% | 72.9% | 80.8% | 75.2% | 48.8% | 16.7% | 64.0% | 18.9% | 35.4% | 6.0% | 34.3%\nLLaMA 1 33B | 33B | 56.8% | 83.7% | 76.2% | 82.2% | 79.6% | 54.4% | 24.1% | 68.5% | 25.0% | 40.9% | 8.4% | 44.1%\nLLaMA 2 70B | 70B | 69.9% | 85.4% | 80.4% | 82.6% | 79.9% | 56.5% | 25.4% | 73.0% | 29.3% | 49.8% | 13.8% | 69.6%\nMistral 7B | 7B | 62.5% | 81.0% | 74.2% | 82.2% | 80.5% | 54.9% | 23.2% | 62.5% | 26.2% | 50.2% | 12.7% | 50.0%\nMixtral 8x7B | 13B | 70.6% | 84.4% | 77.2% | 83.6% | 83.1% | 59.7% | 30.6% | 71.5% | 40.2% | 60.7% | 28.4% | 74.4%",
+          "kind": "table",
+          "char_start": 508,
+          "char_end": 1298
+        },
+        {
+          "paragraph_id": "p_6984cb8b6ee7b3071aaf",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T2",
+          "text": "Table 2: Comparison of Mixtral with Llama. Mixtral outperforms or matches Llama 2 70B performance on almost all popular benchmarks while using 5x fewer active parameters during inference.",
+          "kind": "caption",
+          "char_start": 1300,
+          "char_end": 1487
+        },
+        {
+          "paragraph_id": "p_276eec3b974de0cc825f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i1",
+          "text": "• Commonsense Reasoning (0-shot): Hellaswag [32], Winogrande [26], PIQA [3], SIQA [27], OpenbookQA [22], ARC-Easy, ARC-Challenge [8], CommonsenseQA [30]",
+          "kind": "list_item",
+          "char_start": 1489,
+          "char_end": 1641
+        },
+        {
+          "paragraph_id": "p_29908342b93b695acbe3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i2",
+          "text": "• World Knowledge (5-shot): NaturalQuestions [20], TriviaQA [19]",
+          "kind": "list_item",
+          "char_start": 1643,
+          "char_end": 1707
+        },
+        {
+          "paragraph_id": "p_ddd35282c94c44245416",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i3",
+          "text": "• Reading Comprehension (0-shot): BoolQ [7], QuAC [5]",
+          "kind": "list_item",
+          "char_start": 1709,
+          "char_end": 1762
+        },
+        {
+          "paragraph_id": "p_0a1cfefc8bc8cc1c2b00",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i4",
+          "text": "• Math: GSM8K [9] (8-shot) with maj@8 and MATH [17] (4-shot) with maj@4",
+          "kind": "list_item",
+          "char_start": 1764,
+          "char_end": 1835
+        },
+        {
+          "paragraph_id": "p_a013ab3d7d7a03c8822d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i5",
+          "text": "• Code: Humaneval [4] (0-shot) and MBPP [1] (3-shot)",
+          "kind": "list_item",
+          "char_start": 1837,
+          "char_end": 1889
+        },
+        {
+          "paragraph_id": "p_f9dcd23d0475d6c14e89",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.I1.i6",
+          "text": "• Popular aggregated results: MMLU [16] (5-shot), BBH [29] (3-shot), and AGI Eval [34] (3-5-shot, English multiple-choice questions only)",
+          "kind": "list_item",
+          "char_start": 1891,
+          "char_end": 2028
+        },
+        {
+          "paragraph_id": "p_022ee908f7c89d431581",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.1",
+          "text": "Detailed results for Mixtral, Mistral 7B and Llama 2 7B/13B/70B and Llama 1 34B are reported in Table 2. Figure 2 compares the performance of Mixtral with the Llama models in different categories. Mixtral surpasses Llama 2 70B across most metrics. In particular, Mixtral displays a superior performance in code and mathematics benchmarks.",
+          "kind": "text",
+          "char_start": 2030,
+          "char_end": 2368
+        },
+        {
+          "paragraph_id": "p_f6593e642c886b20cc09",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p3.1",
+          "text": "Footnote: 2 2 Since Llama 2 34B was not open-sourced, we report results for Llama 1 34B.",
+          "kind": "footnote",
+          "char_start": 2370,
+          "char_end": 2458
+        },
+        {
+          "paragraph_id": "p_dcacb4533d0665d79e7b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F3",
+          "text": "Figure 3: Results on MMLU, commonsense reasoning, world knowledge and reading comprehension, math and code for Mistral (7B/8x7B) vs Llama 2 (7B/13B/70B). Mixtral largely outperforms Llama 2 70B on all benchmarks, except on reading comprehension benchmarks while using 5x lower active parameters. It is also vastly superior to Llama 2 70B on code and math.",
+          "kind": "caption",
+          "char_start": 2460,
+          "char_end": 2815
+        },
+        {
+          "paragraph_id": "p_fbe59f4b0ef3dbc05cff",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p4.1",
+          "text": "Size and Efficiency. We compare our performance to the Llama 2 family, aiming to understand Mixtral models’ efficiency in the cost-performance spectrum (see Figure 3). As a sparse Mixture-of-Experts model, Mixtral only uses 13B active parameters for each token. With 5x lower active parameters, Mixtral is able to outperform Llama 2 70B across most categories.",
+          "kind": "text",
+          "char_start": 2817,
+          "char_end": 3177
+        },
+        {
+          "paragraph_id": "p_cce98758ceee847c0b0b",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p5.1",
+          "text": "Note that this analysis focuses on the active parameter count (see Section 2.1), which is directly proportional to the inference compute cost, but does not consider the memory costs and hardware utilization. The memory costs for serving Mixtral are proportional to its sparse parameter count, 47B, which is still smaller than Llama 2 70B. As for device utilization, we note that the SMoEs layer introduces additional overhead due to the routing mechanism and due to the increased memory loads when running more than one expert per device. They are more suitable for batched workloads where one can reach a good degree of arithmetic intensity.",
+          "kind": "text",
+          "char_start": 3179,
+          "char_end": 3821
+        },
+        {
+          "paragraph_id": "p_f769fc89b545e896cc3e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p6.1",
+          "text": "Comparison with Llama 2 70B and GPT-3.5. In Table 3, we report the performance of Mixtral 8x7B compared to Llama 2 70B and GPT-3.5. We observe that Mixtral performs similarly or above the two other models. On MMLU, Mixtral obtains a better performance, despite its significantly smaller capacity (47B tokens compared to 70B). For MT Bench, we report the performance of the latest GPT-3.5-Turbo model available, gpt-3.5-turbo-1106.",
+          "kind": "text",
+          "char_start": 3823,
+          "char_end": 4253
+        },
+        {
+          "paragraph_id": "p_36ed7a4622f6d8873fd5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.p7.1",
+          "text": "Evaluation Differences. On some benchmarks, there are some differences between our evaluation protocol and the one reported in the Llama 2 paper: 1) on MBPP, we use the hand-verified subset 2) on TriviaQA, we do not provide Wikipedia contexts.",
+          "kind": "text",
+          "char_start": 4255,
+          "char_end": 4498
+        },
+        {
+          "paragraph_id": "p_22a0f46b4fedf19a6ce8",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T3.2",
+          "text": "| LLaMA 2 70B | GPT-3.5 | Mixtral 8x7B\nMMLU (MCQ in 57 subjects) | 69.9% | 70.0% | 70.6%\nHellaSwag (10-shot) | 87.1% | 85.5% | 86.7%\nARC Challenge (25-shot) | 85.1% | 85.2% | 85.8%\nWinoGrande (5-shot) | 83.2% | 81.6% | 81.2%\nMBPP (pass@1) | 49.8% | 52.2% | 60.7%\nGSM-8K (5-shot) | 53.6% | 57.1% | 58.4%\nMT Bench (for Instruct Models) | 6.86 | 8.32 | 8.30",
+          "kind": "table",
+          "char_start": 4500,
+          "char_end": 4854
+        },
+        {
+          "paragraph_id": "p_5bf0b9a1ff48d591eb4f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T3",
+          "text": "Table 3: Comparison of Mixtral with Llama 2 70B and GPT-3.5. Mixtral outperforms or matches Llama 2 70B and GPT-3.5 performance on most metrics.",
+          "kind": "caption",
+          "char_start": 4856,
+          "char_end": 5000
+        }
+      ],
+      "text": "We compare Mixtral to Llama, and re-run all benchmarks with our own evaluation pipeline for fair comparison. We measure performance on a wide variety of tasks categorized as follow:\n\nFigure 2: Performance of Mixtral and different Llama models on a wide range of benchmarks. All models were re-evaluated on all metrics with our evaluation pipeline for accurate comparison. Mixtral outperforms or matches Llama 2 70B on all benchmarks. In particular, it is vastly superior in mathematics and code generation.\n\nModel | Active Params | MMLU | HellaS | WinoG | PIQA | Arc-e | Arc-c | NQ | TriQA | HumanE | MBPP | Math | GSM8K\nLLaMA 2 7B | 7B | 44.4% | 77.1% | 69.5% | 77.9% | 68.7% | 43.2% | 17.5% | 56.6% | 11.6% | 26.1% | 3.9% | 16.0%\nLLaMA 2 13B | 13B | 55.6% | 80.7% | 72.9% | 80.8% | 75.2% | 48.8% | 16.7% | 64.0% | 18.9% | 35.4% | 6.0% | 34.3%\nLLaMA 1 33B | 33B | 56.8% | 83.7% | 76.2% | 82.2% | 79.6% | 54.4% | 24.1% | 68.5% | 25.0% | 40.9% | 8.4% | 44.1%\nLLaMA 2 70B | 70B | 69.9% | 85.4% | 80.4% | 82.6% | 79.9% | 56.5% | 25.4% | 73.0% | 29.3% | 49.8% | 13.8% | 69.6%\nMistral 7B | 7B | 62.5% | 81.0% | 74.2% | 82.2% | 80.5% | 54.9% | 23.2% | 62.5% | 26.2% | 50.2% | 12.7% | 50.0%\nMixtral 8x7B | 13B | 70.6% | 84.4% | 77.2% | 83.6% | 83.1% | 59.7% | 30.6% | 71.5% | 40.2% | 60.7% | 28.4% | 74.4%\n\nTable 2: Comparison of Mixtral with Llama. Mixtral outperforms or matches Llama 2 70B performance on almost all popular benchmarks while using 5x fewer active parameters during inference.\n\n• Commonsense Reasoning (0-shot): Hellaswag [32], Winogrande [26], PIQA [3], SIQA [27], OpenbookQA [22], ARC-Easy, ARC-Challenge [8], CommonsenseQA [30]\n\n• World Knowledge (5-shot): NaturalQuestions [20], TriviaQA [19]\n\n• Reading Comprehension (0-shot): BoolQ [7], QuAC [5]\n\n• Math: GSM8K [9] (8-shot) with maj@8 and MATH [17] (4-shot) with maj@4\n\n• Code: Humaneval [4] (0-shot) and MBPP [1] (3-shot)\n\n• Popular aggregated results: MMLU [16] (5-shot), BBH [29] (3-shot), and AGI Eval [34] (3-5-shot, English multiple-choice questions only)\n\nDetailed results for Mixtral, Mistral 7B and Llama 2 7B/13B/70B and Llama 1 34B are reported in Table 2. Figure 2 compares the performance of Mixtral with the Llama models in different categories. Mixtral surpasses Llama 2 70B across most metrics. In particular, Mixtral displays a superior performance in code and mathematics benchmarks.\n\nFootnote: 2 2 Since Llama 2 34B was not open-sourced, we report results for Llama 1 34B.\n\nFigure 3: Results on MMLU, commonsense reasoning, world knowledge and reading comprehension, math and code for Mistral (7B/8x7B) vs Llama 2 (7B/13B/70B). Mixtral largely outperforms Llama 2 70B on all benchmarks, except on reading comprehension benchmarks while using 5x lower active parameters. It is also vastly superior to Llama 2 70B on code and math.\n\nSize and Efficiency. We compare our performance to the Llama 2 family, aiming to understand Mixtral models’ efficiency in the cost-performance spectrum (see Figure 3). As a sparse Mixture-of-Experts model, Mixtral only uses 13B active parameters for each token. With 5x lower active parameters, Mixtral is able to outperform Llama 2 70B across most categories.\n\nNote that this analysis focuses on the active parameter count (see Section 2.1), which is directly proportional to the inference compute cost, but does not consider the memory costs and hardware utilization. The memory costs for serving Mixtral are proportional to its sparse parameter count, 47B, which is still smaller than Llama 2 70B. As for device utilization, we note that the SMoEs layer introduces additional overhead due to the routing mechanism and due to the increased memory loads when running more than one expert per device. They are more suitable for batched workloads where one can reach a good degree of arithmetic intensity.\n\nComparison with Llama 2 70B and GPT-3.5. In Table 3, we report the performance of Mixtral 8x7B compared to Llama 2 70B and GPT-3.5. We observe that Mixtral performs similarly or above the two other models. On MMLU, Mixtral obtains a better performance, despite its significantly smaller capacity (47B tokens compared to 70B). For MT Bench, we report the performance of the latest GPT-3.5-Turbo model available, gpt-3.5-turbo-1106.\n\nEvaluation Differences. On some benchmarks, there are some differences between our evaluation protocol and the one reported in the Llama 2 paper: 1) on MBPP, we use the hand-verified subset 2) on TriviaQA, we do not provide Wikipedia contexts.\n\n| LLaMA 2 70B | GPT-3.5 | Mixtral 8x7B\nMMLU (MCQ in 57 subjects) | 69.9% | 70.0% | 70.6%\nHellaSwag (10-shot) | 87.1% | 85.5% | 86.7%\nARC Challenge (25-shot) | 85.1% | 85.2% | 85.8%\nWinoGrande (5-shot) | 83.2% | 81.6% | 81.2%\nMBPP (pass@1) | 49.8% | 52.2% | 60.7%\nGSM-8K (5-shot) | 53.6% | 57.1% | 58.4%\nMT Bench (for Instruct Models) | 6.86 | 8.32 | 8.30\n\nTable 3: Comparison of Mixtral with Llama 2 70B and GPT-3.5. Mixtral outperforms or matches Llama 2 70B and GPT-3.5 performance on most metrics."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0005",
+      "title": "3.1 Multilingual benchmarks",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS1",
+      "path": [
+        "3 Results",
+        "3.1 Multilingual benchmarks"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_920ed091ceebcc6a77a7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS1.p1.1",
+          "text": "Compared to Mistral 7B, we significantly upsample the proportion of multilingual data during pretraining. The extra capacity allows Mixtral to perform well on multilingual benchmarks while maintaining a high accuracy in English. In particular, Mixtral significantly outperforms Llama 2 70B in French, German, Spanish, and Italian, as shown in Table 4.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 351
+        },
+        {
+          "paragraph_id": "p_6f87454bfb9b17f79a54",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T4.2",
+          "text": "| Active Params |  |  | French |  |  |  |  | German |  |  |  |  | Spanish |  |  |  |  | Italian\nModel |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU\nLLaMA 1 33B | 33B |  | 39.3% | 68.1% | 49.9% |  |  | 41.1% | 63.3% | 48.7% |  |  | 45.7% | 69.8% | 52.3% |  |  | 42.9% | 65.4% | 49.0%\nLLaMA 2 70B | 70B |  | 49.9% | 72.5% | 64.3% |  |  | 47.3% | 68.7% | 64.2% |  |  | 50.5% | 74.5% | 66.0% |  |  | 49.4% | 70.9% | 65.1%\nMixtral 8x7B | 13B |  | 58.2% | 77.4% | 70.9% |  |  | 54.3% | 73.0% | 71.5% |  |  | 55.4% | 77.6% | 72.5% |  |  | 52.8% | 75.1% | 70.9%",
+          "kind": "table",
+          "char_start": 353,
+          "char_end": 977
+        },
+        {
+          "paragraph_id": "p_7be5dc8838bceb2444f7",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.T4",
+          "text": "Table 4: Comparison of Mixtral with Llama on Multilingual Benchmarks. On ARC Challenge, Hellaswag, and MMLU, Mixtral outperforms Llama 2 70B on 4 languages: French, German, Spanish, and Italian.",
+          "kind": "caption",
+          "char_start": 979,
+          "char_end": 1173
+        }
+      ],
+      "text": "Compared to Mistral 7B, we significantly upsample the proportion of multilingual data during pretraining. The extra capacity allows Mixtral to perform well on multilingual benchmarks while maintaining a high accuracy in English. In particular, Mixtral significantly outperforms Llama 2 70B in French, German, Spanish, and Italian, as shown in Table 4.\n\n| Active Params |  |  | French |  |  |  |  | German |  |  |  |  | Spanish |  |  |  |  | Italian\nModel |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU |  |  | Arc-c | HellaS | MMLU\nLLaMA 1 33B | 33B |  | 39.3% | 68.1% | 49.9% |  |  | 41.1% | 63.3% | 48.7% |  |  | 45.7% | 69.8% | 52.3% |  |  | 42.9% | 65.4% | 49.0%\nLLaMA 2 70B | 70B |  | 49.9% | 72.5% | 64.3% |  |  | 47.3% | 68.7% | 64.2% |  |  | 50.5% | 74.5% | 66.0% |  |  | 49.4% | 70.9% | 65.1%\nMixtral 8x7B | 13B |  | 58.2% | 77.4% | 70.9% |  |  | 54.3% | 73.0% | 71.5% |  |  | 55.4% | 77.6% | 72.5% |  |  | 52.8% | 75.1% | 70.9%\n\nTable 4: Comparison of Mixtral with Llama on Multilingual Benchmarks. On ARC Challenge, Hellaswag, and MMLU, Mixtral outperforms Llama 2 70B on 4 languages: French, German, Spanish, and Italian."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0006",
+      "title": "3.2 Long range performance",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS2",
+      "path": [
+        "3 Results",
+        "3.2 Long range performance"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_bd836df80258ce608d5f",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS2.p1.1",
+          "text": "To assess the capabilities of Mixtral to tackle long context, we evaluate it on the passkey retrieval task introduced in [23], a synthetic task designed to measure the ability of the model to retrieve a passkey inserted randomly in a long prompt. Results in Figure 4 (Left) show that Mixtral achieves a 100% retrieval accuracy regardless of the context length or the position of passkey in the sequence. Figure 4 (Right) shows that the perplexity of Mixtral on a subset of the proof-pile dataset [2] decreases monotonically as the size of the context increases.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 561
+        },
+        {
+          "paragraph_id": "p_59fbb1ceea9c3175ca8e",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F4",
+          "text": "Figure 4: Long range performance of Mixtral. (Left) Mixtral has 100% retrieval accuracy of the Passkey task regardless of the location of the passkey and length of the input sequence. (Right) The perplexity of Mixtral on the proof-pile dataset decreases monotonically as the context length increases.",
+          "kind": "caption",
+          "char_start": 563,
+          "char_end": 863
+        },
+        {
+          "paragraph_id": "p_4f00bd6eb6f5d8811480",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F5.2",
+          "text": "| Llama 2 70B | Mixtral 8x7B\nBBQ accuracy | 51.5% | 56.0%\nBOLD sentiment score (avg $\\pm$ std)\ngender | 0.293 $\\pm$ 0.073 | 0.323 $\\pm$0.045\nprofession | 0.218 $\\pm$ 0.073 | 0.243 $\\pm$ 0.087\nreligious_ideology | 0.188 $\\pm$ 0.133 | 0.144 $\\pm$ 0.089\npolitical_ideology | 0.149 $\\pm$ 0.140 | 0.186 $\\pm$ 0.146\nrace | 0.232 $\\pm$ 0.049 | 0.232 $\\pm$ 0.052",
+          "kind": "table",
+          "char_start": 865,
+          "char_end": 1219
+        },
+        {
+          "paragraph_id": "p_df36e5ee31d5eee31c62",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.F5",
+          "text": "Figure 5: Bias Benchmarks. Compared Llama 2 70B, Mixtral presents less bias (higher accuracy on BBQ, lower std on BOLD) and displays more positive sentiment (higher avg on BOLD).",
+          "kind": "caption",
+          "char_start": 1221,
+          "char_end": 1399
+        }
+      ],
+      "text": "To assess the capabilities of Mixtral to tackle long context, we evaluate it on the passkey retrieval task introduced in [23], a synthetic task designed to measure the ability of the model to retrieve a passkey inserted randomly in a long prompt. Results in Figure 4 (Left) show that Mixtral achieves a 100% retrieval accuracy regardless of the context length or the position of passkey in the sequence. Figure 4 (Right) shows that the perplexity of Mixtral on a subset of the proof-pile dataset [2] decreases monotonically as the size of the context increases.\n\nFigure 4: Long range performance of Mixtral. (Left) Mixtral has 100% retrieval accuracy of the Passkey task regardless of the location of the passkey and length of the input sequence. (Right) The perplexity of Mixtral on the proof-pile dataset decreases monotonically as the context length increases.\n\n| Llama 2 70B | Mixtral 8x7B\nBBQ accuracy | 51.5% | 56.0%\nBOLD sentiment score (avg $\\pm$ std)\ngender | 0.293 $\\pm$ 0.073 | 0.323 $\\pm$0.045\nprofession | 0.218 $\\pm$ 0.073 | 0.243 $\\pm$ 0.087\nreligious_ideology | 0.188 $\\pm$ 0.133 | 0.144 $\\pm$ 0.089\npolitical_ideology | 0.149 $\\pm$ 0.140 | 0.186 $\\pm$ 0.146\nrace | 0.232 $\\pm$ 0.049 | 0.232 $\\pm$ 0.052\n\nFigure 5: Bias Benchmarks. Compared Llama 2 70B, Mixtral presents less bias (higher accuracy on BBQ, lower std on BOLD) and displays more positive sentiment (higher avg on BOLD)."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0007",
+      "title": "3.3 Bias Benchmarks",
+      "level": 2,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S3.SS3",
+      "path": [
+        "3 Results",
+        "3.3 Bias Benchmarks"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_76e83e61cb1ce612ff36",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p1.1",
+          "text": "To identify possible flaws to be corrected by fine-tuning / preference modeling, we measure the base model performance on Bias Benchmark for QA (BBQ) [24] and Bias in Open-Ended Language Generation Dataset (BOLD) [10]. BBQ is a dataset of hand-written question sets that target attested social biases against nine different socially-relevant categories: age, disability status, gender identity, nationality, physical appearance, race/ethnicity, religion, socio-economic status, sexual orientation. BOLD is a large-scale dataset that consists of 23,679 English text generation prompts for bias benchmarking across five domains.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 626
+        },
+        {
+          "paragraph_id": "p_0383f2850f5d5012ad2a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S3.SS3.p2.1",
+          "text": "We benchmark Llama 2 and Mixtral on BBQ and BOLD with our evaluation framework and report the results in Table 5. Compared to Llama 2, Mixtral presents less bias on the BBQ benchmark (56.0% vs 51.5%). For each group in BOLD, a higher average sentiment score means more positive sentiments and a lower standard deviation indicates less bias within the group. Overall, Mixtral displays more positive sentiments than Llama 2, with similar variances within each group.",
+          "kind": "text",
+          "char_start": 628,
+          "char_end": 1092
+        }
+      ],
+      "text": "To identify possible flaws to be corrected by fine-tuning / preference modeling, we measure the base model performance on Bias Benchmark for QA (BBQ) [24] and Bias in Open-Ended Language Generation Dataset (BOLD) [10]. BBQ is a dataset of hand-written question sets that target attested social biases against nine different socially-relevant categories: age, disability status, gender identity, nationality, physical appearance, race/ethnicity, religion, socio-economic status, sexual orientation. BOLD is a large-scale dataset that consists of 23,679 English text generation prompts for bias benchmarking across five domains.\n\nWe benchmark Llama 2 and Mixtral on BBQ and BOLD with our evaluation framework and report the results in Table 5. Compared to Llama 2, Mixtral presents less bias on the BBQ benchmark (56.0% vs 51.5%). For each group in BOLD, a higher average sentiment score means more positive sentiments and a lower standard deviation indicates less bias within the group. Overall, Mixtral displays more positive sentiments than Llama 2, with similar variances within each group."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0008",
+      "title": "4 Instruction Fine-tuning",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S4",
+      "path": [
+        "4 Instruction Fine-tuning"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0b1590753df30a0048e3",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "We train Mixtral – Instruct using supervised fine-tuning (SFT) on an instruction dataset followed by Direct Preference Optimization (DPO) [25] on a paired feedback dataset. Mixtral – Instruct reaches a score of 8.30 on MT-Bench [33] (see Table 2), making it the best open-weights model as of December 2023. Independent human evaluation conducted by LMSys is reported in Figure 6 and shows that Mixtral – Instruct outperforms GPT-3.5-Turbo, Gemini Pro, Claude-2.1, and Llama 2 70B chat.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 485
+        },
+        {
+          "paragraph_id": "p_418e0983f838ffd320c4",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.p1.1",
+          "text": "Footnote: 3 3 https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard",
+          "kind": "footnote",
+          "char_start": 487,
+          "char_end": 562
+        },
+        {
+          "paragraph_id": "p_dbb6709c1af79f234970",
+          "page": null,
+          "bbox": null,
+          "element_id": "S4.F6",
+          "text": "Figure 6: LMSys Leaderboard. (Screenshot from Dec 22, 2023) Mixtral 8x7B Instruct v0.1 achieves an Arena Elo rating of 1121 outperforming Claude-2.1 (1117), all versions of GPT-3.5-Turbo (1117 best), Gemini Pro (1111), and Llama-2-70b-chat (1077). Mixtral is currently the best open-weights model by a large margin.",
+          "kind": "caption",
+          "char_start": 564,
+          "char_end": 879
+        }
+      ],
+      "text": "We train Mixtral – Instruct using supervised fine-tuning (SFT) on an instruction dataset followed by Direct Preference Optimization (DPO) [25] on a paired feedback dataset. Mixtral – Instruct reaches a score of 8.30 on MT-Bench [33] (see Table 2), making it the best open-weights model as of December 2023. Independent human evaluation conducted by LMSys is reported in Figure 6 and shows that Mixtral – Instruct outperforms GPT-3.5-Turbo, Gemini Pro, Claude-2.1, and Llama 2 70B chat.\n\nFootnote: 3 3 https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard\n\nFigure 6: LMSys Leaderboard. (Screenshot from Dec 22, 2023) Mixtral 8x7B Instruct v0.1 achieves an Arena Elo rating of 1121 outperforming Claude-2.1 (1117), all versions of GPT-3.5-Turbo (1117 best), Gemini Pro (1111), and Llama-2-70b-chat (1077). Mixtral is currently the best open-weights model by a large margin."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0009",
+      "title": "5 Routing analysis",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S5",
+      "path": [
+        "5 Routing analysis"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_9ba6a6cb3df26c4b2f3d",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p1.1",
+          "text": "In this section, we perform a small analysis on the expert selection by the router. In particular, we are interested to see if during training some experts specialized to some specific domains (e.g. mathematics, biology, philosophy, etc.).",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 239
+        },
+        {
+          "paragraph_id": "p_9b8e4f7fc7b38ab89c71",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p2.1",
+          "text": "To investigate this, we measure the distribution of selected experts on different subsets of The Pile validation dataset [14]. Results are presented in Figure 7, for layers 0, 15, and 31 (layers 0 and 31 respectively being the first and the last layers of the model). Surprisingly, we do not observe obvious patterns in the assignment of experts based on the topic. For instance, at all layers, the distribution of expert assignment is very similar for ArXiv papers (written in Latex), for biology (PubMed Abstracts), and for Philosophy (PhilPapers) documents.",
+          "kind": "text",
+          "char_start": 241,
+          "char_end": 801
+        },
+        {
+          "paragraph_id": "p_1fe42786de96f648421a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p3.1",
+          "text": "Only for DM Mathematics we note a marginally different distribution of experts. This divergence is likely a consequence of the dataset’s synthetic nature and its limited coverage of the natural language spectrum, and is particularly noticeable at the first and last layers, where the hidden states are very correlated to the input and output embeddings respectively.",
+          "kind": "text",
+          "char_start": 803,
+          "char_end": 1169
+        },
+        {
+          "paragraph_id": "p_1b0d324705a77aad05c5",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p4.1",
+          "text": "This suggests that the router does exhibit some structured syntactic behavior. Figure 8 shows examples of text from different domains (Python code, mathematics, and English), where each token is highlighted with a background color corresponding to its selected expert. The figure shows that words such as ‘self’ in Python and ‘Question’ in English often get routed through the same expert even though they involve multiple tokens. Similarly, in code, the indentation tokens are always assigned to the same experts, particularly at the first and last layers where the hidden states are more correlated to the input and output of the model.",
+          "kind": "text",
+          "char_start": 1171,
+          "char_end": 1809
+        },
+        {
+          "paragraph_id": "p_45df421a50c3f2a38842",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p5.1",
+          "text": "We also note from Figure 8 that consecutive tokens are often assigned the same experts. In fact, we observe some degree of positional locality in The Pile datasets. Table 5 shows the proportion of consecutive tokens that get the same expert assignments per domain and layer. The proportion of repeated",
+          "kind": "text",
+          "char_start": 1811,
+          "char_end": 2112
+        },
+        {
+          "paragraph_id": "p_5c92d2ff0be651115b1a",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.F7",
+          "text": "Figure 7: Proportion of tokens assigned to each expert on different domains from The Pile dataset for layers 0, 15, and 31. The gray dashed vertical line marks $1/8$, i.e. the proportion expected with uniform sampling. Here, we consider experts that are either selected as a first or second choice by the router. A breakdown of the proportion of assignments done in each case cane be seen in Figure 9 in the Appendix.",
+          "kind": "caption",
+          "char_start": 2114,
+          "char_end": 2531
+        },
+        {
+          "paragraph_id": "p_8cce9bf33e4650f85022",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.p6.1",
+          "text": "consecutive assignments is significantly higher than random for higher layers. This has implications in how one might optimize the model for fast training and inference. For example, cases with high locality are more likely to cause over-subscription of certain experts when doing Expert Parallelism. Conversely, this locality can be leveraged for caching, as is done in [11]. A more complete view of these same expert frequency is provided for all layers and across datasets in Figure 10 in the Appendix.",
+          "kind": "text",
+          "char_start": 2533,
+          "char_end": 3038
+        },
+        {
+          "paragraph_id": "p_f5abfa2c892c4c9d4afa",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.F8",
+          "text": "Figure 8: Text samples where each token is colored with the first expert choice. The selection of experts appears to be more aligned with the syntax rather than the domain, especially at the initial and final layers.",
+          "kind": "caption",
+          "char_start": 3040,
+          "char_end": 3256
+        },
+        {
+          "paragraph_id": "p_bd037e2ec6d722ec5e23",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.T5.2",
+          "text": "| First choice |  |  | First or second choice\n | Layer 0 | Layer 15 | Layer 31 | Layer 0 | Layer 15 | Layer 31\nArXiv | 14.0% | 27.9% | 22.7% | 46.5% | 62.3% | 52.9%\nDM Mathematics | 14.1% | 28.4% | 19.7% | 44.9% | 67.0% | 44.5%\nGithub | 14.9% | 28.1% | 19.7% | 49.9% | 66.9% | 49.2%\nGutenberg | 13.9% | 26.1% | 26.3% | 49.5% | 63.1% | 52.2%\nPhilPapers | 13.6% | 25.3% | 22.1% | 46.9% | 61.9% | 51.3%\nPubMed Abstracts | 14.2% | 24.6% | 22.0% | 48.6% | 61.6% | 51.8%\nStackExchange | 13.6% | 27.2% | 23.6% | 48.2% | 64.6% | 53.6%\nWikipedia (en) | 14.4% | 23.6% | 25.3% | 49.8% | 62.1% | 51.8%",
+          "kind": "table",
+          "char_start": 3258,
+          "char_end": 3847
+        },
+        {
+          "paragraph_id": "p_43e093112c720d9c5c89",
+          "page": null,
+          "bbox": null,
+          "element_id": "S5.T5",
+          "text": "Table 5: Percentage of expert assignment repetitions. We evaluate the proportion of times the same expert is assigned to a token $i$ and its following token $i+1$. We report whether the first chosen expert is the same, or whether the same expert is observed as first or second choice in consecutive tokens. For reference, the expected proportion of repetitions in the case of random assignments is $\\frac{1}{8}=12.5\\%$ for “First choice” and $1-\\frac{6}{8}\\frac{5}{7}\\approx 46\\%$ for “First and second choice”. Repetitions at the first layer are close to random, but are significantly higher at layers 15 and 31. The high number of repetitions shows that expert choice exhibits high temporal locality at these layers.",
+          "kind": "caption",
+          "char_start": 3849,
+          "char_end": 4567
+        }
+      ],
+      "text": "In this section, we perform a small analysis on the expert selection by the router. In particular, we are interested to see if during training some experts specialized to some specific domains (e.g. mathematics, biology, philosophy, etc.).\n\nTo investigate this, we measure the distribution of selected experts on different subsets of The Pile validation dataset [14]. Results are presented in Figure 7, for layers 0, 15, and 31 (layers 0 and 31 respectively being the first and the last layers of the model). Surprisingly, we do not observe obvious patterns in the assignment of experts based on the topic. For instance, at all layers, the distribution of expert assignment is very similar for ArXiv papers (written in Latex), for biology (PubMed Abstracts), and for Philosophy (PhilPapers) documents.\n\nOnly for DM Mathematics we note a marginally different distribution of experts. This divergence is likely a consequence of the dataset’s synthetic nature and its limited coverage of the natural language spectrum, and is particularly noticeable at the first and last layers, where the hidden states are very correlated to the input and output embeddings respectively.\n\nThis suggests that the router does exhibit some structured syntactic behavior. Figure 8 shows examples of text from different domains (Python code, mathematics, and English), where each token is highlighted with a background color corresponding to its selected expert. The figure shows that words such as ‘self’ in Python and ‘Question’ in English often get routed through the same expert even though they involve multiple tokens. Similarly, in code, the indentation tokens are always assigned to the same experts, particularly at the first and last layers where the hidden states are more correlated to the input and output of the model.\n\nWe also note from Figure 8 that consecutive tokens are often assigned the same experts. In fact, we observe some degree of positional locality in The Pile datasets. Table 5 shows the proportion of consecutive tokens that get the same expert assignments per domain and layer. The proportion of repeated\n\nFigure 7: Proportion of tokens assigned to each expert on different domains from The Pile dataset for layers 0, 15, and 31. The gray dashed vertical line marks $1/8$, i.e. the proportion expected with uniform sampling. Here, we consider experts that are either selected as a first or second choice by the router. A breakdown of the proportion of assignments done in each case cane be seen in Figure 9 in the Appendix.\n\nconsecutive assignments is significantly higher than random for higher layers. This has implications in how one might optimize the model for fast training and inference. For example, cases with high locality are more likely to cause over-subscription of certain experts when doing Expert Parallelism. Conversely, this locality can be leveraged for caching, as is done in [11]. A more complete view of these same expert frequency is provided for all layers and across datasets in Figure 10 in the Appendix.\n\nFigure 8: Text samples where each token is colored with the first expert choice. The selection of experts appears to be more aligned with the syntax rather than the domain, especially at the initial and final layers.\n\n| First choice |  |  | First or second choice\n | Layer 0 | Layer 15 | Layer 31 | Layer 0 | Layer 15 | Layer 31\nArXiv | 14.0% | 27.9% | 22.7% | 46.5% | 62.3% | 52.9%\nDM Mathematics | 14.1% | 28.4% | 19.7% | 44.9% | 67.0% | 44.5%\nGithub | 14.9% | 28.1% | 19.7% | 49.9% | 66.9% | 49.2%\nGutenberg | 13.9% | 26.1% | 26.3% | 49.5% | 63.1% | 52.2%\nPhilPapers | 13.6% | 25.3% | 22.1% | 46.9% | 61.9% | 51.3%\nPubMed Abstracts | 14.2% | 24.6% | 22.0% | 48.6% | 61.6% | 51.8%\nStackExchange | 13.6% | 27.2% | 23.6% | 48.2% | 64.6% | 53.6%\nWikipedia (en) | 14.4% | 23.6% | 25.3% | 49.8% | 62.1% | 51.8%\n\nTable 5: Percentage of expert assignment repetitions. We evaluate the proportion of times the same expert is assigned to a token $i$ and its following token $i+1$. We report whether the first chosen expert is the same, or whether the same expert is observed as first or second choice in consecutive tokens. For reference, the expected proportion of repetitions in the case of random assignments is $\\frac{1}{8}=12.5\\%$ for “First choice” and $1-\\frac{6}{8}\\frac{5}{7}\\approx 46\\%$ for “First and second choice”. Repetitions at the first layer are close to random, but are significantly higher at layers 15 and 31. The high number of repetitions shows that expert choice exhibits high temporal locality at these layers."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0010",
+      "title": "6 Conclusion",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "S6",
+      "path": [
+        "6 Conclusion"
+      ],
+      "kind": "body",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_da0ac64df45eb2702f69",
+          "page": null,
+          "bbox": null,
+          "element_id": "S6.p1.1",
+          "text": "In this paper, we introduced Mixtral 8x7B, the first mixture-of-experts network to reach a state-of-the-art performance among open-source models. Mixtral 8x7B Instruct outperforms Claude-2.1, Gemini Pro, and GPT-3.5 Turbo on human evaluation benchmarks. Because it only uses two experts at each time step, Mixtral only uses 13B active parameters per token while outperforming the previous best model using 70B parameters per token (Llama 2 70B). We are making our trained and fine-tuned models publicly available under the Apache 2.0 license. By sharing our models, we aim to facilitate the development of new techniques and applications that can benefit a wide range of industries and domains.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 694
+        }
+      ],
+      "text": "In this paper, we introduced Mixtral 8x7B, the first mixture-of-experts network to reach a state-of-the-art performance among open-source models. Mixtral 8x7B Instruct outperforms Claude-2.1, Gemini Pro, and GPT-3.5 Turbo on human evaluation benchmarks. Because it only uses two experts at each time step, Mixtral only uses 13B active parameters per token while outperforming the previous best model using 70B parameters per token (Llama 2 70B). We are making our trained and fine-tuned models publicly available under the Apache 2.0 license. By sharing our models, we aim to facilitate the development of new techniques and applications that can benefit a wide range of industries and domains."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0011",
+      "title": "Acknowledgements",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "Sx1",
+      "path": [
+        "Acknowledgements"
+      ],
+      "kind": "acknowledgments",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_2ed5466381d244652648",
+          "page": null,
+          "bbox": null,
+          "element_id": "Sx1.p1.1",
+          "text": "We thank the CoreWeave and Scaleway teams for technical support as we trained our models. We are grateful to NVIDIA for supporting us in integrating TensorRT-LLM and Triton and working alongside us to make a sparse mixture of experts compatible with TensorRT-LLM.",
+          "kind": "text",
+          "char_start": 0,
+          "char_end": 263
+        }
+      ],
+      "text": "We thank the CoreWeave and Scaleway teams for technical support as we trained our models. We are grateful to NVIDIA for supporting us in integrating TensorRT-LLM and Triton and working alongside us to make a sparse mixture of experts compatible with TensorRT-LLM."
+    },
+    {
+      "section_id": "arxiv_2401.04088_v1_s0012",
+      "title": "References",
+      "level": 1,
+      "heading_method": "html_section",
+      "heading_page": null,
+      "html_id": "bib",
+      "path": [
+        "References"
+      ],
+      "kind": "references",
+      "paragraphs": [
+        {
+          "paragraph_id": "p_0fb857d04441189344ed",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib1",
+          "text": "[1] Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, David Dohan, Ellen Jiang, Carrie Cai, Michael Terry, Quoc Le, et al. Program synthesis with large language models. arXiv preprint arXiv:2108.07732, 2021.",
+          "kind": "list_item",
+          "char_start": 0,
+          "char_end": 235
+        },
+        {
+          "paragraph_id": "p_ed7087653c52559a6c27",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib2",
+          "text": "[2] Zhangir Azerbayev, Hailey Schoelkopf, Keiran Paster, Marco Dos Santos, Stephen McAleer, Albert Q Jiang, Jia Deng, Stella Biderman, and Sean Welleck. Llemma: An open language model for mathematics. arXiv preprint arXiv:2310.10631, 2023.",
+          "kind": "list_item",
+          "char_start": 237,
+          "char_end": 476
+        },
+        {
+          "paragraph_id": "p_e09a6ca17cadfd173b9b",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib3",
+          "text": "[3] Yonatan Bisk, Rowan Zellers, Jianfeng Gao, Yejin Choi, et al. Piqa: Reasoning about physical commonsense in natural language. In Proceedings of the AAAI conference on artificial intelligence, pages 7432–7439, 2020.",
+          "kind": "list_item",
+          "char_start": 478,
+          "char_end": 696
+        },
+        {
+          "paragraph_id": "p_008d9058eda3c4bd7a82",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib4",
+          "text": "[4] Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de Oliveira Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg Brockman, et al. Evaluating large language models trained on code. arXiv preprint arXiv:2107.03374, 2021.",
+          "kind": "list_item",
+          "char_start": 698,
+          "char_end": 954
+        },
+        {
+          "paragraph_id": "p_7d703f4804d42b827928",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib5",
+          "text": "[5] Eunsol Choi, He He, Mohit Iyyer, Mark Yatskar, Wen-tau Yih, Yejin Choi, Percy Liang, and Luke Zettlemoyer. Quac: Question answering in context. arXiv preprint arXiv:1808.07036, 2018.",
+          "kind": "list_item",
+          "char_start": 956,
+          "char_end": 1142
+        },
+        {
+          "paragraph_id": "p_a3f1efa5484c73f1cdee",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib6",
+          "text": "[6] Aidan Clark, Diego De Las Casas, Aurelia Guy, Arthur Mensch, Michela Paganini, Jordan Hoffmann, Bogdan Damoc, Blake Hechtman, Trevor Cai, Sebastian Borgeaud, et al. Unified scaling laws for routed language models. In International Conference on Machine Learning, pages 4057–4086. PMLR, 2022.",
+          "kind": "list_item",
+          "char_start": 1144,
+          "char_end": 1439
+        },
+        {
+          "paragraph_id": "p_440400425193dd63664e",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib7",
+          "text": "[7] Christopher Clark, Kenton Lee, Ming-Wei Chang, Tom Kwiatkowski, Michael Collins, and Kristina Toutanova. Boolq: Exploring the surprising difficulty of natural yes/no questions. arXiv preprint arXiv:1905.10044, 2019.",
+          "kind": "list_item",
+          "char_start": 1441,
+          "char_end": 1660
+        },
+        {
+          "paragraph_id": "p_4e5cb3d5f217f6f32d22",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib8",
+          "text": "[8] Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and Oyvind Tafjord. Think you have solved question answering? try arc, the ai2 reasoning challenge. arXiv preprint arXiv:1803.05457, 2018.",
+          "kind": "list_item",
+          "char_start": 1662,
+          "char_end": 1895
+        },
+        {
+          "paragraph_id": "p_813f283fb0cbe03eb145",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib9",
+          "text": "[9] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, et al. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168, 2021.",
+          "kind": "list_item",
+          "char_start": 1897,
+          "char_end": 2145
+        },
+        {
+          "paragraph_id": "p_7e1e7246ff06d687f6d0",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib10",
+          "text": "[10] Jwala Dhamala, Tony Sun, Varun Kumar, Satyapriya Krishna, Yada Pruksachatkun, Kai-Wei Chang, and Rahul Gupta. Bold: Dataset and metrics for measuring biases in open-ended language generation. In Proceedings of the 2021 ACM conference on fairness, accountability, and transparency, pages 862–872, 2021.",
+          "kind": "list_item",
+          "char_start": 2147,
+          "char_end": 2453
+        },
+        {
+          "paragraph_id": "p_51326ab2ab30146ad08c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib11",
+          "text": "[11] Artyom Eliseev and Denis Mazur. Fast inference of mixture-of-experts language models with offloading. arXiv preprint arXiv:2312.17238, 2023.",
+          "kind": "list_item",
+          "char_start": 2455,
+          "char_end": 2600
+        },
+        {
+          "paragraph_id": "p_b6dabd13c636662636d1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib12",
+          "text": "[12] William Fedus, Jeff Dean, and Barret Zoph. A review of sparse expert models in deep learning. arXiv preprint arXiv:2209.01667, 2022.",
+          "kind": "list_item",
+          "char_start": 2602,
+          "char_end": 2739
+        },
+        {
+          "paragraph_id": "p_964625847ebfc37827ab",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib13",
+          "text": "[13] Trevor Gale, Deepak Narayanan, Cliff Young, and Matei Zaharia. Megablocks: Efficient sparse training with mixture-of-experts. arXiv preprint arXiv:2211.15841, 2022.",
+          "kind": "list_item",
+          "char_start": 2741,
+          "char_end": 2910
+        },
+        {
+          "paragraph_id": "p_81bb1ae159571b46bec2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib14",
+          "text": "[14] Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles Foster, Jason Phang, Horace He, Anish Thite, Noa Nabeshima, et al. The pile: An 800gb dataset of diverse text for language modeling. arXiv preprint arXiv:2101.00027, 2020.",
+          "kind": "list_item",
+          "char_start": 2912,
+          "char_end": 3165
+        },
+        {
+          "paragraph_id": "p_1f252e170aea000da82d",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib15",
+          "text": "[15] Hussein Hazimeh, Zhe Zhao, Aakanksha Chowdhery, Maheswaran Sathiamoorthy, Yihua Chen, Rahul Mazumder, Lichan Hong, and Ed Chi. Dselect-k: Differentiable selection in the mixture of experts with applications to multi-task learning. Advances in Neural Information Processing Systems, 34:29335–29347, 2021.",
+          "kind": "list_item",
+          "char_start": 3167,
+          "char_end": 3475
+        },
+        {
+          "paragraph_id": "p_f0164c66505d450182f8",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib16",
+          "text": "[16] Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. Measuring massive multitask language understanding. arXiv preprint arXiv:2009.03300, 2020.",
+          "kind": "list_item",
+          "char_start": 3477,
+          "char_end": 3675
+        },
+        {
+          "paragraph_id": "p_41886e4e297508dfb750",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib17",
+          "text": "[17] Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. Measuring mathematical problem solving with the math dataset. arXiv preprint arXiv:2103.03874, 2021.",
+          "kind": "list_item",
+          "char_start": 3677,
+          "char_end": 3899
+        },
+        {
+          "paragraph_id": "p_b3c630d4346b2e4cc0a9",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib18",
+          "text": "[18] Albert Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, et al. Mistral 7b. arXiv preprint arXiv:2310.06825, 2023.",
+          "kind": "list_item",
+          "char_start": 3901,
+          "char_end": 4146
+        },
+        {
+          "paragraph_id": "p_00d8d760242c89b278f1",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib19",
+          "text": "[19] Mandar Joshi, Eunsol Choi, Daniel S Weld, and Luke Zettlemoyer. Triviaqa: A large scale distantly supervised challenge dataset for reading comprehension. arXiv preprint arXiv:1705.03551, 2017.",
+          "kind": "list_item",
+          "char_start": 4148,
+          "char_end": 4345
+        },
+        {
+          "paragraph_id": "p_1851abe7560b87c731e4",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib20",
+          "text": "[20] Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh, Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, et al. Natural questions: a benchmark for question answering research. Transactions of the Association for Computational Linguistics, pages 453–466, 2019.",
+          "kind": "list_item",
+          "char_start": 4347,
+          "char_end": 4669
+        },
+        {
+          "paragraph_id": "p_6a3c8fe4dd699278f28a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib21",
+          "text": "[21] Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim Krikun, Noam Shazeer, and Zhifeng Chen. Gshard: Scaling giant models with conditional computation and automatic sharding. arXiv preprint arXiv:2006.16668, 2020.",
+          "kind": "list_item",
+          "char_start": 4671,
+          "char_end": 4929
+        },
+        {
+          "paragraph_id": "p_e1cbe483dae59d234f7c",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib22",
+          "text": "[22] Todor Mihaylov, Peter Clark, Tushar Khot, and Ashish Sabharwal. Can a suit of armor conduct electricity? a new dataset for open book question answering. arXiv preprint arXiv:1809.02789, 2018.",
+          "kind": "list_item",
+          "char_start": 4931,
+          "char_end": 5127
+        },
+        {
+          "paragraph_id": "p_958e3be2e52496d68459",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib23",
+          "text": "[23] Amirkeivan Mohtashami and Martin Jaggi. Landmark attention: Random-access infinite context length for transformers. arXiv preprint arXiv:2305.16300, 2023.",
+          "kind": "list_item",
+          "char_start": 5129,
+          "char_end": 5288
+        },
+        {
+          "paragraph_id": "p_304f8da6efcb9641abcc",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib24",
+          "text": "[24] Alicia Parrish, Angelica Chen, Nikita Nangia, Vishakh Padmakumar, Jason Phang, Jana Thompson, Phu Mon Htut, and Samuel R Bowman. Bbq: A hand-built bias benchmark for question answering. arXiv preprint arXiv:2110.08193, 2021.",
+          "kind": "list_item",
+          "char_start": 5290,
+          "char_end": 5519
+        },
+        {
+          "paragraph_id": "p_dea1354d1a0ad39ee6a2",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib25",
+          "text": "[25] Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher D Manning, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. arXiv preprint arXiv:2305.18290, 2023.",
+          "kind": "list_item",
+          "char_start": 5521,
+          "char_end": 5747
+        },
+        {
+          "paragraph_id": "p_6ed420ecfd814f69e8c5",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib26",
+          "text": "[26] Keisuke Sakaguchi, Ronan Le Bras, Chandra Bhagavatula, and Yejin Choi. Winogrande: An adversarial winograd schema challenge at scale. Communications of the ACM, pages 99–106, 2021.",
+          "kind": "list_item",
+          "char_start": 5749,
+          "char_end": 5934
+        },
+        {
+          "paragraph_id": "p_f667ff2b83c1f1388bbe",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib27",
+          "text": "[27] Maarten Sap, Hannah Rashkin, Derek Chen, Ronan LeBras, and Yejin Choi. Socialiqa: Commonsense reasoning about social interactions. arXiv preprint arXiv:1904.09728, 2019.",
+          "kind": "list_item",
+          "char_start": 5936,
+          "char_end": 6110
+        },
+        {
+          "paragraph_id": "p_3839945706b2371a8849",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib28",
+          "text": "[28] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+          "kind": "list_item",
+          "char_start": 6112,
+          "char_end": 6341
+        },
+        {
+          "paragraph_id": "p_e87188b0c3d05ed3b3b7",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib29",
+          "text": "[29] Mirac Suzgun, Nathan Scales, Nathanael Schärli, Sebastian Gehrmann, Yi Tay, Hyung Won Chung, Aakanksha Chowdhery, Quoc V Le, Ed H Chi, Denny Zhou, , and Jason Wei. Challenging big-bench tasks and whether chain-of-thought can solve them. arXiv preprint arXiv:2210.09261, 2022.",
+          "kind": "list_item",
+          "char_start": 6343,
+          "char_end": 6623
+        },
+        {
+          "paragraph_id": "p_d952646f7ffdaa583d5f",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib30",
+          "text": "[30] Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant. Commonsenseqa: A question answering challenge targeting commonsense knowledge. arXiv preprint arXiv:1811.00937, 2018.",
+          "kind": "list_item",
+          "char_start": 6625,
+          "char_end": 6815
+        },
+        {
+          "paragraph_id": "p_59290aa943538fe9c3dd",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib31",
+          "text": "[31] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.",
+          "kind": "list_item",
+          "char_start": 6817,
+          "char_end": 7034
+        },
+        {
+          "paragraph_id": "p_ed6b465f896d6ed3ab9a",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib32",
+          "text": "[32] Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi. Hellaswag: Can a machine really finish your sentence? arXiv preprint arXiv:1905.07830, 2019.",
+          "kind": "list_item",
+          "char_start": 7036,
+          "char_end": 7205
+        },
+        {
+          "paragraph_id": "p_21847eaa7aa190d64aef",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib33",
+          "text": "[33] Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric Xing, et al. Judging llm-as-a-judge with mt-bench and chatbot arena. arXiv preprint arXiv:2306.05685, 2023.",
+          "kind": "list_item",
+          "char_start": 7207,
+          "char_end": 7443
+        },
+        {
+          "paragraph_id": "p_b844ecde901d1b8b1279",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib34",
+          "text": "[34] Wanjun Zhong, Ruixiang Cui, Yiduo Guo, Yaobo Liang, Shuai Lu, Yanlin Wang, Amin Saied, Weizhu Chen, and Nan Duan. Agieval: A human-centric benchmark for evaluating foundation models. arXiv preprint arXiv:2304.06364, 2023.",
+          "kind": "list_item",
+          "char_start": 7445,
+          "char_end": 7671
+        },
+        {
+          "paragraph_id": "p_2a5baf33ab5e28c86cbe",
+          "page": null,
+          "bbox": null,
+          "element_id": "bib.bib35",
+          "text": "[35] Yanqi Zhou, Tao Lei, Hanxiao Liu, Nan Du, Yanping Huang, Vincent Zhao, Andrew M Dai, Quoc V Le, James Laudon, et al. Mixture-of-experts with expert choice routing. Advances in Neural Information Processing Systems, 35:7103–7114, 2022.",
+          "kind": "list_item",
+          "char_start": 7673,
+          "char_end": 7912
+        }
+      ],
+      "text": "[1] Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, David Dohan, Ellen Jiang, Carrie Cai, Michael Terry, Quoc Le, et al. Program synthesis with large language models. arXiv preprint arXiv:2108.07732, 2021.\n\n[2] Zhangir Azerbayev, Hailey Schoelkopf, Keiran Paster, Marco Dos Santos, Stephen McAleer, Albert Q Jiang, Jia Deng, Stella Biderman, and Sean Welleck. Llemma: An open language model for mathematics. arXiv preprint arXiv:2310.10631, 2023.\n\n[3] Yonatan Bisk, Rowan Zellers, Jianfeng Gao, Yejin Choi, et al. Piqa: Reasoning about physical commonsense in natural language. In Proceedings of the AAAI conference on artificial intelligence, pages 7432–7439, 2020.\n\n[4] Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de Oliveira Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg Brockman, et al. Evaluating large language models trained on code. arXiv preprint arXiv:2107.03374, 2021.\n\n[5] Eunsol Choi, He He, Mohit Iyyer, Mark Yatskar, Wen-tau Yih, Yejin Choi, Percy Liang, and Luke Zettlemoyer. Quac: Question answering in context. arXiv preprint arXiv:1808.07036, 2018.\n\n[6] Aidan Clark, Diego De Las Casas, Aurelia Guy, Arthur Mensch, Michela Paganini, Jordan Hoffmann, Bogdan Damoc, Blake Hechtman, Trevor Cai, Sebastian Borgeaud, et al. Unified scaling laws for routed language models. In International Conference on Machine Learning, pages 4057–4086. PMLR, 2022.\n\n[7] Christopher Clark, Kenton Lee, Ming-Wei Chang, Tom Kwiatkowski, Michael Collins, and Kristina Toutanova. Boolq: Exploring the surprising difficulty of natural yes/no questions. arXiv preprint arXiv:1905.10044, 2019.\n\n[8] Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and Oyvind Tafjord. Think you have solved question answering? try arc, the ai2 reasoning challenge. arXiv preprint arXiv:1803.05457, 2018.\n\n[9] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, et al. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168, 2021.\n\n[10] Jwala Dhamala, Tony Sun, Varun Kumar, Satyapriya Krishna, Yada Pruksachatkun, Kai-Wei Chang, and Rahul Gupta. Bold: Dataset and metrics for measuring biases in open-ended language generation. In Proceedings of the 2021 ACM conference on fairness, accountability, and transparency, pages 862–872, 2021.\n\n[11] Artyom Eliseev and Denis Mazur. Fast inference of mixture-of-experts language models with offloading. arXiv preprint arXiv:2312.17238, 2023.\n\n[12] William Fedus, Jeff Dean, and Barret Zoph. A review of sparse expert models in deep learning. arXiv preprint arXiv:2209.01667, 2022.\n\n[13] Trevor Gale, Deepak Narayanan, Cliff Young, and Matei Zaharia. Megablocks: Efficient sparse training with mixture-of-experts. arXiv preprint arXiv:2211.15841, 2022.\n\n[14] Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles Foster, Jason Phang, Horace He, Anish Thite, Noa Nabeshima, et al. The pile: An 800gb dataset of diverse text for language modeling. arXiv preprint arXiv:2101.00027, 2020.\n\n[15] Hussein Hazimeh, Zhe Zhao, Aakanksha Chowdhery, Maheswaran Sathiamoorthy, Yihua Chen, Rahul Mazumder, Lichan Hong, and Ed Chi. Dselect-k: Differentiable selection in the mixture of experts with applications to multi-task learning. Advances in Neural Information Processing Systems, 34:29335–29347, 2021.\n\n[16] Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. Measuring massive multitask language understanding. arXiv preprint arXiv:2009.03300, 2020.\n\n[17] Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. Measuring mathematical problem solving with the math dataset. arXiv preprint arXiv:2103.03874, 2021.\n\n[18] Albert Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, et al. Mistral 7b. arXiv preprint arXiv:2310.06825, 2023.\n\n[19] Mandar Joshi, Eunsol Choi, Daniel S Weld, and Luke Zettlemoyer. Triviaqa: A large scale distantly supervised challenge dataset for reading comprehension. arXiv preprint arXiv:1705.03551, 2017.\n\n[20] Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh, Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, et al. Natural questions: a benchmark for question answering research. Transactions of the Association for Computational Linguistics, pages 453–466, 2019.\n\n[21] Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang, Maxim Krikun, Noam Shazeer, and Zhifeng Chen. Gshard: Scaling giant models with conditional computation and automatic sharding. arXiv preprint arXiv:2006.16668, 2020.\n\n[22] Todor Mihaylov, Peter Clark, Tushar Khot, and Ashish Sabharwal. Can a suit of armor conduct electricity? a new dataset for open book question answering. arXiv preprint arXiv:1809.02789, 2018.\n\n[23] Amirkeivan Mohtashami and Martin Jaggi. Landmark attention: Random-access infinite context length for transformers. arXiv preprint arXiv:2305.16300, 2023.\n\n[24] Alicia Parrish, Angelica Chen, Nikita Nangia, Vishakh Padmakumar, Jason Phang, Jana Thompson, Phu Mon Htut, and Samuel R Bowman. Bbq: A hand-built bias benchmark for question answering. arXiv preprint arXiv:2110.08193, 2021.\n\n[25] Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher D Manning, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. arXiv preprint arXiv:2305.18290, 2023.\n\n[26] Keisuke Sakaguchi, Ronan Le Bras, Chandra Bhagavatula, and Yejin Choi. Winogrande: An adversarial winograd schema challenge at scale. Communications of the ACM, pages 99–106, 2021.\n\n[27] Maarten Sap, Hannah Rashkin, Derek Chen, Ronan LeBras, and Yejin Choi. Socialiqa: Commonsense reasoning about social interactions. arXiv preprint arXiv:1904.09728, 2019.\n\n[28] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.\n\n[29] Mirac Suzgun, Nathan Scales, Nathanael Schärli, Sebastian Gehrmann, Yi Tay, Hyung Won Chung, Aakanksha Chowdhery, Quoc V Le, Ed H Chi, Denny Zhou, , and Jason Wei. Challenging big-bench tasks and whether chain-of-thought can solve them. arXiv preprint arXiv:2210.09261, 2022.\n\n[30] Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant. Commonsenseqa: A question answering challenge targeting commonsense knowledge. arXiv preprint arXiv:1811.00937, 2018.\n\n[31] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.\n\n[32] Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi. Hellaswag: Can a machine really finish your sentence? arXiv preprint arXiv:1905.07830, 2019.\n\n[33] Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric Xing, et al. Judging llm-as-a-judge with mt-bench and chatbot arena. arXiv preprint arXiv:2306.05685, 2023.\n\n[34] Wanjun Zhong, Ruixiang Cui, Yiduo Guo, Yaobo Liang, Shuai Lu, Yanlin Wang, Amin Saied, Weizhu Chen, and Nan Duan. Agieval: A human-centric benchmark for evaluating foundation models. arXiv preprint arXiv:2304.06364, 2023.\n\n[35] Yanqi Zhou, Tao Lei, Hanxiao Liu, Nan Du, Yanping Huang, Vincent Zhao, Andrew M Dai, Quoc V Le, James Laudon, et al. Mixture-of-experts with expert choice routing. Advances in Neural Information Processing Systems, 35:7103–7114, 2022."
+    }
+  ]
+}

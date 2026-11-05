@@ -1,0 +1,48 @@
+{
+  "verified_at_utc": "2026-10-24T01:46:46.864021+00:00",
+  "unique_documents": 101,
+  "source_occurrences": 101,
+  "download_status": {
+    "downloaded_pdf": 94,
+    "manual_review_book": 2,
+    "downloaded_html": 5
+  },
+  "identity_review": {
+    "title_tokens_found": 92,
+    "needs_ocr_review": 1,
+    "not_applicable": 7,
+    "title_tokens_found_after_cover": 1
+  },
+  "total_download_bytes": 506111690,
+  "errors": [],
+  "needs_attention": [
+    {
+      "paper_id": "doc_2fd2a7ad7452",
+      "title": "Learning representations by back-propagating errors",
+      "status": "downloaded_pdf",
+      "identity_review": "needs_ocr_review",
+      "error": null
+    },
+    {
+      "paper_id": "doc_978c610ca8a5",
+      "title": "Deep Learning",
+      "status": "manual_review_book",
+      "identity_review": null,
+      "error": "Book/TOC retained as a candidate; not treated as a single paper PDF."
+    },
+    {
+      "paper_id": "doc_8eeab393f558",
+      "title": "Brownian Motion, Martingales, and Stochastic Calculus",
+      "status": "manual_review_book",
+      "identity_review": null,
+      "error": "Book/TOC retained as a candidate; not treated as a single paper PDF."
+    }
+  ],
+  "limitations": [
+    "User Google spreadsheet not imported because authentication is required.",
+    "All entries remain candidates, not an approved evaluation corpus.",
+    "Title-token checks are a heuristic, not bibliographic identity certification.",
+    "Text screening covers the first page, expanded to at most three pages for sparse covers; full parsing remains to be done.",
+    "Unversioned sources are snapshotted with SHA-256; arXiv revision numbers are not inferred."
+  ]
+}

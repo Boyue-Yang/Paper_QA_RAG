@@ -1,0 +1,13 @@
+{
+  "model": "BAAI/bge-m3",
+  "run_id": "section_recursive_512_64_e14374fa6d",
+  "embed_format": "v1: \"{paper_title} | {section_path joined by >}\\n{text}\"",
+  "normalized": true,
+  "count": 5755,
+  "dim": 1024,
+  "max_embed_tokens": 594,
+  "device": "cuda:0",
+  "seconds": 236.0,
+  "chunks_sha256": "b7f17a680500912c26caa8eeb4bf49a159c7c72f960ed0b17ebf3583984bd995",
+  "partial": false
+}

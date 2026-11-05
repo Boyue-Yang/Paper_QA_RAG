@@ -1,0 +1,39 @@
+{
+  "catalog_version": "candidate_2026-10-23_v1",
+  "status": "partial_pending_user_sheet",
+  "unique_documents": 101,
+  "document_types": {
+    "research_paper": 85,
+    "book": 2,
+    "monograph": 1,
+    "web_article": 5,
+    "technical_report": 8
+  },
+  "scope_buckets": {
+    "deep_learning_background": 5,
+    "llm_core": 44,
+    "optimization_and_rl_foundations": 16,
+    "math_background": 1,
+    "diffusion_and_flow_models": 20,
+    "safety_and_alignment": 15
+  },
+  "download_status": {
+    "downloaded_pdf": 94,
+    "manual_review_book": 2,
+    "downloaded_html": 5
+  },
+  "source_status": [
+    {
+      "source_id": "cs395t_f26",
+      "url": "https://noahgol.github.io/teaching/cs395t-f26/",
+      "status": "imported",
+      "raw_entries": 101
+    },
+    {
+      "source_id": "user_sheet",
+      "url": "https://docs.google.com/spreadsheets/d/1-obHFhggS7_C5UZ5SnR8Lrv92oEFs2HG/edit?gid=2016396705",
+      "status": "blocked_authentication",
+      "raw_entries": null
+    }
+  ]
+}

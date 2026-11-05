@@ -1,0 +1,201 @@
+{
+  "status": "complete",
+  "needs_review": [
+    {
+      "paper_id": "arxiv_2405.21060",
+      "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+      "version": "v1",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 83,
+      "merged_section_count": 7,
+      "indexed_section_count": 69,
+      "excluded_section_titles": [
+        "2 Background and Overview",
+        "4.1 The Attention Framework",
+        "9.4 Architecture Ablations",
+        "Acknowledgments",
+        "References",
+        "Appendix C Theory Details",
+        "Appendix D Experimental Details"
+      ],
+      "chunk_count": 153,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 1,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2405.21060v1.json",
+      "heading_methods": {
+        "html_section": 83
+      }
+    },
+    {
+      "paper_id": "arxiv_2412.01951",
+      "title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+      "version": "v2",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 47,
+      "merged_section_count": 2,
+      "indexed_section_count": 41,
+      "excluded_section_titles": [
+        "Acknowledgments",
+        "References",
+        "Appendix F Preliminaries",
+        "Appendix J Proofs from Section 4.2"
+      ],
+      "chunk_count": 217,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 54,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2412.01951v2.json",
+      "heading_methods": {
+        "html_section": 47
+      }
+    },
+    {
+      "paper_id": "arxiv_2408.03314",
+      "title": "Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters",
+      "version": "v1",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 31,
+      "merged_section_count": 1,
+      "indexed_section_count": 28,
+      "excluded_section_titles": [
+        "Acknowledgements",
+        "References"
+      ],
+      "chunk_count": 50,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 1,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2408.03314v1.json",
+      "heading_methods": {
+        "html_section": 31
+      }
+    },
+    {
+      "paper_id": "arxiv_2601.18734",
+      "title": "Self-Distilled Reasoner: On-Policy Self-Distillation for Large Language Models",
+      "version": "v3",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 27,
+      "merged_section_count": 3,
+      "indexed_section_count": 22,
+      "excluded_section_titles": [
+        "2 Background",
+        "References"
+      ],
+      "chunk_count": 45,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 9,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2601.18734v3.json",
+      "heading_methods": {
+        "html_section": 27
+      }
+    },
+    {
+      "paper_id": "arxiv_2501.00656",
+      "title": "2 OLMo 2 Furious",
+      "version": "v3",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 52,
+      "merged_section_count": 3,
+      "indexed_section_count": 44,
+      "excluded_section_titles": [
+        "3.3 Architecture Improvements",
+        "3.4 Hyperparameter Improvements",
+        "Acknowledgments",
+        "References",
+        "Appendix C Additional Instruct Details"
+      ],
+      "chunk_count": 119,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 54,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2501.00656v3.json",
+      "heading_methods": {
+        "html_section": 52
+      }
+    },
+    {
+      "paper_id": "arxiv_1508.07909",
+      "title": "Neural Machine Translation of Rare Words with Subword Units",
+      "version": "v5",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 15,
+      "merged_section_count": 0,
+      "indexed_section_count": 12,
+      "excluded_section_titles": [
+        "5 Analysis",
+        "Acknowledgments",
+        "References"
+      ],
+      "chunk_count": 32,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 1,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_1508.07909v5.json",
+      "heading_methods": {
+        "html_section": 15
+      }
+    },
+    {
+      "paper_id": "arxiv_2503.14476",
+      "title": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale",
+      "version": "v2",
+      "status": "complete",
+      "source_format": "html",
+      "page_count": null,
+      "section_count": 32,
+      "merged_section_count": 4,
+      "indexed_section_count": 23,
+      "excluded_section_titles": [
+        "2 Preliminary",
+        "4 Experiments",
+        "Acknowledgments",
+        "References",
+        "Model’s output (Markdown Text)"
+      ],
+      "chunk_count": 37,
+      "quality_flags": [
+        "latex_conversion_errors_in_body"
+      ],
+      "cache_used": false,
+      "latex_error_elements": 2,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_78\\parsed\\arxiv-html-v1_beautifulsoup4==4.15.0_lxml==6.1.3\\arxiv_2503.14476v2.json",
+      "heading_methods": {
+        "html_section": 32
+      }
+    }
+  ],
+  "failed_papers": [],
+  "limitations": [
+    "Text comes from arXiv LaTeXML HTML; conversion errors in a paper show up as quality flags.",
+    "Figures contribute captions only; images are not read. Tables are flattened to \"cell | cell\" rows.",
+    "Token counts use the BAAI/bge-m3 tokenizer; it must match the embedding model that reads these chunks.",
+    "max_tokens applies to chunk text only; account for any added metadata prefix when embedding."
+  ]
+}

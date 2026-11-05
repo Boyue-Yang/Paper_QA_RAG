@@ -1,0 +1,138 @@
+{
+  "status": "complete",
+  "needs_review": [
+    {
+      "paper_id": "arxiv_2207.09238",
+      "title": "Formal Algorithms for Transformers",
+      "version": "v1",
+      "status": "complete",
+      "page_count": 16,
+      "section_count": 17,
+      "indexed_section_count": 15,
+      "excluded_section_titles": [
+        "Front matter",
+        "A. References"
+      ],
+      "chunk_count": 35,
+      "quality_flags": [
+        "floating_content_recovered_needs_review"
+      ],
+      "cache_used": true,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\parsed\\section-layout-v5_pymupdf_1.28.2\\arxiv_2207.09238v1.json",
+      "heading_methods": {
+        "synthetic_front_matter": 1,
+        "retained_front_matter_prose": 1,
+        "pdf_outline_match": 10,
+        "float_page_recovery": 5
+      },
+      "page_layouts": {
+        "two_columns_heuristic": 11,
+        "single_column": 5
+      }
+    },
+    {
+      "paper_id": "arxiv_2406.04093",
+      "title": "Scaling and Evaluating Sparse Autoencoders",
+      "version": "v1",
+      "status": "complete",
+      "page_count": 34,
+      "section_count": 66,
+      "indexed_section_count": 56,
+      "excluded_section_titles": [
+        "Front matter",
+        "2 Methods",
+        "3 Scaling laws",
+        "5 Understanding the TopK activation function",
+        "Acknowledgments",
+        "References",
+        "A Optimization",
+        "C Training ablations",
+        "E Qualitative results",
+        "F Miscellaneous small results"
+      ],
+      "chunk_count": 70,
+      "quality_flags": [
+        "floating_content_recovered_needs_review"
+      ],
+      "cache_used": true,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\parsed\\section-layout-v5_pymupdf_1.28.2\\arxiv_2406.04093v1.json",
+      "heading_methods": {
+        "synthetic_front_matter": 1,
+        "named_heading": 3,
+        "pdf_outline_match": 61,
+        "float_page_recovery": 1
+      },
+      "page_layouts": {
+        "single_column": 34
+      }
+    },
+    {
+      "paper_id": "arxiv_2401.04088",
+      "title": "Mixtral of Experts",
+      "version": "v1",
+      "status": "complete",
+      "page_count": 13,
+      "section_count": 16,
+      "indexed_section_count": 13,
+      "excluded_section_titles": [
+        "Front matter",
+        "Acknowledgements",
+        "References"
+      ],
+      "chunk_count": 20,
+      "quality_flags": [
+        "floating_content_recovered_needs_review"
+      ],
+      "cache_used": true,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\parsed\\section-layout-v5_pymupdf_1.28.2\\arxiv_2401.04088v1.json",
+      "heading_methods": {
+        "synthetic_front_matter": 1,
+        "named_heading": 3,
+        "pdf_outline_match": 10,
+        "float_page_recovery": 2
+      },
+      "page_layouts": {
+        "single_column": 13
+      }
+    },
+    {
+      "paper_id": "arxiv_2101.00190",
+      "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+      "version": "v1",
+      "status": "complete",
+      "page_count": 15,
+      "section_count": 38,
+      "indexed_section_count": 33,
+      "excluded_section_titles": [
+        "Front matter",
+        "5 Experimental Setup",
+        "6 Main Results",
+        "References",
+        "A Supplementary Material"
+      ],
+      "chunk_count": 48,
+      "quality_flags": [
+        "floating_content_recovered_needs_review"
+      ],
+      "cache_used": true,
+      "parsed_json": "C:\\Users\\boyue\\Desktop\\LLM projects\\Paper_QA_RAG\\data\\processed\\corpus_80\\parsed\\section-layout-v5_pymupdf_1.28.2\\arxiv_2101.00190v1.json",
+      "heading_methods": {
+        "synthetic_front_matter": 1,
+        "named_heading": 2,
+        "number_and_font": 34,
+        "float_page_recovery": 1
+      },
+      "page_layouts": {
+        "two_columns_heuristic": 11,
+        "single_column": 4
+      }
+    }
+  ],
+  "failed_papers": [],
+  "limitations": [
+    "PDF heading and column detection are heuristic; inspect representative parsed documents.",
+    "Tables, equations and figures retain extracted text/captions but are not structurally reconstructed or OCRed.",
+    "Token counts use the BAAI/bge-m3 tokenizer; it must match the embedding model that reads these chunks.",
+    "max_tokens applies to chunk text only; account for any added metadata prefix when embedding."
+  ]
+}

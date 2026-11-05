@@ -1,0 +1,3879 @@
+{
+  "catalog_version": "merged_candidates_2026-10-26_v1",
+  "approval_status": "proposed_not_frozen",
+  "document_count": 60,
+  "documents": [
+    {
+      "paper_id": "arxiv_1706.03762",
+      "dedupe_key": "arxiv:1706.03762",
+      "title": "Attention Is All You Need",
+      "citation": "Vaswani et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1706.03762",
+      "source_url": "https://arxiv.org/pdf/1706.03762",
+      "download_url": "https://arxiv.org/pdf/1706.03762",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-08-31",
+          "lecture_topic": "Architectures I: Transformers",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 6,
+          "title_cell": "A6",
+          "link_cell": "B6",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "arxiv_id": "1706.03762",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1706.03762",
+        "resolved_url": "https://arxiv.org/pdf/1706.03762",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:33.783601+00:00",
+        "bytes": 2215244,
+        "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+        "page_count": 15,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1706.03762.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2860
+      },
+      "title_variants": [
+        "Attention Is All You Need"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 6,
+          "title_cell": "A6",
+          "link_cell": "B6",
+          "title": "Attention Is All You Need",
+          "url": "https://arxiv.org/abs/1706.03762",
+          "arxiv_id": "1706.03762",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "Transformer 主线基础，连接注意力、推理与长上下文题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1701.06538",
+      "dedupe_key": "arxiv:1701.06538",
+      "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+      "citation": "Shazeer et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1701.06538",
+      "source_url": "https://arxiv.org/pdf/1701.06538",
+      "download_url": "https://arxiv.org/pdf/1701.06538",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 3,
+          "title_cell": "A3",
+          "link_cell": "B3",
+          "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+          "url": "https://arxiv.org/abs/1701.06538",
+          "arxiv_id": "1701.06538",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1701.06538",
+        "resolved_url": "https://arxiv.org/pdf/1701.06538",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:42.726523+00:00",
+        "bytes": 544288,
+        "sha256": "2567713d198a376b65b92f0c60b9f58c8c5f66755530b92203533a17c4ec4b8e",
+        "page_count": 19,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1701.06538.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3365
+      },
+      "title_variants": [
+        "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 3,
+          "title_cell": "A3",
+          "link_cell": "B3",
+          "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+          "url": "https://arxiv.org/abs/1701.06538",
+          "arxiv_id": "1701.06538",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/1701.06538v1",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "MoE 基础，与 Switch、Mixtral、DeepSeekMoE 串联。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2101.03961",
+      "dedupe_key": "arxiv:2101.03961",
+      "title": "Switch Transformers",
+      "citation": "Fedus, Zoph & Shazeer (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2101.03961",
+      "source_url": "https://arxiv.org/pdf/2101.03961",
+      "download_url": "https://arxiv.org/pdf/2101.03961",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 11,
+          "title_cell": "A11",
+          "link_cell": "B11",
+          "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+          "url": "https://arxiv.org/abs/2101.03961",
+          "arxiv_id": "2101.03961",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture5"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2101.03961",
+        "resolved_url": "https://arxiv.org/pdf/2101.03961",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:45.755789+00:00",
+        "bytes": 1304157,
+        "sha256": "f340f6ace31abf7d0730ef461404279f40d3c890e9cc2daeb7068b3304afdbd6",
+        "page_count": 40,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2101.03961.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2302
+      },
+      "title_variants": [
+        "Switch Transformers",
+        "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 11,
+          "title_cell": "A11",
+          "link_cell": "B11",
+          "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+          "url": "https://arxiv.org/abs/2101.03961",
+          "arxiv_id": "2101.03961",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture5"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "MoE 路由与扩展的比较材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2405.21060",
+      "dedupe_key": "arxiv:2405.21060",
+      "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+      "citation": "Dao & Gu (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2405.21060",
+      "source_url": "https://arxiv.org/pdf/2405.21060",
+      "download_url": "https://arxiv.org/pdf/2405.21060",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 9,
+          "title_cell": "A9",
+          "link_cell": "B9",
+          "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+          "url": "https://arxiv.org/abs/2405.21060",
+          "arxiv_id": "2405.21060",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture4"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2405.21060",
+        "resolved_url": "https://arxiv.org/pdf/2405.21060",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:48.806450+00:00",
+        "bytes": 3209170,
+        "sha256": "6fe16414fa471a5ab150cddcba5840d3a94e347e96992c50c12c1fb8b919479f",
+        "page_count": 52,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2405.21060.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3664
+      },
+      "title_variants": [
+        "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 9,
+          "title_cell": "A9",
+          "link_cell": "B9",
+          "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+          "url": "https://arxiv.org/abs/2405.21060",
+          "arxiv_id": "2405.21060",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture4"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "保留 SSM 与 Transformer 联系的材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2006.16236",
+      "dedupe_key": "arxiv:2006.16236",
+      "title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+      "citation": "Katharopoulos et al. (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2006.16236",
+      "source_url": "https://arxiv.org/pdf/2006.16236",
+      "download_url": "https://arxiv.org/pdf/2006.16236",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 10,
+          "title_cell": "A10",
+          "link_cell": "B10",
+          "title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+          "url": "https://arxiv.org/abs/2006.16236",
+          "arxiv_id": "2006.16236",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture4"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2006.16236",
+        "resolved_url": "https://arxiv.org/pdf/2006.16236",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:51.776967+00:00",
+        "bytes": 1728131,
+        "sha256": "2e655ef4a8d85428b576c8e0827d68f1c97950318ba03c9887c5b019a9a332fd",
+        "page_count": 17,
+        "pdf_metadata_title": "Transformers are RNNs:  Fast Autoregressive Transformers with Linear Attention",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2006.16236.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4406
+      },
+      "title_variants": [
+        "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 10,
+          "title_cell": "A10",
+          "link_cell": "B10",
+          "title": "Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention",
+          "url": "https://arxiv.org/abs/2006.16236",
+          "arxiv_id": "2006.16236",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture4"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "补充线性注意力与循环形式之间的联系。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2312.00752",
+      "dedupe_key": "arxiv:2312.00752",
+      "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+      "citation": "Gu & Dao (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2312.00752",
+      "source_url": "https://arxiv.org/pdf/2312.00752",
+      "download_url": "https://arxiv.org/pdf/2312.00752",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-02",
+          "lecture_topic": "Architectures II: Transformers cont., mixture-of-experts, state-space models",
+          "reading_group": "additional",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2312.00752",
+        "resolved_url": "https://arxiv.org/pdf/2312.00752",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:40:57.766552+00:00",
+        "bytes": 1168615,
+        "sha256": "adf70ed1803c85b1899dec3e21f3af0b124411439e8654b840ea65f7b9f52b2e",
+        "page_count": 36,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2312.00752.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4108
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "补充选择性状态空间模型，与 Transformer 主线形成对照。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2001.08361",
+      "dedupe_key": "arxiv:2001.08361",
+      "title": "Scaling Laws for Neural Language Models",
+      "citation": "Kaplan et al. (2020)",
+      "year_as_listed": 2020,
+      "document_type": "research_paper",
+      "arxiv_id": "2001.08361",
+      "source_url": "https://arxiv.org/pdf/2001.08361",
+      "download_url": "https://arxiv.org/pdf/2001.08361",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 14,
+          "title_cell": "A14",
+          "link_cell": "B14",
+          "title": "Scaling Laws for Neural Language Models",
+          "url": "https://arxiv.org/abs/2001.08361",
+          "arxiv_id": "2001.08361",
+          "version_as_listed": "v1",
+          "topic": "Scaling Laws",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2001.08361",
+        "resolved_url": "https://arxiv.org/pdf/2001.08361",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:00.908801+00:00",
+        "bytes": 2493004,
+        "sha256": "a41bd7877fd1a6bcbba096b2619618bd2f90e02488f2365644903eb2f7c6a494",
+        "page_count": 30,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2001.08361.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1655
+      },
+      "title_variants": [
+        "Scaling Laws for Neural Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 14,
+          "title_cell": "A14",
+          "link_cell": "B14",
+          "title": "Scaling Laws for Neural Language Models",
+          "url": "https://arxiv.org/abs/2001.08361",
+          "arxiv_id": "2001.08361",
+          "version_as_listed": "v1",
+          "topic": "Scaling Laws",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2001.08361v1",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "Scaling Laws",
+      "selection_reason": "与 Chinchilla 形成参数、数据和计算预算的比较题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2203.15556",
+      "dedupe_key": "arxiv:2203.15556",
+      "title": "Training Compute-Optimal Large Language Models",
+      "citation": "Hoffmann et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2203.15556",
+      "source_url": "https://arxiv.org/pdf/2203.15556",
+      "download_url": "https://arxiv.org/pdf/2203.15556",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-09",
+          "lecture_topic": "Pretraining & Scaling laws",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 15,
+          "title_cell": "A15",
+          "link_cell": "B15",
+          "title": "Training Compute-Optimal Large Language Models",
+          "url": "https://arxiv.org/abs/2203.15556",
+          "arxiv_id": "2203.15556",
+          "version_as_listed": "v1",
+          "topic": "Scaling Laws",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2203.15556",
+        "resolved_url": "https://arxiv.org/pdf/2203.15556",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:04.299316+00:00",
+        "bytes": 6004349,
+        "sha256": "3fd3632a8ef48171bd25282990221d49535d75356192f068b3b2ebe08f2aedd4",
+        "page_count": 36,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2203.15556.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3911
+      },
+      "title_variants": [
+        "Training Compute-Optimal Large Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 15,
+          "title_cell": "A15",
+          "link_cell": "B15",
+          "title": "Training Compute-Optimal Large Language Models",
+          "url": "https://arxiv.org/abs/2203.15556",
+          "arxiv_id": "2203.15556",
+          "version_as_listed": "v1",
+          "topic": "Scaling Laws",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2203.15556v1",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "Scaling Laws",
+      "selection_reason": "与 Kaplan scaling laws 形成可对照的研究主线。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1412.6980",
+      "dedupe_key": "arxiv:1412.6980",
+      "title": "Adam: A Method for Stochastic Optimization",
+      "citation": "Kingma & Ba (2014)",
+      "year_as_listed": 2014,
+      "document_type": "research_paper",
+      "arxiv_id": "1412.6980",
+      "source_url": "https://arxiv.org/abs/1412.6980",
+      "download_url": "https://arxiv.org/pdf/1412.6980",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-14",
+          "lecture_topic": "Optimization I: SGD, Adam",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 14,
+          "title_cell": "A14",
+          "link_cell": "B14",
+          "title": "Adam: A Method for Stochastic Optimization",
+          "url": "https://arxiv.org/abs/1412.6980",
+          "arxiv_id": "1412.6980",
+          "version_as_listed": null,
+          "topic": "Optimizers",
+          "lecture_as_listed": "lecture6"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1412.6980",
+        "resolved_url": "https://arxiv.org/pdf/1412.6980",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:15.776581+00:00",
+        "bytes": 584641,
+        "sha256": "eab9c73ae2ceda884b94830bda99312254bac4806f6c9f045cbab90721ecda31",
+        "page_count": 15,
+        "pdf_metadata_title": "Adam: A Method for Stochastic Optimization",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1412.6980.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4130
+      },
+      "title_variants": [
+        "Adam: A Method for Stochastic Optimization"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 14,
+          "title_cell": "A14",
+          "link_cell": "B14",
+          "title": "Adam: A Method for Stochastic Optimization",
+          "url": "https://arxiv.org/abs/1412.6980",
+          "arxiv_id": "1412.6980",
+          "version_as_listed": null,
+          "topic": "Optimizers",
+          "lecture_as_listed": "lecture6"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "保留 Adam 作为优化器比较的基础。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2409.11321",
+      "dedupe_key": "arxiv:2409.11321",
+      "title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+      "citation": "Vyas et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2409.11321",
+      "source_url": "https://arxiv.org/pdf/2409.11321",
+      "download_url": "https://arxiv.org/pdf/2409.11321",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-16",
+          "lecture_topic": "Optimization II: Preconditioning in modern ML optimization",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "optimization_and_rl_foundations"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 18,
+          "title_cell": "A18",
+          "link_cell": "B18",
+          "title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+          "url": "https://arxiv.org/abs/2409.11321",
+          "arxiv_id": "2409.11321",
+          "version_as_listed": null,
+          "topic": "Optimizers",
+          "lecture_as_listed": "lecture8"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2409.11321",
+        "resolved_url": "https://arxiv.org/pdf/2409.11321",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:18.773951+00:00",
+        "bytes": 1300562,
+        "sha256": "d6f33bb71eab0f046d911b60800846fd3332f1dcf5f2f1434ab444ab89d0b22a",
+        "page_count": 20,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2409.11321.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4033
+      },
+      "title_variants": [
+        "SOAP: Improving and Stabilizing Shampoo using Adam"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 18,
+          "title_cell": "A18",
+          "link_cell": "B18",
+          "title": "SOAP: Improving and Stabilizing Shampoo using Adam",
+          "url": "https://arxiv.org/abs/2409.11321",
+          "arxiv_id": "2409.11321",
+          "version_as_listed": null,
+          "topic": "Optimizers",
+          "lecture_as_listed": "lecture8"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "与 Shampoo、Adam 形成优化器比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1802.09568",
+      "dedupe_key": "arxiv:1802.09568",
+      "title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+      "citation": "Gupta, Koren & Singer (2018)",
+      "year_as_listed": 2018,
+      "document_type": "research_paper",
+      "arxiv_id": "1802.09568",
+      "source_url": "https://arxiv.org/abs/1802.09568",
+      "download_url": "https://arxiv.org/pdf/1802.09568",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-16",
+          "lecture_topic": "Optimization II: Preconditioning in modern ML optimization",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "optimization_and_rl_foundations"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 10,
+          "title_cell": "A10",
+          "link_cell": "B10",
+          "title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+          "url": "https://arxiv.org/abs/1802.09568",
+          "arxiv_id": "1802.09568",
+          "version_as_listed": "v2",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1802.09568",
+        "resolved_url": "https://arxiv.org/pdf/1802.09568",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:21.740012+00:00",
+        "bytes": 330728,
+        "sha256": "dedd4fdb7f591342eb3bcee119d7d51f3b751d7070afc0b1ba59560ef2594d64",
+        "page_count": 21,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1802.09568.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3293
+      },
+      "title_variants": [
+        "Shampoo: Preconditioned Stochastic Tensor Optimization"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 10,
+          "title_cell": "A10",
+          "link_cell": "B10",
+          "title": "Shampoo: Preconditioned Stochastic Tensor Optimization",
+          "url": "https://arxiv.org/abs/1802.09568",
+          "arxiv_id": "1802.09568",
+          "version_as_listed": "v2",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/1802.09568v2",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "保留矩阵预条件优化器材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2502.16982",
+      "dedupe_key": "arxiv:2502.16982",
+      "title": "Muon is Scalable for LLM Training",
+      "citation": "Liu et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "research_paper",
+      "arxiv_id": "2502.16982",
+      "source_url": "https://arxiv.org/pdf/2502.16982",
+      "download_url": "https://arxiv.org/pdf/2502.16982",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-21",
+          "lecture_topic": "Optimization III: More preconditioning",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2502.16982",
+        "resolved_url": "https://arxiv.org/pdf/2502.16982",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:30.816798+00:00",
+        "bytes": 2077505,
+        "sha256": "6b8e3b47da4db09c952a35486c905f416c57081a32b445a36a3744c441b1c7f3",
+        "page_count": 19,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2502.16982.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2403
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "补充面向 LLM 训练的 Muon 材料。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2211.17192",
+      "dedupe_key": "arxiv:2211.17192",
+      "title": "Fast Inference from Transformers via Speculative Decoding",
+      "citation": "Leviathan, Kalman & Matias (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2211.17192",
+      "source_url": "https://arxiv.org/pdf/2211.17192",
+      "download_url": "https://arxiv.org/pdf/2211.17192",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 21,
+          "title_cell": "A21",
+          "link_cell": "B21",
+          "title": "Fast Inference from Transformers via Speculative Decoding",
+          "url": "https://arxiv.org/abs/2211.17192",
+          "arxiv_id": "2211.17192",
+          "version_as_listed": null,
+          "topic": "Inference",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2211.17192",
+        "resolved_url": "https://arxiv.org/pdf/2211.17192",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:42.758335+00:00",
+        "bytes": 574982,
+        "sha256": "8967e2daab74178b8a73a6f0b0780c5cbb40f9f6dcbd5c456b24a89c128c52ed",
+        "page_count": 13,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2211.17192.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4616
+      },
+      "title_variants": [
+        "Fast Inference from Transformers via Speculative Decoding"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 21,
+          "title_cell": "A21",
+          "link_cell": "B21",
+          "title": "Fast Inference from Transformers via Speculative Decoding",
+          "url": "https://arxiv.org/abs/2211.17192",
+          "arxiv_id": "2211.17192",
+          "version_as_listed": null,
+          "topic": "Inference",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "推理系统",
+      "selection_reason": "保留 speculative decoding 代表材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2402.08164",
+      "dedupe_key": "arxiv:2402.08164",
+      "title": "On Limitations of the Transformer Architecture",
+      "citation": "Peng, Narayanan & Papadimitriou (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2402.08164",
+      "source_url": "https://arxiv.org/pdf/2402.08164",
+      "download_url": "https://arxiv.org/pdf/2402.08164",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 20,
+          "title_cell": "A20",
+          "link_cell": "B20",
+          "title": "On Limitations of the Transformer Architecture",
+          "url": "https://arxiv.org/abs/2402.08164",
+          "arxiv_id": "2402.08164",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2402.08164",
+        "resolved_url": "https://arxiv.org/pdf/2402.08164",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:48.740610+00:00",
+        "bytes": 230532,
+        "sha256": "75975fb249554f3b43ea63b2626f96bea97513b08af0204bfcbcc082dc5aad9f",
+        "page_count": 14,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2402.08164.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3895
+      },
+      "title_variants": [
+        "On Limitations of the Transformer Architecture"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 20,
+          "title_cell": "A20",
+          "link_cell": "B20",
+          "title": "On Limitations of the Transformer Architecture",
+          "url": "https://arxiv.org/abs/2402.08164",
+          "arxiv_id": "2402.08164",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "保留架构局限材料，用于考察条件与限制的回答。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2201.11903",
+      "dedupe_key": "arxiv:2201.11903",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "citation": "Wei et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2201.11903",
+      "source_url": "https://arxiv.org/pdf/2201.11903",
+      "download_url": "https://arxiv.org/pdf/2201.11903",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-23",
+          "lecture_topic": "Inference I: Chain-of-Thought, Speculative decoding",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 18,
+          "title_cell": "A18",
+          "link_cell": "B18",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "url": "https://arxiv.org/abs/2201.11903",
+          "arxiv_id": "2201.11903",
+          "version_as_listed": "v6",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2201.11903",
+        "resolved_url": "https://arxiv.org/pdf/2201.11903",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:51.766472+00:00",
+        "bytes": 891773,
+        "sha256": "7d9f878c23b460e4566aa4ec9201b1abfb3b8faefb2b1356e411cb90fef72a12",
+        "page_count": 43,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2201.11903.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2306
+      },
+      "title_variants": [
+        "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 18,
+          "title_cell": "A18",
+          "link_cell": "B18",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "url": "https://arxiv.org/abs/2201.11903",
+          "arxiv_id": "2201.11903",
+          "version_as_listed": "v6",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v6"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2201.11903v6",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "与 Zero-Shot CoT、Self-Consistency 形成推理方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2412.01951",
+      "dedupe_key": "arxiv:2412.01951",
+      "title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+      "citation": "Huang et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2412.01951",
+      "source_url": "https://arxiv.org/pdf/2412.01951",
+      "download_url": "https://arxiv.org/pdf/2412.01951",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 23,
+          "title_cell": "A23",
+          "link_cell": "B23",
+          "title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+          "url": "https://arxiv.org/abs/2412.01951",
+          "arxiv_id": "2412.01951",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture10"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2412.01951",
+        "resolved_url": "https://arxiv.org/pdf/2412.01951",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:54.806369+00:00",
+        "bytes": 1924304,
+        "sha256": "df66bfb7d1cc8a34033a4783da1b21d4d9854ddcd87240f7d65930c5067b81fc",
+        "page_count": 59,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2412.01951.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3719
+      },
+      "title_variants": [
+        "Self-Improvement in Language Models: The Sharpening Mechanism"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 23,
+          "title_cell": "A23",
+          "link_cell": "B23",
+          "title": "Self-Improvement in Language Models: The Sharpening Mechanism",
+          "url": "https://arxiv.org/abs/2412.01951",
+          "arxiv_id": "2412.01951",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture10"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "保留自改进相关材料，连接训练与推理主题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2205.14135",
+      "dedupe_key": "arxiv:2205.14135",
+      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "citation": "Dao et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2205.14135",
+      "source_url": "https://arxiv.org/pdf/2205.14135",
+      "download_url": "https://arxiv.org/pdf/2205.14135",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 22,
+          "title_cell": "A22",
+          "link_cell": "B22",
+          "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+          "url": "https://arxiv.org/abs/2205.14135",
+          "arxiv_id": "2205.14135",
+          "version_as_listed": null,
+          "topic": "Inference",
+          "lecture_as_listed": "lecture10"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2205.14135",
+        "resolved_url": "https://arxiv.org/pdf/2205.14135",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:41:57.818265+00:00",
+        "bytes": 2630825,
+        "sha256": "ca7f9fda10b90fc05dd291a3accc85e9c1a4a860b99b31928dab03ed3fcb14e4",
+        "page_count": 34,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2205.14135.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3554
+      },
+      "title_variants": [
+        "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 22,
+          "title_cell": "A22",
+          "link_cell": "B22",
+          "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+          "url": "https://arxiv.org/abs/2205.14135",
+          "arxiv_id": "2205.14135",
+          "version_as_listed": null,
+          "topic": "Inference",
+          "lecture_as_listed": "lecture10"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "推理系统",
+      "selection_reason": "保留注意力计算与访存优化材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2408.03314",
+      "dedupe_key": "arxiv:2408.03314",
+      "title": "Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters",
+      "citation": "Snell et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2408.03314",
+      "source_url": "https://arxiv.org/pdf/2408.03314",
+      "download_url": "https://arxiv.org/pdf/2408.03314",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "additional",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2408.03314",
+        "resolved_url": "https://arxiv.org/pdf/2408.03314",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:00.876718+00:00",
+        "bytes": 3870997,
+        "sha256": "ded7b20b51493258c5ce2a1a024cd33dd752de1fa3373d1207620da4cfe24545",
+        "page_count": 37,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2408.03314.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3847
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "补充测试时计算预算这一比较维度。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2309.06180",
+      "dedupe_key": "arxiv:2309.06180",
+      "title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+      "citation": "Kwon et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2309.06180",
+      "source_url": "https://arxiv.org/pdf/2309.06180",
+      "download_url": "https://arxiv.org/pdf/2309.06180",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-28",
+          "lecture_topic": "Inference II: Sharpening, Flash attention",
+          "reading_group": "additional",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2309.06180",
+        "resolved_url": "https://arxiv.org/pdf/2309.06180",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:03.806479+00:00",
+        "bytes": 1459631,
+        "sha256": "55b3b324d779a67c59dac2519445e3b07c14e6ff5c656fadb47a3d7b5997469e",
+        "page_count": 16,
+        "pdf_metadata_title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2309.06180.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4681
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "推理系统",
+      "selection_reason": "补充服务阶段的内存管理材料。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_1707.06347",
+      "dedupe_key": "arxiv:1707.06347",
+      "title": "Proximal Policy Optimization Algorithms",
+      "citation": "Schulman et al. (2017)",
+      "year_as_listed": 2017,
+      "document_type": "research_paper",
+      "arxiv_id": "1707.06347",
+      "source_url": "https://arxiv.org/abs/1707.06347",
+      "download_url": "https://arxiv.org/pdf/1707.06347",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-09-30",
+          "lecture_topic": "Post-training 0: Basics of policy gradient methods",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "optimization_and_rl_foundations"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 24,
+          "title_cell": "A24",
+          "link_cell": "B24",
+          "title": "Proximal Policy Optimization Algorithms",
+          "url": "https://arxiv.org/abs/1707.06347",
+          "arxiv_id": "1707.06347",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11-13"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1707.06347",
+        "resolved_url": "https://arxiv.org/pdf/1707.06347",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:12.822740+00:00",
+        "bytes": 2923532,
+        "sha256": "e78feadadbdbb0b601b3c2bcc81404722cd431a489b307545f9b7bea1e8c4f5b",
+        "page_count": 12,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1707.06347.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3336
+      },
+      "title_variants": [
+        "Proximal Policy Optimization Algorithms"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 24,
+          "title_cell": "A24",
+          "link_cell": "B24",
+          "title": "Proximal Policy Optimization Algorithms",
+          "url": "https://arxiv.org/abs/1707.06347",
+          "arxiv_id": "1707.06347",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11-13"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "为后训练相关问题提供 PPO 基础。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2203.02155",
+      "dedupe_key": "arxiv:2203.02155",
+      "title": "Training Language Models to Follow Instructions with Human Feedback",
+      "citation": "Ouyang et al. (2022)",
+      "year_as_listed": 2022,
+      "document_type": "research_paper",
+      "arxiv_id": "2203.02155",
+      "source_url": "https://arxiv.org/pdf/2203.02155",
+      "download_url": "https://arxiv.org/pdf/2203.02155",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-05",
+          "lecture_topic": "Post-training I (Student Presentations #1): SFT, RLHF, and DPO",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 16,
+          "title_cell": "A16",
+          "link_cell": "B16",
+          "title": "Training language models to follow instructions with human feedback",
+          "url": "https://arxiv.org/abs/2203.02155",
+          "arxiv_id": "2203.02155",
+          "version_as_listed": "v1",
+          "topic": "Instruction Tuning",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2203.02155",
+        "resolved_url": "https://arxiv.org/pdf/2203.02155",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:15.823679+00:00",
+        "bytes": 1797405,
+        "sha256": "c1984bb50a5b90fddb895fdc3a0f72e5bc977148c9f63ef6040cbe7a3e1f0d98",
+        "page_count": 68,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2203.02155.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2530
+      },
+      "title_variants": [
+        "Training Language Models to Follow Instructions with Human Feedback",
+        "Training language models to follow instructions with human feedback"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 16,
+          "title_cell": "A16",
+          "link_cell": "B16",
+          "title": "Training language models to follow instructions with human feedback",
+          "url": "https://arxiv.org/abs/2203.02155",
+          "arxiv_id": "2203.02155",
+          "version_as_listed": "v1",
+          "topic": "Instruction Tuning",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2203.02155v1",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "保留指令微调与人类反馈训练的核心材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2305.18290",
+      "dedupe_key": "arxiv:2305.18290",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "citation": "Rafailov et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2305.18290",
+      "source_url": "https://arxiv.org/pdf/2305.18290",
+      "download_url": "https://arxiv.org/pdf/2305.18290",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-05",
+          "lecture_topic": "Post-training I (Student Presentations #1): SFT, RLHF, and DPO",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 17,
+          "title_cell": "A17",
+          "link_cell": "B17",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "url": "https://arxiv.org/abs/2305.18290",
+          "arxiv_id": "2305.18290",
+          "version_as_listed": "v3",
+          "topic": "Instruction Tuning",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2305.18290",
+        "resolved_url": "https://arxiv.org/pdf/2305.18290",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:21.801053+00:00",
+        "bytes": 1299212,
+        "sha256": "92cb3a2b71362acda98a789b03d88688fd33cf5fcf13f81d2b1de30ee7d3b67a",
+        "page_count": 27,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2305.18290.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3177
+      },
+      "title_variants": [
+        "Direct Preference Optimization: Your Language Model is Secretly a Reward Model"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 17,
+          "title_cell": "A17",
+          "link_cell": "B17",
+          "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+          "url": "https://arxiv.org/abs/2305.18290",
+          "arxiv_id": "2305.18290",
+          "version_as_listed": "v3",
+          "topic": "Instruction Tuning",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2305.18290v3",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "与 RLHF、PPO 形成偏好优化比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2402.03300",
+      "dedupe_key": "arxiv:2402.03300",
+      "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+      "citation": "Shao et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2402.03300",
+      "source_url": "https://arxiv.org/pdf/2402.03300",
+      "download_url": "https://arxiv.org/pdf/2402.03300",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 25,
+          "title_cell": "A25",
+          "link_cell": "B25",
+          "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+          "url": "https://arxiv.org/abs/2402.03300",
+          "arxiv_id": "2402.03300",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11-13"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2402.03300",
+        "resolved_url": "https://arxiv.org/pdf/2402.03300",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:24.799435+00:00",
+        "bytes": 1844642,
+        "sha256": "6cc20b3c5b8d25b8b53868fc4ec1792c144f07d67bdf7395138efd4422197e7b",
+        "page_count": 30,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2402.03300.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 1725
+      },
+      "title_variants": [
+        "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 25,
+          "title_cell": "A25",
+          "link_cell": "B25",
+          "title": "DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models",
+          "url": "https://arxiv.org/abs/2402.03300",
+          "arxiv_id": "2402.03300",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11-13"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "保留数学推理与 GRPO 主线材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2501.12948",
+      "dedupe_key": "arxiv:2501.12948",
+      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "citation": "Guo et al. (2025)",
+      "year_as_listed": 2025,
+      "document_type": "technical_report",
+      "arxiv_id": "2501.12948",
+      "source_url": "https://arxiv.org/pdf/2501.12948",
+      "download_url": "https://arxiv.org/pdf/2501.12948",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-07",
+          "lecture_topic": "Post-training II: RLVR, GRPO, and variants",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2501.12948",
+        "resolved_url": "https://arxiv.org/pdf/2501.12948",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:30.951020+00:00",
+        "bytes": 5034998,
+        "sha256": "b191b0a365a64b4ab2791d117069ed17a2933d03554a662ced58b37df52018f4",
+        "page_count": 86,
+        "pdf_metadata_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2501.12948.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2920
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "连接强化学习、推理与蒸馏主题。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2306.13649",
+      "dedupe_key": "arxiv:2306.13649",
+      "title": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes",
+      "citation": "Agarwal et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2306.13649",
+      "source_url": "https://arxiv.org/abs/2306.13649",
+      "download_url": "https://arxiv.org/pdf/2306.13649",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-12",
+          "lecture_topic": "Post-training III (Student Presentations #2): Distillation",
+          "reading_group": "suggested",
+          "item_in_group": 2,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2306.13649",
+        "resolved_url": "https://arxiv.org/pdf/2306.13649",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:39.780752+00:00",
+        "bytes": 895556,
+        "sha256": "a81c71fa0cd15506642092790d854347f030c29ee1d6aa643b55aa51348e6869",
+        "page_count": 18,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2306.13649.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3012
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "蒸馏",
+      "selection_reason": "补充语言模型 on-policy distillation 材料。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_1503.02531",
+      "dedupe_key": "arxiv:1503.02531",
+      "title": "Distilling the Knowledge in a Neural Network",
+      "citation": "Hinton, Vinyals & Dean (2015)",
+      "year_as_listed": 2015,
+      "document_type": "research_paper",
+      "arxiv_id": "1503.02531",
+      "source_url": "https://arxiv.org/abs/1503.02531",
+      "download_url": "https://arxiv.org/pdf/1503.02531",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-12",
+          "lecture_topic": "Post-training III (Student Presentations #2): Distillation",
+          "reading_group": "suggested",
+          "item_in_group": 3,
+          "scope_bucket": "llm_core"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/1503.02531",
+        "resolved_url": "https://arxiv.org/pdf/1503.02531",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:42.765085+00:00",
+        "bytes": 106630,
+        "sha256": "74e6689115c539db499f9d6153edecb364059926fd45402454f8210442444c5a",
+        "page_count": 9,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_1503.02531.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3488
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "蒸馏",
+      "selection_reason": "保留知识蒸馏基础，连接较新的语言模型蒸馏工作。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2106.09685",
+      "dedupe_key": "arxiv:2106.09685",
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "citation": "Hu et al. (2021)",
+      "year_as_listed": 2021,
+      "document_type": "research_paper",
+      "arxiv_id": "2106.09685",
+      "source_url": "https://arxiv.org/abs/2106.09685",
+      "download_url": "https://arxiv.org/pdf/2106.09685",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-10-14",
+          "lecture_topic": "Post-training IV (Student Presentations #3): LoRA, continual learning, & test-time training",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "llm_core"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 11,
+          "title_cell": "A11",
+          "link_cell": "B11",
+          "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+          "url": "https://arxiv.org/abs/2106.09685",
+          "arxiv_id": "2106.09685",
+          "version_as_listed": "v2",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2106.09685",
+        "resolved_url": "https://arxiv.org/pdf/2106.09685",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:42:54.838448+00:00",
+        "bytes": 1609513,
+        "sha256": "e9a0d3128767db616085dc0f4e6e455e672e89af823e8ed1282793682787395a",
+        "page_count": 26,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2106.09685.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 3147
+      },
+      "title_variants": [
+        "LoRA: Low-Rank Adaptation of Large Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 11,
+          "title_cell": "A11",
+          "link_cell": "B11",
+          "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+          "url": "https://arxiv.org/abs/2106.09685",
+          "arxiv_id": "2106.09685",
+          "version_as_listed": "v2",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2106.09685v2",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "PEFT",
+      "selection_reason": "与 Prefix、Prompt Tuning、QLoRA 组成参数高效微调比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2406.07524",
+      "dedupe_key": "arxiv:2406.07524",
+      "title": "Simple and Effective Masked Diffusion Language Models",
+      "citation": "Sahoo et al. (2024)",
+      "year_as_listed": 2024,
+      "document_type": "research_paper",
+      "arxiv_id": "2406.07524",
+      "source_url": "https://arxiv.org/pdf/2406.07524",
+      "download_url": "https://arxiv.org/pdf/2406.07524",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-04",
+          "lecture_topic": "Diffusion V (Student Presentations #6): Discrete diffusion models",
+          "reading_group": "suggested",
+          "item_in_group": 4,
+          "scope_bucket": "diffusion_and_flow_models"
+        },
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 32,
+          "title_cell": "A32",
+          "link_cell": "B32",
+          "title": "Simple and Effective Masked Diffusion Language Models",
+          "url": "https://arxiv.org/pdf/2406.07524",
+          "arxiv_id": "2406.07524",
+          "version_as_listed": "v2",
+          "topic": "Discrete Diffusion (Language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2406.07524",
+        "resolved_url": "https://arxiv.org/pdf/2406.07524",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:43:57.807204+00:00",
+        "bytes": 1034628,
+        "sha256": "d3f6e01211777db2145d55fb51826eff0f9c1bfe315b142540973f35b626be35",
+        "page_count": 49,
+        "pdf_metadata_title": "",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2406.07524.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 2903
+      },
+      "title_variants": [
+        "Simple and Effective Masked Diffusion Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 32,
+          "title_cell": "A32",
+          "link_cell": "B32",
+          "title": "Simple and Effective Masked Diffusion Language Models",
+          "url": "https://arxiv.org/pdf/2406.07524",
+          "arxiv_id": "2406.07524",
+          "version_as_listed": "v2",
+          "topic": "Discrete Diffusion (Language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2406.07524v2",
+      "version_note": "用户表格指定版本；本地课程 PDF 是未指定修订号的哈希快照，尚未确认与该版本相同。",
+      "source_presence": "both",
+      "recommendation": "core",
+      "review_topic": "语言扩散模型",
+      "selection_reason": "保留 masked diffusion language model 材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2301.10226",
+      "dedupe_key": "arxiv:2301.10226",
+      "title": "A Watermark for Large Language Models",
+      "citation": "Kirchenbauer et al. (2023)",
+      "year_as_listed": 2023,
+      "document_type": "research_paper",
+      "arxiv_id": "2301.10226",
+      "source_url": "https://arxiv.org/pdf/2301.10226",
+      "download_url": "https://arxiv.org/pdf/2301.10226",
+      "selection_status": "candidate",
+      "selection_note": "Needs scope review before corpus approval.",
+      "sources": [
+        {
+          "source_id": "cs395t_f26",
+          "source_url": "https://noahgol.github.io/teaching/cs395t-f26/",
+          "reading_list_url": "https://noahgol.github.io/teaching/cs395t-f26/readings.json",
+          "lecture_date": "2026-11-09",
+          "lecture_topic": "Alignment I (Student Presentations #7): Watermarking and Backdoors",
+          "reading_group": "suggested",
+          "item_in_group": 1,
+          "scope_bucket": "safety_and_alignment"
+        }
+      ],
+      "download": {
+        "requested_url": "https://arxiv.org/pdf/2301.10226",
+        "resolved_url": "https://arxiv.org/pdf/2301.10226",
+        "content_type": "application/pdf",
+        "downloaded_at_utc": "2026-10-24T01:44:00.823575+00:00",
+        "bytes": 1461511,
+        "sha256": "7690ccaa0ff7038219c966d8466b63d5d241e30beff9aeb2860e205ab392fc20",
+        "page_count": 26,
+        "pdf_metadata_title": "A Watermark for Large Language Models",
+        "title_token_coverage_first_page": 1.0,
+        "identity_review": "title_tokens_found",
+        "status": "downloaded_pdf",
+        "local_path": "data/papers/arxiv_2301.10226.pdf",
+        "snapshot_policy": "content_sha256",
+        "first_page_extracted_characters": 4339
+      },
+      "source_presence": "course_only",
+      "recommendation": "core",
+      "review_topic": "安全与水印",
+      "selection_reason": "保留一个与语言模型直接相关的安全主题入口。",
+      "approval_status": "proposed_not_frozen",
+      "user_entries": [],
+      "user_version_labels": [],
+      "version_note": "沿用课程下载快照，以 SHA-256 标识。"
+    },
+    {
+      "paper_id": "arxiv_2401.04088",
+      "dedupe_key": "arxiv:2401.04088",
+      "title": "Mixtral of Experts",
+      "arxiv_id": "2401.04088",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2401.04088",
+      "download_url": "https://arxiv.org/pdf/2401.04088",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 2,
+          "title_cell": "A2",
+          "link_cell": "B2",
+          "title": "Mixtral of Experts",
+          "url": "https://arxiv.org/abs/2401.04088",
+          "arxiv_id": "2401.04088",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Mixtral of Experts"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 2,
+          "title_cell": "A2",
+          "link_cell": "B2",
+          "title": "Mixtral of Experts",
+          "url": "https://arxiv.org/abs/2401.04088",
+          "arxiv_id": "2401.04088",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2401.04088v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "保留代表性 MoE 模型，与其他 MoE 论文形成比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2404.19737",
+      "dedupe_key": "arxiv:2404.19737",
+      "title": "Better & Faster Large Language Models via Multi-token Prediction",
+      "arxiv_id": "2404.19737",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2404.19737",
+      "download_url": "https://arxiv.org/pdf/2404.19737",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 4,
+          "title_cell": "A4",
+          "link_cell": "B4",
+          "title": "Better & Faster Large Language Models via Multi-token Prediction",
+          "url": "https://arxiv.org/abs/2404.19737",
+          "arxiv_id": "2404.19737",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Better & Faster Large Language Models via Multi-token Prediction"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 4,
+          "title_cell": "A4",
+          "link_cell": "B4",
+          "title": "Better & Faster Large Language Models via Multi-token Prediction",
+          "url": "https://arxiv.org/abs/2404.19737",
+          "arxiv_id": "2404.19737",
+          "version_as_listed": "v1",
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2404.19737v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "补充多 token 预测这一训练设计维度。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2104.09864",
+      "dedupe_key": "arxiv:2104.09864",
+      "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+      "arxiv_id": "2104.09864",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2104.09864",
+      "download_url": "https://arxiv.org/pdf/2104.09864",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 5,
+          "title_cell": "A5",
+          "link_cell": "B5",
+          "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+          "url": "https://arxiv.org/abs/2104.09864",
+          "arxiv_id": "2104.09864",
+          "version_as_listed": "v5",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "RoFormer: Enhanced Transformer with Rotary Position Embedding"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 5,
+          "title_cell": "A5",
+          "link_cell": "B5",
+          "title": "RoFormer: Enhanced Transformer with Rotary Position Embedding",
+          "url": "https://arxiv.org/abs/2104.09864",
+          "arxiv_id": "2104.09864",
+          "version_as_listed": "v5",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v5"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2104.09864v5",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "长上下文",
+      "selection_reason": "位置编码基础，与 YaRN、LongRoPE 组成上下文扩展主题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2402.13753",
+      "dedupe_key": "arxiv:2402.13753",
+      "title": "LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens",
+      "arxiv_id": "2402.13753",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2402.13753",
+      "download_url": "https://arxiv.org/pdf/2402.13753",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 6,
+          "title_cell": "A6",
+          "link_cell": "B6",
+          "title": "LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens",
+          "url": "https://arxiv.org/abs/2402.13753",
+          "arxiv_id": "2402.13753",
+          "version_as_listed": "v1",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 6,
+          "title_cell": "A6",
+          "link_cell": "B6",
+          "title": "LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens",
+          "url": "https://arxiv.org/abs/2402.13753",
+          "arxiv_id": "2402.13753",
+          "version_as_listed": "v1",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2402.13753v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "长上下文",
+      "selection_reason": "与 RoFormer、YaRN 形成长上下文方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2309.00071",
+      "dedupe_key": "arxiv:2309.00071",
+      "title": "YaRN: Efficient Context Window Extension of Large Language Models",
+      "arxiv_id": "2309.00071",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2309.00071",
+      "download_url": "https://arxiv.org/pdf/2309.00071",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 7,
+          "title_cell": "A7",
+          "link_cell": "B7",
+          "title": "YaRN: Efficient Context Window Extension of Large Language Models",
+          "url": "https://arxiv.org/abs/2309.00071",
+          "arxiv_id": "2309.00071",
+          "version_as_listed": "v3",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "YaRN: Efficient Context Window Extension of Large Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 7,
+          "title_cell": "A7",
+          "link_cell": "B7",
+          "title": "YaRN: Efficient Context Window Extension of Large Language Models",
+          "url": "https://arxiv.org/abs/2309.00071",
+          "arxiv_id": "2309.00071",
+          "version_as_listed": "v3",
+          "topic": "Long Context",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2309.00071v3",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "长上下文",
+      "selection_reason": "与 RoFormer、LongRoPE 形成方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1711.05101",
+      "dedupe_key": "arxiv:1711.05101",
+      "title": "Decoupled Weight Decay Regularization",
+      "arxiv_id": "1711.05101",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/1711.05101",
+      "download_url": "https://arxiv.org/pdf/1711.05101",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 8,
+          "title_cell": "A8",
+          "link_cell": "B8",
+          "title": "Decoupled Weight Decay Regularization",
+          "url": "https://arxiv.org/abs/1711.05101",
+          "arxiv_id": "1711.05101",
+          "version_as_listed": "v3",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Decoupled Weight Decay Regularization"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 8,
+          "title_cell": "A8",
+          "link_cell": "B8",
+          "title": "Decoupled Weight Decay Regularization",
+          "url": "https://arxiv.org/abs/1711.05101",
+          "arxiv_id": "1711.05101",
+          "version_as_listed": "v3",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/1711.05101v3",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "保留权重衰减设计，与 Adam 形成比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2302.06675",
+      "dedupe_key": "arxiv:2302.06675",
+      "title": "Symbolic Discovery of Optimization Algorithms",
+      "arxiv_id": "2302.06675",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2302.06675",
+      "download_url": "https://arxiv.org/pdf/2302.06675",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 9,
+          "title_cell": "A9",
+          "link_cell": "B9",
+          "title": "Symbolic Discovery of Optimization Algorithms",
+          "url": "https://arxiv.org/abs/2302.06675",
+          "arxiv_id": "2302.06675",
+          "version_as_listed": "v4",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Symbolic Discovery of Optimization Algorithms"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 9,
+          "title_cell": "A9",
+          "link_cell": "B9",
+          "title": "Symbolic Discovery of Optimization Algorithms",
+          "url": "https://arxiv.org/abs/2302.06675",
+          "arxiv_id": "2302.06675",
+          "version_as_listed": "v4",
+          "topic": "Optimizers",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v4"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2302.06675v4",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "优化器",
+      "selection_reason": "保留优化算法发现这一不同研究角度。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2101.00190",
+      "dedupe_key": "arxiv:2101.00190",
+      "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+      "arxiv_id": "2101.00190",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2101.00190",
+      "download_url": "https://arxiv.org/pdf/2101.00190",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 12,
+          "title_cell": "A12",
+          "link_cell": "B12",
+          "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+          "url": "https://arxiv.org/abs/2101.00190",
+          "arxiv_id": "2101.00190",
+          "version_as_listed": "v1",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Prefix-Tuning: Optimizing Continuous Prompts for Generation"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 12,
+          "title_cell": "A12",
+          "link_cell": "B12",
+          "title": "Prefix-Tuning: Optimizing Continuous Prompts for Generation",
+          "url": "https://arxiv.org/abs/2101.00190",
+          "arxiv_id": "2101.00190",
+          "version_as_listed": "v1",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2101.00190v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "PEFT",
+      "selection_reason": "与 LoRA、Prompt Tuning 形成适配方式比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2104.08691",
+      "dedupe_key": "arxiv:2104.08691",
+      "title": "The Power of Scale for Parameter-Efficient Prompt Tuning",
+      "arxiv_id": "2104.08691",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2104.08691",
+      "download_url": "https://arxiv.org/pdf/2104.08691",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 13,
+          "title_cell": "A13",
+          "link_cell": "B13",
+          "title": "The Power of Scale for Parameter-Efficient Prompt Tuning",
+          "url": "https://arxiv.org/abs/2104.08691",
+          "arxiv_id": "2104.08691",
+          "version_as_listed": "v2",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "The Power of Scale for Parameter-Efficient Prompt Tuning"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 13,
+          "title_cell": "A13",
+          "link_cell": "B13",
+          "title": "The Power of Scale for Parameter-Efficient Prompt Tuning",
+          "url": "https://arxiv.org/abs/2104.08691",
+          "arxiv_id": "2104.08691",
+          "version_as_listed": "v2",
+          "topic": "Parameter Efficient Fine Tuning (PEFT)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2104.08691v2",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "PEFT",
+      "selection_reason": "与 Prefix-Tuning 形成连续提示方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2205.11916",
+      "dedupe_key": "arxiv:2205.11916",
+      "title": "Large Language Models are Zero-Shot Reasoners",
+      "arxiv_id": "2205.11916",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2205.11916",
+      "download_url": "https://arxiv.org/pdf/2205.11916",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 19,
+          "title_cell": "A19",
+          "link_cell": "B19",
+          "title": "Large Language Models are Zero-Shot Reasoners",
+          "url": "https://arxiv.org/abs/2205.11916",
+          "arxiv_id": "2205.11916",
+          "version_as_listed": "v4",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Large Language Models are Zero-Shot Reasoners"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 19,
+          "title_cell": "A19",
+          "link_cell": "B19",
+          "title": "Large Language Models are Zero-Shot Reasoners",
+          "url": "https://arxiv.org/abs/2205.11916",
+          "arxiv_id": "2205.11916",
+          "version_as_listed": "v4",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v4"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2205.11916v4",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "与 CoT few-shot 设置形成提示方式比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2203.11171",
+      "dedupe_key": "arxiv:2203.11171",
+      "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "arxiv_id": "2203.11171",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2203.11171",
+      "download_url": "https://arxiv.org/pdf/2203.11171",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 20,
+          "title_cell": "A20",
+          "link_cell": "B20",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "url": "https://arxiv.org/abs/2203.11171",
+          "arxiv_id": "2203.11171",
+          "version_as_listed": "v4",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Self-Consistency Improves Chain of Thought Reasoning in Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 20,
+          "title_cell": "A20",
+          "link_cell": "B20",
+          "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+          "url": "https://arxiv.org/abs/2203.11171",
+          "arxiv_id": "2203.11171",
+          "version_as_listed": "v4",
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v4"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2203.11171v4",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "与 CoT 形成生成与答案聚合方式比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2208.07339",
+      "dedupe_key": "arxiv:2208.07339",
+      "title": "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale",
+      "arxiv_id": "2208.07339",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2208.07339",
+      "download_url": "https://arxiv.org/pdf/2208.07339",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 21,
+          "title_cell": "A21",
+          "link_cell": "B21",
+          "title": "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale",
+          "url": "https://arxiv.org/abs/2208.07339",
+          "arxiv_id": "2208.07339",
+          "version_as_listed": "v2",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 21,
+          "title_cell": "A21",
+          "link_cell": "B21",
+          "title": "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale",
+          "url": "https://arxiv.org/abs/2208.07339",
+          "arxiv_id": "2208.07339",
+          "version_as_listed": "v2",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2208.07339v2",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "量化",
+      "selection_reason": "与 GPTQ、AWQ 组成量化方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2210.17323",
+      "dedupe_key": "arxiv:2210.17323",
+      "title": "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers",
+      "arxiv_id": "2210.17323",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2210.17323",
+      "download_url": "https://arxiv.org/pdf/2210.17323",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 22,
+          "title_cell": "A22",
+          "link_cell": "B22",
+          "title": "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers",
+          "url": "https://arxiv.org/abs/2210.17323",
+          "arxiv_id": "2210.17323",
+          "version_as_listed": "v2",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 22,
+          "title_cell": "A22",
+          "link_cell": "B22",
+          "title": "GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers",
+          "url": "https://arxiv.org/abs/2210.17323",
+          "arxiv_id": "2210.17323",
+          "version_as_listed": "v2",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2210.17323v2",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "量化",
+      "selection_reason": "保留代表性训练后量化材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2306.00978",
+      "dedupe_key": "arxiv:2306.00978",
+      "title": "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration",
+      "arxiv_id": "2306.00978",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2306.00978",
+      "download_url": "https://arxiv.org/pdf/2306.00978",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 23,
+          "title_cell": "A23",
+          "link_cell": "B23",
+          "title": "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration",
+          "url": "https://arxiv.org/abs/2306.00978",
+          "arxiv_id": "2306.00978",
+          "version_as_listed": "v6",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 23,
+          "title_cell": "A23",
+          "link_cell": "B23",
+          "title": "AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration",
+          "url": "https://arxiv.org/abs/2306.00978",
+          "arxiv_id": "2306.00978",
+          "version_as_listed": "v6",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v6"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2306.00978v6",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "量化",
+      "selection_reason": "与 GPTQ、LLM.int8 形成量化方法比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2305.14314",
+      "dedupe_key": "arxiv:2305.14314",
+      "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+      "arxiv_id": "2305.14314",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2305.14314",
+      "download_url": "https://arxiv.org/pdf/2305.14314",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 24,
+          "title_cell": "A24",
+          "link_cell": "B24",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "url": "https://arxiv.org/abs/2305.14314",
+          "arxiv_id": "2305.14314",
+          "version_as_listed": "v1",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "QLoRA: Efficient Finetuning of Quantized LLMs"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 24,
+          "title_cell": "A24",
+          "link_cell": "B24",
+          "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+          "url": "https://arxiv.org/abs/2305.14314",
+          "arxiv_id": "2305.14314",
+          "version_as_listed": "v1",
+          "topic": "Quantization (video, image, language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2305.14314v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "PEFT",
+      "selection_reason": "连接 PEFT 和量化，支持跨主题综合题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2210.03629",
+      "dedupe_key": "arxiv:2210.03629",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "arxiv_id": "2210.03629",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2210.03629",
+      "download_url": "https://arxiv.org/pdf/2210.03629",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 25,
+          "title_cell": "A25",
+          "link_cell": "B25",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "url": "https://arxiv.org/abs/2210.03629",
+          "arxiv_id": "2210.03629",
+          "version_as_listed": "v3",
+          "topic": "Tool use (agentic etc.)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "ReAct: Synergizing Reasoning and Acting in Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 25,
+          "title_cell": "A25",
+          "link_cell": "B25",
+          "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+          "url": "https://arxiv.org/abs/2210.03629",
+          "arxiv_id": "2210.03629",
+          "version_as_listed": "v3",
+          "topic": "Tool use (agentic etc.)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2210.03629v3",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "工具使用",
+      "selection_reason": "与 Toolformer 形成推理、行动和工具使用的比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2302.04761",
+      "dedupe_key": "arxiv:2302.04761",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "arxiv_id": "2302.04761",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2302.04761",
+      "download_url": "https://arxiv.org/pdf/2302.04761",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 26,
+          "title_cell": "A26",
+          "link_cell": "B26",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "url": "https://arxiv.org/abs/2302.04761",
+          "arxiv_id": "2302.04761",
+          "version_as_listed": "v1",
+          "topic": "Tool use (agentic etc.)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Toolformer: Language Models Can Teach Themselves to Use Tools"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 26,
+          "title_cell": "A26",
+          "link_cell": "B26",
+          "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+          "url": "https://arxiv.org/abs/2302.04761",
+          "arxiv_id": "2302.04761",
+          "version_as_listed": "v1",
+          "topic": "Tool use (agentic etc.)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2302.04761v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "工具使用",
+      "selection_reason": "与 ReAct 形成工具使用机制比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2406.11794",
+      "dedupe_key": "arxiv:2406.11794",
+      "title": "DataComp-LM: In search of the next generation of training sets for language models",
+      "arxiv_id": "2406.11794",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2406.11794",
+      "download_url": "https://arxiv.org/pdf/2406.11794",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 27,
+          "title_cell": "A27",
+          "link_cell": "B27",
+          "title": "DataComp-LM: In search of the next generation of training sets for language models",
+          "url": "https://arxiv.org/abs/2406.11794",
+          "arxiv_id": "2406.11794",
+          "version_as_listed": "v4",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "DataComp-LM: In search of the next generation of training sets for language models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 27,
+          "title_cell": "A27",
+          "link_cell": "B27",
+          "title": "DataComp-LM: In search of the next generation of training sets for language models",
+          "url": "https://arxiv.org/abs/2406.11794",
+          "arxiv_id": "2406.11794",
+          "version_as_listed": "v4",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v4"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2406.11794v4",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "训练数据",
+      "selection_reason": "保留数据集构建与比较材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2402.16827",
+      "dedupe_key": "arxiv:2402.16827",
+      "title": "A Survey on Data Selection for Language Models",
+      "arxiv_id": "2402.16827",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2402.16827",
+      "download_url": "https://arxiv.org/pdf/2402.16827",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 28,
+          "title_cell": "A28",
+          "link_cell": "B28",
+          "title": "A Survey on Data Selection for Language Models",
+          "url": "https://arxiv.org/abs/2402.16827",
+          "arxiv_id": "2402.16827",
+          "version_as_listed": "v3",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "A Survey on Data Selection for Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 28,
+          "title_cell": "A28",
+          "link_cell": "B28",
+          "title": "A Survey on Data Selection for Language Models",
+          "url": "https://arxiv.org/abs/2402.16827",
+          "arxiv_id": "2402.16827",
+          "version_as_listed": "v3",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2402.16827v3",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "训练数据",
+      "selection_reason": "保留一篇数据选择综述，支持概念覆盖与综合题。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2501.00656",
+      "dedupe_key": "arxiv:2501.00656",
+      "title": "2 OLMo 2 Furious",
+      "arxiv_id": "2501.00656",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2501.00656",
+      "download_url": "https://arxiv.org/pdf/2501.00656",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 29,
+          "title_cell": "A29",
+          "link_cell": "B29",
+          "title": "2 OLMo 2 Furious",
+          "url": "https://arxiv.org/abs/2501.00656",
+          "arxiv_id": "2501.00656",
+          "version_as_listed": "v3",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "2 OLMo 2 Furious"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 29,
+          "title_cell": "A29",
+          "link_cell": "B29",
+          "title": "2 OLMo 2 Furious",
+          "url": "https://arxiv.org/abs/2501.00656",
+          "arxiv_id": "2501.00656",
+          "version_as_listed": "v3",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v3"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2501.00656v3",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "训练数据",
+      "selection_reason": "保留一份开放模型报告，连接数据与训练流程。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2506.04178",
+      "dedupe_key": "arxiv:2506.04178",
+      "title": "OpenThoughts: Data Recipes for Reasoning Models",
+      "arxiv_id": "2506.04178",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2506.04178",
+      "download_url": "https://arxiv.org/pdf/2506.04178",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 30,
+          "title_cell": "A30",
+          "link_cell": "B30",
+          "title": "OpenThoughts: Data Recipes for Reasoning Models",
+          "url": "https://arxiv.org/abs/2506.04178",
+          "arxiv_id": "2506.04178",
+          "version_as_listed": "v2",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "OpenThoughts: Data Recipes for Reasoning Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 30,
+          "title_cell": "A30",
+          "link_cell": "B30",
+          "title": "OpenThoughts: Data Recipes for Reasoning Models",
+          "url": "https://arxiv.org/abs/2506.04178",
+          "arxiv_id": "2506.04178",
+          "version_as_listed": "v2",
+          "topic": "Which Data",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v2"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2506.04178v2",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "训练数据",
+      "selection_reason": "补充推理数据配方，与训练和推理主题连接。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2205.14217",
+      "dedupe_key": "arxiv:2205.14217",
+      "title": "Diffusion-LM Improves Controllable Text Generation",
+      "arxiv_id": "2205.14217",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/pdf/2205.14217",
+      "download_url": "https://arxiv.org/pdf/2205.14217",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 31,
+          "title_cell": "A31",
+          "link_cell": "B31",
+          "title": "Diffusion-LM Improves Controllable Text Generation",
+          "url": "https://arxiv.org/pdf/2205.14217",
+          "arxiv_id": "2205.14217",
+          "version_as_listed": "v1",
+          "topic": "Discrete Diffusion (Language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Diffusion-LM Improves Controllable Text Generation"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet1",
+          "row": 31,
+          "title_cell": "A31",
+          "link_cell": "B31",
+          "title": "Diffusion-LM Improves Controllable Text Generation",
+          "url": "https://arxiv.org/pdf/2205.14217",
+          "arxiv_id": "2205.14217",
+          "version_as_listed": "v1",
+          "topic": "Discrete Diffusion (Language)",
+          "lecture_as_listed": null
+        }
+      ],
+      "user_version_labels": [
+        "v1"
+      ],
+      "preferred_download_url_from_user": "https://arxiv.org/pdf/2205.14217v1",
+      "version_note": "保留用户表格指定版本，尚未下载。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "语言扩散模型",
+      "selection_reason": "保留语言生成相关扩散方法，控制通用图像扩散的范围。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1607.06450",
+      "dedupe_key": "arxiv:1607.06450",
+      "title": "Layer Normalization",
+      "arxiv_id": "1607.06450",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/1607.06450",
+      "download_url": "https://arxiv.org/pdf/1607.06450",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 3,
+          "title_cell": "A3",
+          "link_cell": "B3",
+          "title": "Layer Normalization",
+          "url": "https://arxiv.org/abs/1607.06450",
+          "arxiv_id": "1607.06450",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Layer Normalization"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 3,
+          "title_cell": "A3",
+          "link_cell": "B3",
+          "title": "Layer Normalization",
+          "url": "https://arxiv.org/abs/1607.06450",
+          "arxiv_id": "1607.06450",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "与 RMSNorm 形成归一化设计比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2002.05202",
+      "dedupe_key": "arxiv:2002.05202",
+      "title": "GLU Variants Improve Transformer",
+      "arxiv_id": "2002.05202",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2002.05202",
+      "download_url": "https://arxiv.org/pdf/2002.05202",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 5,
+          "title_cell": "A5",
+          "link_cell": "B5",
+          "title": "GLU Variants Improve Transformer",
+          "url": "https://arxiv.org/abs/2002.05202",
+          "arxiv_id": "2002.05202",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "GLU Variants Improve Transformer"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 5,
+          "title_cell": "A5",
+          "link_cell": "B5",
+          "title": "GLU Variants Improve Transformer",
+          "url": "https://arxiv.org/abs/2002.05202",
+          "arxiv_id": "2002.05202",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "补充 Transformer 前馈层设计。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1910.07467",
+      "dedupe_key": "arxiv:1910.07467",
+      "title": "Root Mean Square Layer Normalization",
+      "arxiv_id": "1910.07467",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/1910.07467",
+      "download_url": "https://arxiv.org/pdf/1910.07467",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 7,
+          "title_cell": "A7",
+          "link_cell": "B7",
+          "title": "Root Mean Square Layer Normalization",
+          "url": "https://arxiv.org/abs/1910.07467",
+          "arxiv_id": "1910.07467",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Root Mean Square Layer Normalization"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 7,
+          "title_cell": "A7",
+          "link_cell": "B7",
+          "title": "Root Mean Square Layer Normalization",
+          "url": "https://arxiv.org/abs/1910.07467",
+          "arxiv_id": "1910.07467",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "与 LayerNorm 形成归一化设计比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_1508.07909",
+      "dedupe_key": "arxiv:1508.07909",
+      "title": "Neural Machine Translation of Rare Words with Subword Units",
+      "arxiv_id": "1508.07909",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/1508.07909",
+      "download_url": "https://arxiv.org/pdf/1508.07909",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 8,
+          "title_cell": "A8",
+          "link_cell": "B8",
+          "title": "Neural Machine Translation of Rare Words with Subword Units",
+          "url": "https://arxiv.org/abs/1508.07909",
+          "arxiv_id": "1508.07909",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Neural Machine Translation of Rare Words with Subword Units"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 8,
+          "title_cell": "A8",
+          "link_cell": "B8",
+          "title": "Neural Machine Translation of Rare Words with Subword Units",
+          "url": "https://arxiv.org/abs/1508.07909",
+          "arxiv_id": "1508.07909",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture3"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "保留分词基础，避免语料只覆盖模型结构。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2401.06066",
+      "dedupe_key": "arxiv:2401.06066",
+      "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+      "arxiv_id": "2401.06066",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2401.06066",
+      "download_url": "https://arxiv.org/pdf/2401.06066",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 12,
+          "title_cell": "A12",
+          "link_cell": "B12",
+          "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+          "url": "https://arxiv.org/abs/2401.06066",
+          "arxiv_id": "2401.06066",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture5"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 12,
+          "title_cell": "A12",
+          "link_cell": "B12",
+          "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+          "url": "https://arxiv.org/abs/2401.06066",
+          "arxiv_id": "2401.06066",
+          "version_as_listed": null,
+          "topic": "Architectural Modifications for LLM",
+          "lecture_as_listed": "lecture5"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "架构与分词",
+      "selection_reason": "补充 MoE 专家设计的比较材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2203.14465",
+      "dedupe_key": "arxiv:2203.14465",
+      "title": "STaR: Bootstrapping Reasoning With Reasoning",
+      "arxiv_id": "2203.14465",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2203.14465",
+      "download_url": "https://arxiv.org/pdf/2203.14465",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 19,
+          "title_cell": "A19",
+          "link_cell": "B19",
+          "title": "STaR: Bootstrapping Reasoning With Reasoning",
+          "url": "https://arxiv.org/abs/2203.14465",
+          "arxiv_id": "2203.14465",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "STaR: Bootstrapping Reasoning With Reasoning"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 19,
+          "title_cell": "A19",
+          "link_cell": "B19",
+          "title": "STaR: Bootstrapping Reasoning With Reasoning",
+          "url": "https://arxiv.org/abs/2203.14465",
+          "arxiv_id": "2203.14465",
+          "version_as_listed": null,
+          "topic": "Chain of Thought and Reasoning",
+          "lecture_as_listed": "lecture9"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "推理与测试时计算",
+      "selection_reason": "补充通过生成推理进行训练的研究路线。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2503.14476",
+      "dedupe_key": "arxiv:2503.14476",
+      "title": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale",
+      "arxiv_id": "2503.14476",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2503.14476",
+      "download_url": "https://arxiv.org/pdf/2503.14476",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 26,
+          "title_cell": "A26",
+          "link_cell": "B26",
+          "title": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale",
+          "url": "https://arxiv.org/abs/2503.14476",
+          "arxiv_id": "2503.14476",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "DAPO: An Open-Source LLM Reinforcement Learning System at Scale"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 26,
+          "title_cell": "A26",
+          "link_cell": "B26",
+          "title": "DAPO: An Open-Source LLM Reinforcement Learning System at Scale",
+          "url": "https://arxiv.org/abs/2503.14476",
+          "arxiv_id": "2503.14476",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture11"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "保留一份大规模 LLM RL 系统材料。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2402.14740",
+      "dedupe_key": "arxiv:2402.14740",
+      "title": "Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs",
+      "arxiv_id": "2402.14740",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2402.14740",
+      "download_url": "https://arxiv.org/pdf/2402.14740",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 27,
+          "title_cell": "A27",
+          "link_cell": "B27",
+          "title": "Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs",
+          "url": "https://arxiv.org/abs/2402.14740",
+          "arxiv_id": "2402.14740",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture13"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 27,
+          "title_cell": "A27",
+          "link_cell": "B27",
+          "title": "Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs",
+          "url": "https://arxiv.org/abs/2402.14740",
+          "arxiv_id": "2402.14740",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture13"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "保留 REINFORCE 风格方法，与 PPO 主线比较。",
+      "approval_status": "proposed_not_frozen"
+    },
+    {
+      "paper_id": "arxiv_2503.20783",
+      "dedupe_key": "arxiv:2503.20783",
+      "title": "Understanding R1-Zero-Like Training: A Critical Perspective",
+      "arxiv_id": "2503.20783",
+      "citation": "",
+      "year_as_listed": null,
+      "document_type": "research_paper",
+      "source_url": "https://arxiv.org/abs/2503.20783",
+      "download_url": "https://arxiv.org/pdf/2503.20783",
+      "sources": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 28,
+          "title_cell": "A28",
+          "link_cell": "B28",
+          "title": "Understanding R1-Zero-Like Training: A Critical Perspective",
+          "url": "https://arxiv.org/abs/2503.20783",
+          "arxiv_id": "2503.20783",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture13"
+        }
+      ],
+      "download": {
+        "status": "not_downloaded"
+      },
+      "selection_status": "candidate",
+      "title_variants": [
+        "Understanding R1-Zero-Like Training: A Critical Perspective"
+      ],
+      "user_entries": [
+        {
+          "source_id": "user_workbook",
+          "sheet": "Sheet2",
+          "row": 28,
+          "title_cell": "A28",
+          "link_cell": "B28",
+          "title": "Understanding R1-Zero-Like Training: A Critical Perspective",
+          "url": "https://arxiv.org/abs/2503.20783",
+          "arxiv_id": "2503.20783",
+          "version_as_listed": null,
+          "topic": "Post-training and RL",
+          "lecture_as_listed": "lecture13"
+        }
+      ],
+      "user_version_labels": [],
+      "preferred_download_url_from_user": null,
+      "version_note": "未指定修订号。",
+      "source_presence": "user_only",
+      "recommendation": "core",
+      "review_topic": "后训练与RL",
+      "selection_reason": "保留批判性分析，支持限制与实验条件类问题。",
+      "approval_status": "proposed_not_frozen"
+    }
+  ]
+}
